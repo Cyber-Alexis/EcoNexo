@@ -18,7 +18,9 @@ services:
 
   # Servicio Backend - Laravel
   backend:
-    image: php:8.3-apache
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: laravel-backend
     working_dir: /var/www/html
     volumes:
@@ -36,16 +38,14 @@ services:
     networks:
       - app-network
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     command: >
-      bash -c "
-      apt-get update && apt-get install -y libpng-dev libjpeg-dev libfreetype6-dev zip unzip git &&
-      docker-php-ext-configure gd --with-freetype --with-jpeg &&
-      docker-php-ext-install gd pdo pdo_mysql &&
-      a2enmod rewrite &&
-      chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache &&
-      chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache &&
-      apache2-foreground
+      sh -c "
+        composer install --no-interaction --prefer-dist &&
+        php artisan key:generate --force &&
+        php artisan migrate --force &&
+        apache2-foreground
       "
 
   # Servicio Base de Datos - MySQL
@@ -69,12 +69,9 @@ services:
       timeout: 5s
       retries: 5
 
-# Volumen para persistir datos de MySQL
 volumes:
   mysql-data:
-    driver: local
 
-# Red para comunicación entre servicios
 networks:
   app-network:
     driver: bridge
