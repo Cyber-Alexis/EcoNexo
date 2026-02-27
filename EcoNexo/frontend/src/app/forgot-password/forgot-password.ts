@@ -4,19 +4,18 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
 @Component({
-  selector: 'app-login',
+  selector: 'app-forgot-password',
   imports: [FormsModule, CommonModule, RouterLink],
-  templateUrl: './login.html',
-  styleUrl: './login.css',
+  templateUrl: './forgot-password.html',
+  styleUrl: './forgot-password.css',
 })
-export class Login {
+export class ForgotPassword {
   email = '';
-  password = '';
-  rememberMe = false;
   message = '';
+  submitted = false;
 
   onSubmit(): void {
-    this.message = `Inicio de sesión enviado para: ${this.email}`;
+    this.message = `Enlace de recuperación enviado a: ${this.email}`;
+    this.submitted = true;
   }
-
 }

@@ -299,6 +299,24 @@ ul {
   color: #2D6A4F;
 }
 
+.login-link-text {
+  margin-top: 1.2rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.login-link-text a {
+  color: #2D6A4F;
+  font-weight: 600;
+  text-decoration: none;
+  transition: text-decoration 0.2s;
+}
+
+.login-link-text a:hover {
+  text-decoration: underline;
+}
+
 /* ─── Footer ─── */
 .footer {
   background: #ffffff;

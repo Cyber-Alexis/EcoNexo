@@ -12,9 +12,9 @@
   </div>
 
   <ul class="nav-links">
-    <li><a href="#">Negocios</a></li>
-    <li><a href="#">Productos</a></li>
-    <li><a href="#">Sobre Nosotros</a></li>
+    <li><a routerLink="/negocios">Negocios</a></li>
+    <li><a routerLink="/productos">Productos</a></li>
+    <li><a routerLink="/about">Sobre Nosotros</a></li>
   </ul>
 
   <div class="nav-right">
@@ -32,14 +32,14 @@
         <path d="M8 2V6M16 2V6" stroke="#374151" stroke-width="1.5" stroke-linecap="round"/>
       </svg>
     </button>
-    <a href="#" class="login-link">
+    <a routerLink="/login" class="login-link">
       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="12" cy="8" r="4" stroke="#374151" stroke-width="1.5"/>
         <path d="M4 20C4 16.686 7.582 14 12 14C16.418 14 20 16.686 20 20" stroke="#374151" stroke-width="1.5" stroke-linecap="round"/>
       </svg>
       Iniciar Sesión
     </a>
-    <button class="register-btn-nav">Registrarse</button>
+    <button class="register-btn-nav" routerLink="/register">Registrarse</button>
   </div>
 </nav>
 
@@ -90,6 +90,7 @@
           <button type="submit" class="submit-btn" [disabled]="registerForm.invalid">Registrarse</button>
         </form>
         <p class="message" *ngIf="message">{{ message }}</p>
+        <p class="login-link-text">¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión aquí</a></p>
       </div>
     </div>
   </div>
@@ -126,8 +127,8 @@
     <div class="footer-col">
       <h4>Explorar</h4>
       <ul>
-        <li><a href="#">Negocios</a></li>
-        <li><a href="#">Productos</a></li>
+        <li><a routerLink="/negocios">Negocios</a></li>
+        <li><a routerLink="/productos">Productos</a></li>
         <li><a href="#">Categorías</a></li>
       </ul>
     </div>
