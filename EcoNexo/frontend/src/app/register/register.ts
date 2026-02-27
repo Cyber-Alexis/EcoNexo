@@ -9,13 +9,20 @@ import { CommonModule } from '@angular/common';
   styleUrl: './register.css',
 })
 export class Register {
-  name = '';
   email = '';
+  username = '';
+  dni = '';
+  domicilio = '';
   password = '';
+  confirmPassword = '';
   message = '';
 
   onSubmit(): void {
-    this.message = `Registro enviado para: ${this.name}`;
+    if (this.password !== this.confirmPassword) {
+      this.message = 'Las contraseñas no coinciden.';
+      return;
+    }
+    this.message = `Registro enviado para: ${this.email}`;
   }
 
 }
