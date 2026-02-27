@@ -1,0 +1,29 @@
+<section class="auth-card">
+	<h2>Login</h2>
+
+	<form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+		<label for="email">Email</label>
+		<input
+			id="email"
+			type="email"
+			name="email"
+			[(ngModel)]="email"
+			required
+			email
+		/>
+
+		<label for="password">Password</label>
+		<input
+			id="password"
+			type="password"
+			name="password"
+			[(ngModel)]="password"
+			required
+			minlength="6"
+		/>
+
+		<button type="submit" [disabled]="loginForm.invalid">Entrar</button>
+	</form>
+
+	<p class="message" *ngIf="message">{{ message }}</p>
+</section>

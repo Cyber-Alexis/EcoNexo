@@ -1,0 +1,38 @@
+<section class="auth-card">
+	<h2>Register</h2>
+
+	<form (ngSubmit)="onSubmit()" #registerForm="ngForm">
+		<label for="name">Nombre</label>
+		<input
+			id="name"
+			type="text"
+			name="name"
+			[(ngModel)]="name"
+			required
+		/>
+
+		<label for="email">Email</label>
+		<input
+			id="email"
+			type="email"
+			name="email"
+			[(ngModel)]="email"
+			required
+			email
+		/>
+
+		<label for="password">Password</label>
+		<input
+			id="password"
+			type="password"
+			name="password"
+			[(ngModel)]="password"
+			required
+			minlength="6"
+		/>
+
+		<button type="submit" [disabled]="registerForm.invalid">Crear cuenta</button>
+	</form>
+
+	<p class="message" *ngIf="message">{{ message }}</p>
+</section>
