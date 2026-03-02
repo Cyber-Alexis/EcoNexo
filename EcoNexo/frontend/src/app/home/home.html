@@ -1,9 +1,299 @@
 <div class="home-container">
-	<h1>Inicio</h1>
-	<p>Bienvenido a EcoNexo</p>
-	<nav>
-		<a routerLink="/negocios">Negocios</a>
-		<a routerLink="/productos">Productos</a>
-		<a routerLink="/about">Sobre Nosotros</a>
-	</nav>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="navbar-content">
+      <div class="navbar-left">
+        <div class="logo">🌿 EcoNexo</div>
+        <ul class="nav-menu">
+          <li><a href="#negocios">Negocios</a></li>
+          <li><a href="#productos">Productos</a></li>
+          <li><a href="#about">Sobre Nosotros</a></li>
+        </ul>
+      </div>
+      <div class="navbar-center">
+        <div class="search-bar">
+          <input type="text" placeholder="Busca negocios y productos..." />
+          <button type="button">🔍</button>
+        </div>
+      </div>
+      <div class="navbar-right">
+        <button class="icon-btn">📅</button>
+        <div *ngIf="!isLoggedIn" class="auth-buttons">
+          <button routerLink="/login" class="btn-login">Iniciar Sesión</button>
+          <button routerLink="/register" class="btn-register">Regístrate</button>
+        </div>
+        <div *ngIf="isLoggedIn" class="user-menu">
+          <span class="user-name">{{ userName }}</span>
+          <button (click)="logout()" class="btn-logout">Cerrar Sesión</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-tag">🌱 Comercio Local y Sostenible</div>
+      <h1>Descubre los <span class="highlight">negocios locales</span> de Lleida</h1>
+      <p>
+        Conectamos a productores y comerciantes locales con su comunidad. Encuentra productos
+        únicos, apoya la economía local y construye un futuro más sostenible.
+      </p>
+      <div class="hero-buttons">
+        <button routerLink="/home" fragment="negocios" class="btn-primary">Explorar Negocios →</button>
+        <button routerLink="/register" class="btn-secondary">Registrar mi Negocio</button>
+      </div>
+      <div class="hero-stats">
+        <div class="stat">
+          <div class="stat-number">150+</div>
+          <div class="stat-label">Negocios</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number">5,000+</div>
+          <div class="stat-label">Usuarios</div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- Categorías -->
+  <section class="categories">
+    <h2>Explora por Categorías</h2>
+    <p class="section-subtitle">
+      Encuentra exactamente lo que buscas. Desde productos frescos hasta artesanía local.
+    </p>
+    <div class="categories-grid">
+      <div *ngFor="let category of categories" class="category-card">
+        <div class="category-icon">{{ category.icon }}</div>
+        <div class="category-name">{{ category.name }}</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Negocios Destacados -->
+  <section class="featured-businesses" id="negocios">
+    <div class="section-header">
+      <h2>Negocios Destacados</h2>
+      <a href="#" class="see-all">Ver todos →</a>
+    </div>
+    <p class="section-subtitle">
+      Descubre los negocios mejor valorados por nuestra comunidad
+    </p>
+    <div class="businesses-grid">
+      <div class="business-card">
+        <div class="business-image">
+          <span class="business-badge">Frutas y Verduras</span>
+        </div>
+        <div class="business-info">
+          <h3>Cal Teta - Frutas y Verduras</h3>
+          <p class="business-description">Frutas de temporada y verduras de proximidad.</p>
+          <div class="business-rating">
+            <span class="stars">⭐ 4.8</span>
+            <span class="reviews">(324 reseñas)</span>
+          </div>
+          <a href="#" class="location-link">📍 Lleida</a>
+        </div>
+      </div>
+
+      <div class="business-card">
+        <div class="business-image">
+          <span class="business-badge">Panadería</span>
+        </div>
+        <div class="business-info">
+          <h3>Forn de la Plaça</h3>
+          <p class="business-description">Pan de cada día y bollería casera artesanal de la zona.</p>
+          <div class="business-rating">
+            <span class="stars">⭐ 4.9</span>
+            <span class="reviews">(287 reseñas)</span>
+          </div>
+          <a href="#" class="location-link">📍 Lleida</a>
+        </div>
+      </div>
+
+      <div class="business-card">
+        <div class="business-image">
+          <span class="business-badge">Vinos y Licores</span>
+        </div>
+        <div class="business-info">
+          <h3>Vinya del Segre</h3>
+          <p class="business-description">Bodega artesanal con más de 20 años de experiencia vinícola.</p>
+          <div class="business-rating">
+            <span class="stars">⭐ 4.7</span>
+            <span class="reviews">(156 reseñas)</span>
+          </div>
+          <a href="#" class="location-link">📍 Lleida</a>
+        </div>
+      </div>
+
+      <div class="business-card">
+        <div class="business-image">
+          <span class="business-badge">Carnicería</span>
+        </div>
+        <div class="business-info">
+          <h3>Carns d Alesança Macià</h3>
+          <p class="business-description">Carnes de selecta calidad para los paladares más exigentes.</p>
+          <div class="business-rating">
+            <span class="stars">⭐ 4.8</span>
+            <span class="reviews">(198 reseñas)</span>
+          </div>
+          <a href="#" class="location-link">📍 Lleida</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Productos Populares -->
+  <section class="popular-products" id="productos">
+    <div class="section-header">
+      <h2>Productos populares</h2>
+      <div class="product-filters">
+        <button class="filter-btn">Rango de precios ↓</button>
+        <button class="filter-btn">Fecha de caducidad ↓</button>
+        <button class="filter-btn">Categorías ↓</button>
+        <button class="filter-btn">Reseñas Calificaciones ↓</button>
+      </div>
+    </div>
+    <p class="section-subtitle">
+      Distintos favoritos según las opciones de los clientes
+    </p>
+    <div class="products-grid">
+      <div class="product-card">
+        <div class="product-info">
+          <h4>Tomates</h4>
+          <p class="product-price">3.50€</p>
+        </div>
+        <button class="add-to-cart">+</button>
+      </div>
+
+      <div class="product-card">
+        <div class="product-info">
+          <h4>Barra de pan</h4>
+          <p class="product-price">1.20€</p>
+        </div>
+        <button class="add-to-cart">+</button>
+      </div>
+
+      <div class="product-card">
+        <div class="product-info">
+          <h4>Limones</h4>
+          <p class="product-price">2.80€</p>
+        </div>
+        <button class="add-to-cart">+</button>
+      </div>
+
+      <div class="product-card">
+        <div class="product-info">
+          <h4>Melón</h4>
+          <p class="product-price">5.00€</p>
+        </div>
+        <button class="add-to-cart">+</button>
+      </div>
+
+      <div class="product-card">
+        <div class="product-info">
+          <h4>Sardis</h4>
+          <p class="product-price">12.50€</p>
+        </div>
+        <button class="add-to-cart">+</button>
+      </div>
+
+      <div class="product-card">
+        <div class="product-info">
+          <h4>Espinacas</h4>
+          <p class="product-price">2.30€</p>
+        </div>
+        <button class="add-to-cart">+</button>
+      </div>
+
+      <div class="product-card">
+        <div class="product-info">
+          <h4>Brócoli</h4>
+          <p class="product-price">3.10€</p>
+        </div>
+        <button class="add-to-cart">+</button>
+      </div>
+
+      <div class="product-card">
+        <div class="product-info">
+          <h4>Garbanzos</h4>
+          <p class="product-price">4.20€</p>
+        </div>
+        <button class="add-to-cart">+</button>
+      </div>
+
+      <div class="product-card">
+        <div class="product-info">
+          <h4>Lentejas</h4>
+          <p class="product-price">3.80€</p>
+        </div>
+        <button class="add-to-cart">+</button>
+      </div>
+
+      <div class="product-card">
+        <div class="product-info">
+          <h4>Pollo</h4>
+          <p class="product-price">8.50€</p>
+        </div>
+        <button class="add-to-cart">+</button>
+      </div>
+
+      <div class="product-card">
+        <div class="product-info">
+          <h4>Panzeta</h4>
+          <p class="product-price">6.75€</p>
+        </div>
+        <button class="add-to-cart">+</button>
+      </div>
+
+      <div class="product-card product-card-more">
+        <div class="more-products-badge">
+          <span>🛍️</span>
+          <p>Tus productos más cerca de casa</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h4>🌿 EcoNexo</h4>
+        <p>Conectamos a productores y comerciantes locales con su comunidad para construir un futuro más sostenible.</p>
+        <div class="social-links">
+          <a href="#">f</a>
+          <a href="#">📷</a>
+          <a href="#">𝕏</a>
+        </div>
+      </div>
+      <div class="footer-section">
+        <h4>Explorar</h4>
+        <ul>
+          <li><a href="#">Negocios</a></li>
+          <li><a href="#">Productos</a></li>
+          <li><a href="#">Categorías</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Para Negocios</h4>
+        <ul>
+          <li><a href="#">Como Funciona</a></li>
+          <li><a href="#">Planes y Precios</a></li>
+          <li><a href="#">Registrar Negocio</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Soporte</h4>
+        <ul>
+          <li><a href="#">Preguntas Frecuentes</a></li>
+          <li><a href="#">Políticas de Privacidad</a></li>
+          <li><a href="#">Términos de Uso</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 EcoNexo. Todos los derechos reservados.</p>
+    </div>
+  </footer>
 </div>
