@@ -421,3 +421,73 @@ ul {
   font-size: 0.78rem;
   color: #9ca3af;
 }
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+  .nav-links {
+    display: none;
+  }
+
+  .search-bar {
+    width: 160px;
+  }
+
+  .hero-content {
+    flex-direction: column;
+    padding: 2rem;
+  }
+
+  .hero-left,
+  .hero-right {
+    flex: 1;
+    width: 100%;
+  }
+
+  .hero-left h1 {
+    font-size: 2rem;
+  }
+
+  .hero-left p {
+    max-width: 100%;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-content {
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .footer-brand {
+    flex: unset;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    padding: 0.75rem 1rem;
+    gap: 1rem;
+  }
+
+  .search-bar {
+    display: none;
+  }
+
+  .icon-btn {
+    display: none;
+  }
+
+  .hero-content {
+    padding: 1.5rem 1rem;
+  }
+
+  .hero-left h1 {
+    font-size: 1.6rem;
+  }
+
+  .form-card {
+    padding: 1.5rem 1.25rem;
+  }
+}
