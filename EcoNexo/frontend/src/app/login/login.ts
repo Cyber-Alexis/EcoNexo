@@ -1,53 +1,51 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
-  imports: [FormsModule, CommonModule, RouterLink],
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './login.html',
   styleUrl: './login.css',
 })
 export class Login {
-  email = '';
-  password = '';
-  rememberMe = false;
-  message = '';
-  isLoading = false;
+  private router = inject(Router);
+  private fb = inject(FormBuilder);
 
-  constructor(private router: Router) {}
+  isLoading = false;
+  message = '';
+
+  form = this.fb.group({
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, Validators.minLength(6)]],
+  });
+
+  get email() { return this.form.get('email')!; }
+  get password() { return this.form.get('password')!; }
 
   onSubmit(): void {
-    if (!this.email || !this.password) {
-      this.message = 'Por favor, completa todos los campos.';
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
       return;
     }
 
     this.isLoading = true;
 
-    // Simular llamada al backend con un pequeño delay
     setTimeout(() => {
-      // Aquí iría la llamada real al backend
-      // this.authService.login(this.email, this.password).subscribe(...)
-      
-      // Simulamos un login exitoso
+      const { email } = this.form.value;
       const userData = {
-        email: this.email,
-        name: this.email.split('@')[0],
+        email,
+        name: email!.split('@')[0],
         token: 'fake-jwt-token',
       };
 
-      // Guardar datos del usuario en localStorage
       localStorage.setItem('user', JSON.stringify(userData));
-      
       this.message = '✓ Iniciando sesión...';
       this.isLoading = false;
 
-      // Redirigir al home después de 500ms
-      setTimeout(() => {
-        this.router.navigate(['/home']);
-      }, 500);
+      setTimeout(() => this.router.navigate(['/home']), 500);
     }, 800);
   }
 }
