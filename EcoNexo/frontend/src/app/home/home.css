@@ -32,7 +32,8 @@ ul { list-style: none; }
   z-index: 100;
 }
 
-.navbar-brand { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+.navbar-brand { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; text-decoration: none; cursor: pointer; transition: opacity 0.2s; }
+.navbar-brand:hover { opacity: 0.8; }
 .logo-icon svg { width: 32px; height: 32px; display: block; }
 .brand-name { font-size: 1.15rem; font-weight: 700; color: #1a1a1a; }
 
