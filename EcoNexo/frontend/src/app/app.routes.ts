@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
-import { Login } from './login/login';
-import { RegisterCliente } from './register-cliente/register-cliente';
-import { RegisterNegocio } from './register-negocio/register-negocio';
-import { Home } from './home/home';
+import { Login } from './pages/login/login';
+import { RegisterCliente } from './pages/register-cliente/register-cliente';
+import { RegisterNegocio } from './pages/register-negocio/register-negocio';
+import { Home } from './pages/home/home';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
