@@ -29,18 +29,15 @@
         <path d="M8 2V6M16 2V6" stroke="#374151" stroke-width="1.5" stroke-linecap="round"/>
       </svg>
     </button>
-    <a
-      routerLink="/login"
-      routerLinkActive="login-link--active"
-      [routerLinkActiveOptions]="{ exact: true }"
-      class="login-link"
-    >
+    <a routerLink="/login" routerLinkActive="login-link--active" [routerLinkActiveOptions]="{ exact: true }" class="login-link">
       <svg viewBox="0 0 24 24" fill="none">
         <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.5"/>
         <path d="M4 20C4 16.686 7.582 14 12 14C16.418 14 20 16.686 20 20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
       </svg>
       Iniciar Sesión
     </a>
-    <a routerLink="/register" routerLinkActive="register-btn-nav--active" class="register-btn-nav">Registrarse</a>
+    <a routerLink="/register" [class.register-btn-nav--inactive]="router.url.startsWith('/login')" class="register-btn-nav">
+      Registrarse
+    </a>
   </div>
 </nav>

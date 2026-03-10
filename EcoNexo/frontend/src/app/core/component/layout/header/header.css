@@ -39,25 +39,29 @@
   display: flex; align-items: center; gap: 0.35rem;
   font-size: 0.875rem; color: #2D6A4F; font-weight: 600;
   white-space: nowrap; text-decoration: none;
-  padding: 0.5rem 1.1rem; border-radius: 8px;
-  background: #ffffff; 
-  transition: color 0.2s, background 0.2s, border-color 0.2s;
+  padding: 0.5rem 0.2rem; border-radius: 8px;
+  background: transparent;
+  transition: color 0.2s, background 0.2s;
 }
 .login-link svg { width: 18px; height: 18px; }
 .login-link:hover { background: rgba(45, 106, 79, 0.08); }
 .login-link--active {
   color: #ffffff;
   background: #2D6A4F;
+  padding: 0.5rem 1.1rem;
 }
 
 .register-btn-nav {
   display: inline-flex; align-items: center; justify-content: center; text-decoration: none;
-  background: #ffffff; color: #2D6A4F; border-radius: 8px;
+  background: #2D6A4F; color: #ffffff; border-radius: 8px;
   padding: 0.5rem 1.1rem; font-size: 0.875rem; font-weight: 600;
   cursor: pointer; white-space: nowrap; transition: background 0.2s, color 0.2s, border-color 0.2s;
 }
-.register-btn-nav:hover { background: rgba(45, 106, 79, 0.08); }
-.register-btn-nav--active {
-  background: #2D6A4F;
-  color: #ffffff;
+.register-btn-nav:hover { background: #1f5a41; }
+.register-btn-nav--inactive {
+  background: #ffffff;
+  color: #2D6A4F;
+}
+.register-btn-nav--inactive:hover {
+  background: rgba(45, 106, 79, 0.08);
 }
