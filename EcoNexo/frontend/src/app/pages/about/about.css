@@ -1,67 +1,333 @@
-.page-container {
-	max-width: 800px;
-	margin: 0 auto;
-	padding: 2rem;
+/* ─── Global ─── */
+:host {
+  display: block;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  color: #1a1a1a;
 }
 
-h1 {
-	color: #2D6A4F;
-	text-align: center;
-	margin-bottom: 2rem;
-	font-size: 2.5rem;
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+a { text-decoration: none; color: inherit; }
+ul { list-style: none; }
+
+/* ─── Navbar ─── */
+.navbar {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 0.75rem 2rem;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
-.about-section {
-	margin-bottom: 2rem;
-	padding: 1.5rem;
-	background: white;
-	border-left: 4px solid #2D6A4F;
-	border-radius: 4px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+.navbar-brand { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+.logo-icon svg { width: 32px; height: 32px; display: block; }
+.brand-name { font-size: 1.15rem; font-weight: 700; color: #1a1a1a; }
+
+.nav-links { display: flex; gap: 1.5rem; }
+.nav-links a { font-size: 0.9rem; color: #374151; font-weight: 500; transition: color 0.2s; }
+.nav-links a:hover, .nav-links .nav-active { color: #2D6A4F; font-weight: 600; }
+
+.nav-right { margin-left: auto; display: flex; align-items: center; gap: 0.75rem; }
+
+.search-bar {
+  display: flex; align-items: center;
+  background: #f9fafb; border: 1px solid #e5e7eb;
+  border-radius: 8px; padding: 0.4rem 0.75rem; gap: 0.4rem; width: 240px;
+}
+.search-icon { width: 16px; height: 16px; flex-shrink: 0; }
+.search-bar input { border: none; background: transparent; outline: none; font-size: 0.85rem; color: #374151; width: 100%; }
+.search-bar input::placeholder { color: #9ca3af; }
+
+.login-link { display: flex; align-items: center; gap: 0.35rem; font-size: 0.875rem; color: #374151; font-weight: 500; white-space: nowrap; }
+.login-link svg { width: 18px; height: 18px; }
+.login-link:hover { color: #2D6A4F; }
+
+.register-btn-nav {
+  background: #2D6A4F; color: #fff; border: none; border-radius: 8px;
+  padding: 0.5rem 1.1rem; font-size: 0.875rem; font-weight: 600;
+  cursor: pointer; white-space: nowrap; transition: background 0.2s;
+}
+.register-btn-nav:hover { background: #1B4332; }
+
+/* ─── Section common ─── */
+.section-title { font-size: 2rem; font-weight: 700; color: #1a1a1a; text-align: center; margin-bottom: 0.6rem; }
+.section-subtitle { font-size: 0.95rem; color: #6b7280; text-align: center; margin-bottom: 3rem; }
+
+/* ─── Hero ─── */
+.about-hero {
+  background: #f0f4f1;
+  padding: 5rem 2rem 4rem;
+  text-align: center;
+}
+.about-hero-inner { max-width: 700px; margin: 0 auto; }
+
+.location-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #e6f0eb; color: #2D6A4F;
+  font-size: 0.82rem; font-weight: 500;
+  padding: 0.35rem 0.85rem; border-radius: 999px;
+  margin-bottom: 1.5rem;
 }
 
-.about-section h2 {
-	color: #2D6A4F;
-	margin-bottom: 1rem;
+.about-hero-title {
+  font-size: clamp(2.2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1.15;
+  color: #111827;
+  margin-bottom: 1.25rem;
 }
 
-.about-section p {
-	color: #555;
-	line-height: 1.6;
+.about-hero-subtitle {
+  font-size: 1rem;
+  color: #6b7280;
+  line-height: 1.75;
+  max-width: 560px;
+  margin: 0 auto;
 }
 
-.about-section ul {
-	list-style: none;
-	padding: 0;
+/* ─── Historia + Stats ─── */
+.historia-section {
+  padding: 5rem 2rem;
+  background: #fff;
+}
+.historia-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
 }
 
-.about-section li {
-	color: #555;
-	margin-bottom: 0.8rem;
-	line-height: 1.6;
+.historia-text h2 { font-size: 1.6rem; font-weight: 700; margin-bottom: 1.25rem; color: #111827; }
+.historia-text p { color: #4b5563; line-height: 1.75; font-size: 0.95rem; margin-bottom: 1rem; }
+.historia-text p:last-child { margin-bottom: 0; }
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.stat-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  display: flex; flex-direction: column; gap: 0.4rem;
+}
+.stat-number { font-size: 1.75rem; font-weight: 800; color: #2D6A4F; }
+.stat-label { font-size: 0.82rem; color: #6b7280; }
+
+/* ─── Valores ─── */
+.valores-section {
+  padding: 5rem 2rem;
+  background: #f9fafb;
+}
+.valores-inner { max-width: 1100px; margin: 0 auto; }
+
+.valores-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+}
+.valor-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+}
+.valor-icon {
+  width: 48px; height: 48px;
+  background: #e6f0eb;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 1rem;
+}
+.valor-card h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.6rem; color: #111827; }
+.valor-card p { font-size: 0.85rem; color: #6b7280; line-height: 1.6; }
+
+/* ─── Cómo funciona ─── */
+.como-section {
+  padding: 5rem 2rem;
+  background: #fff;
+}
+.como-inner { max-width: 900px; margin: 0 auto; }
+
+.steps-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin-top: 0;
+}
+.step { text-align: center; }
+.step-num {
+  width: 52px; height: 52px;
+  background: #2D6A4F;
+  color: #fff;
+  font-size: 1.3rem; font-weight: 800;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 1rem;
+}
+.step h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; color: #111827; }
+.step p { font-size: 0.875rem; color: #6b7280; line-height: 1.6; }
+
+/* ─── Equipo ─── */
+.team-section {
+  padding: 5rem 2rem;
+  background: #f9fafb;
+}
+.team-inner { max-width: 900px; margin: 0 auto; }
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+.team-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+}
+.team-avatar {
+  width: 60px; height: 60px;
+  background: #d1e7dd;
+  color: #2D6A4F;
+  font-size: 1.1rem; font-weight: 700;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 1rem;
+}
+.team-name { font-size: 0.95rem; font-weight: 700; color: #111827; margin-bottom: 0.3rem; }
+.team-role { font-size: 0.82rem; font-weight: 600; display: block; margin-bottom: 0.75rem; }
+.team-role--ceo { color: #d97706; }
+.team-role--ops { color: #2563eb; }
+.team-role--com { color: #7c3aed; }
+.team-desc { font-size: 0.85rem; color: #6b7280; line-height: 1.6; }
+
+/* ─── CTA ─── */
+.cta-section {
+  background: #2D6A4F;
+  padding: 4rem 2rem;
+}
+.cta-inner {
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+}
+.cta-section h2 { font-size: 1.8rem; font-weight: 700; color: #fff; margin-bottom: 0.75rem; }
+.cta-section p { color: rgba(255,255,255,0.8); font-size: 0.95rem; line-height: 1.7; margin-bottom: 2rem; }
+.cta-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+.cta-btn-primary {
+  background: #fff; color: #2D6A4F;
+  padding: 0.7rem 1.5rem; border-radius: 8px;
+  font-weight: 600; font-size: 0.9rem;
+  transition: background 0.2s;
+}
+.cta-btn-primary:hover { background: #f0fdf4; }
+.cta-btn-outline {
+  background: transparent; color: #fff;
+  border: 1.5px solid rgba(255,255,255,0.6);
+  padding: 0.7rem 1.5rem; border-radius: 8px;
+  font-weight: 600; font-size: 0.9rem;
+  transition: border-color 0.2s;
+}
+.cta-btn-outline:hover { border-color: #fff; }
+
+/* ─── Footer ─── */
+.footer {
+  background: #ffffff; border-top: 1px solid #e5e7eb;
+  padding: 2.5rem 2rem 1rem;
+}
+.footer-content {
+  display: flex; gap: 3rem; max-width: 1200px;
+  margin: 0 auto; padding-bottom: 2rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+.footer-brand { flex: 0 0 28%; }
+.footer-logo {
+  display: flex; align-items: center; gap: 0.5rem;
+  margin-bottom: 0.75rem; font-weight: 700; font-size: 1rem; color: #1a1a1a;
+}
+.footer-logo-icon svg { width: 28px; height: 28px; display: block; }
+.footer-brand p { font-size: 0.8rem; color: #6b7280; line-height: 1.6; margin-bottom: 1rem; }
+.social-links { display: flex; gap: 0.75rem; }
+.social-links a {
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 6px;
+  background: #f3f4f6; color: #374151;
+  transition: background 0.2s, color 0.2s;
+}
+.social-links a:hover { background: #2D6A4F; color: #fff; }
+.social-links svg { width: 16px; height: 16px; }
+.footer-col h4 { font-size: 0.875rem; font-weight: 700; color: #111827; margin-bottom: 0.75rem; }
+.footer-col ul { display: flex; flex-direction: column; gap: 0.5rem; }
+.footer-col ul a { font-size: 0.8rem; color: #6b7280; transition: color 0.2s; }
+.footer-col ul a:hover { color: #2D6A4F; }
+.footer-bottom { text-align: center; padding-top: 1rem; font-size: 0.78rem; color: #9ca3af; }
+
+/* ─── Responsive ─── */
+
+/* Tablet (≤1024px) */
+@media (max-width: 1024px) {
+  .valores-grid { grid-template-columns: repeat(2, 1fr); }
+  .search-bar { width: 160px; }
 }
 
-.about-section strong {
-	color: #2D6A4F;
+/* Tablet pequeña (≤900px) */
+@media (max-width: 900px) {
+  .historia-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .section-title { font-size: 1.6rem; }
+  .footer-content { flex-wrap: wrap; gap: 2rem; }
+  .footer-brand { flex: 0 0 100%; }
+  .footer-col { flex: 1 1 calc(33% - 1rem); min-width: 130px; }
 }
 
-.back-link {
-	text-align: center;
-	margin-top: 3rem;
+/* Tablet/móvil (≤768px) */
+@media (max-width: 768px) {
+  .navbar { padding: 0.75rem 1rem; gap: 0.75rem; }
+  .search-bar { display: none; }
+  .login-link span { display: none; }
+  .nav-links { gap: 0.75rem; }
+  .nav-links a { font-size: 0.82rem; }
+
+  .about-hero { padding: 3rem 1.25rem 2.5rem; }
+  .about-hero-title { font-size: clamp(1.75rem, 7vw, 2.5rem); }
+  .about-hero-subtitle { font-size: 0.9rem; }
+
+  .historia-section,
+  .valores-section,
+  .como-section,
+  .team-section { padding: 3rem 1.25rem; }
+
+  .cta-section { padding: 3rem 1.25rem; }
+  .cta-section h2 { font-size: 1.4rem; }
+
+  .footer { padding: 2rem 1.25rem 1rem; }
+  .footer-content { flex-direction: column; gap: 1.5rem; }
+  .footer-brand { flex: unset; }
+  .footer-col { flex: unset; }
 }
 
-.back-link a {
-	color: #2D6A4F;
-	text-decoration: none;
-	font-weight: 600;
-	padding: 0.6rem 1.2rem;
-	border: 2px solid #2D6A4F;
-	border-radius: 4px;
-	display: inline-block;
-	transition: background-color 0.2s, color 0.2s;
-}
+/* Móvil pequeño (≤480px) */
+@media (max-width: 480px) {
+  .nav-links { display: none; }
+  .nav-right { gap: 0.5rem; }
+  .login-link { display: none; }
+  .register-btn-nav { padding: 0.45rem 0.75rem; font-size: 0.8rem; }
 
-.back-link a:hover {
-	background-color: #2D6A4F;
-	color: white;
+  .valores-grid { grid-template-columns: 1fr; }
+  .steps-row { grid-template-columns: 1fr; gap: 1.5rem; }
+  .team-grid { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: 1fr; }
+
+  .cta-actions { flex-direction: column; align-items: stretch; }
+  .cta-btn-primary, .cta-btn-outline { text-align: center; }
 }

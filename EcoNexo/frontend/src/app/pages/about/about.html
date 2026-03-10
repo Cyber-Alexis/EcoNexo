@@ -1,38 +1,249 @@
-<div class="page-container">
-	<h1>Sobre Nosotros</h1>
-	
-	<section class="about-section">
-		<h2>¿Quiénes Somos?</h2>
-		<p>
-			EcoNexo es una plataforma dedicada a conectar a los empresarios y productores locales 
-			de Lleida con su comunidad, promoviendo el comercio sostenible y responsable con el medio ambiente.
-		</p>
-	</section>
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="navbar-brand">
+    <div class="logo-icon">
+      <svg viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" rx="8" fill="#2D6A4F"/>
+        <path d="M16 6 C8 10, 6 20, 16 26 C26 20, 24 10, 16 6Z" fill="white" opacity="0.9"/>
+        <path d="M16 14 L16 26" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <span class="brand-name">EcoNexo</span>
+  </div>
+  <ul class="nav-links">
+    <li><a routerLink="/home">Negocios</a></li>
+    <li><a routerLink="/home">Productos</a></li>
+    <li><a routerLink="/about" class="nav-active">Sobre Nosotros</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="search-bar">
+      <svg class="search-icon" viewBox="0 0 20 20" fill="none">
+        <circle cx="8.5" cy="8.5" r="5.5" stroke="#9CA3AF" stroke-width="1.5"/>
+        <path d="M13 13L17 17" stroke="#9CA3AF" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <input type="text" placeholder="Busca negocios o productos..." />
+    </div>
+    <a routerLink="/login" class="login-link">
+      <svg viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="8" r="4" stroke="#374151" stroke-width="1.5"/>
+        <path d="M4 20C4 16.686 7.582 14 12 14C16.418 14 20 16.686 20 20" stroke="#374151" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <span>Iniciar Sesión</span>
+    </a>
+    <button class="register-btn-nav" routerLink="/register">Registrarse</button>
+  </div>
+</nav>
 
-	<section class="about-section">
-		<h2>Nuestra Misión</h2>
-		<p>
-			Crear un ecosistema digital que facilite el comercio local, reduciendo la huella de carbono 
-			y apoyando a los pequeños negocios sostenibles de nuestra región.
-		</p>
-	</section>
+<!-- Hero -->
+<section class="about-hero">
+  <div class="about-hero-inner">
+    <span class="location-badge">
+      <svg viewBox="0 0 16 16" fill="none" width="13" height="13">
+        <path d="M8 1.5C5.51 1.5 3.5 3.51 3.5 6c0 3.75 4.5 8.5 4.5 8.5S12.5 9.75 12.5 6c0-2.49-2.01-4.5-4.5-4.5z" fill="#2D6A4F"/>
+        <circle cx="8" cy="6" r="1.5" fill="white"/>
+      </svg>
+      Lleida · Terres de Ponent
+    </span>
+    <h1 class="about-hero-title">Conectamos la tierra con tu mesa</h1>
+    <p class="about-hero-subtitle">
+      EcoNexo nace con la misión de acercar los mejores productos de proximidad
+      directamente a tu hogar, apoyando a los productores locales y fomentando un
+      consumo responsable.
+    </p>
+  </div>
+</section>
 
-	<section class="about-section">
-		<h2>Nuestros Valores</h2>
-		<ul>
-			<li><strong>Sostenibilidad:</strong> Comprometidos con el medio ambiente</li>
-			<li><strong>Comunidad:</strong> Apoyamos el comercio local</li>
-			<li><strong>Transparencia:</strong> Operamos con honestidad</li>
-			<li><strong>Innovación:</strong> Utilizamos tecnología para mejorar</li>
-		</ul>
-	</section>
+<!-- Historia + Stats -->
+<section class="historia-section">
+  <div class="historia-inner">
+    <div class="historia-text">
+      <h2>Nuestra historia</h2>
+      <p>Todo empezó en 2023 con una idea sencilla: ¿por qué los productos de calidad de nuestros campos tardan tanto en llegar a las familias de la zona?</p>
+      <p>En un mundo dominado por grandes cadenas de distribución, queríamos devolver el protagonismo a los pequeños productores de la provincia de Lleida — agricultores, ganaderos, artesanos y elaboradores que ponen pasión en cada producto.</p>
+      <p>Hoy, EcoNexo es la plataforma de referencia para el comercio de proximidad en Terres de Ponent, conectando a más de 150 productores con miles de familias.</p>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-number">150+</span>
+        <span class="stat-label">Productores locales</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-number">2.000+</span>
+        <span class="stat-label">Productos disponibles</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-number">10.000+</span>
+        <span class="stat-label">Pedidos realizados</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-number">50 km</span>
+        <span class="stat-label">Radio máximo de proximidad</span>
+      </div>
+    </div>
+  </div>
+</section>
 
-	<section class="about-section">
-		<h2>Contacto</h2>
-		<p>¿Tienes preguntas? Contáctanos en <strong>info@econexo.local</strong></p>
-	</section>
+<!-- Valores -->
+<section class="valores-section">
+  <div class="valores-inner">
+    <h2 class="section-title">Nuestros valores</h2>
+    <p class="section-subtitle">Principios que guían cada decisión que tomamos.</p>
+    <div class="valores-grid">
+      <div class="valor-card">
+        <div class="valor-icon">
+          <svg viewBox="0 0 24 24" fill="none" width="22" height="22">
+            <path d="M12 3C7 6, 5 12, 12 18C19 12, 17 6, 12 3Z" stroke="#2D6A4F" stroke-width="1.5" stroke-linejoin="round"/>
+            <line x1="12" y1="10" x2="12" y2="18" stroke="#2D6A4F" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3>Sostenibilidad</h3>
+        <p>Apoyamos prácticas agrícolas y productivas respetuosas con el medio ambiente y el territorio.</p>
+      </div>
+      <div class="valor-card">
+        <div class="valor-icon">
+          <svg viewBox="0 0 24 24" fill="none" width="22" height="22">
+            <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" stroke="#2D6A4F" stroke-width="1.5" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3>Proximidad</h3>
+        <p>Conectamos directamente productores locales con consumidores, sin intermediarios innecesarios.</p>
+      </div>
+      <div class="valor-card">
+        <div class="valor-icon">
+          <svg viewBox="0 0 24 24" fill="none" width="22" height="22">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#2D6A4F" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M9 12l2 2 4-4" stroke="#2D6A4F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3>Calidad</h3>
+        <p>Cada negocio en nuestra plataforma cumple estándares de calidad y trazabilidad garantizados.</p>
+      </div>
+      <div class="valor-card">
+        <div class="valor-icon">
+          <svg viewBox="0 0 24 24" fill="none" width="22" height="22">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="#2D6A4F" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="9" cy="7" r="4" stroke="#2D6A4F" stroke-width="1.5"/>
+            <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="#2D6A4F" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3>Comunidad</h3>
+        <p>Fomentamos relaciones de confianza entre productores y consumidores de la tierra de Lleida.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-	<div class="back-link">
-		<a routerLink="/">Volver al Inicio</a>
-	</div>
-</div>
+<!-- Cómo funciona -->
+<section class="como-section">
+  <div class="como-inner">
+    <h2 class="section-title">¿Cómo funciona?</h2>
+    <div class="steps-row">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Explora</h3>
+        <p>Descubre productores y negocios de proximidad en tu zona.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>Pide</h3>
+        <p>Añade productos al carrito y elige recogida o entrega a domicilio.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>Disfruta</h3>
+        <p>Recibe productos frescos y de calidad directamente del productor.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- El equipo -->
+<section class="team-section">
+  <div class="team-inner">
+    <h2 class="section-title">El equipo</h2>
+    <p class="section-subtitle">Las personas que hacen posible EcoNexo.</p>
+    <div class="team-grid">
+      <div class="team-card">
+        <div class="team-avatar">JD</div>
+        <h3 class="team-name">Jordi el navos</h3>
+        <span class="team-role team-role--ceo">Fundadora y CEO</span>
+        <p class="team-desc">Apasionada por la agricultura local y la economía circular en la provincia de Lleida.</p>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar">AB</div>
+        <h3 class="team-name">Alexis el buzos</h3>
+        <span class="team-role team-role--ops">Director de Operaciones</span>
+        <p class="team-desc">Con 15 años de experiencia en logística alimentaria y cadenas de suministro cortas.</p>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar">MS</div>
+        <h3 class="team-name">Miquel el zumos</h3>
+        <span class="team-role team-role--com">Responsable de Comunidad</span>
+        <p class="team-desc">Conecta productores y consumidores, asegurando la mejor experiencia para todos.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-inner">
+    <h2>¿Listo para comprar local?</h2>
+    <p>Únete a miles de familias que ya confían en los productores de Lleida para llenar su despensa con productos frescos y de proximidad.</p>
+    <div class="cta-actions">
+      <a routerLink="/home" class="cta-btn-primary">Explorar negocios →</a>
+      <a routerLink="/register" class="cta-btn-outline">Registrarse gratis</a>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-content">
+    <div class="footer-brand">
+      <div class="footer-logo">
+        <div class="footer-logo-icon">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect width="32" height="32" rx="8" fill="#2D6A4F"/>
+            <path d="M16 6 C8 10, 6 20, 16 26 C26 20, 24 10, 16 6Z" fill="white" opacity="0.9"/>
+            <path d="M16 14 L16 26" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span>EcoNexo</span>
+      </div>
+      <p>Conectamos a los productos de Lleida con su comunidad. Apoya el comercio local y sostenible.</p>
+      <div class="social-links">
+        <a href="#"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg></a>
+        <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/></svg></a>
+        <a href="#"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Explorar</h4>
+      <ul>
+        <li><a href="#">Negocios</a></li>
+        <li><a href="#">Productos</a></li>
+        <li><a href="#">Categorías</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Para Negocios</h4>
+      <ul>
+        <li><a href="#">Registrar mi Negocio</a></li>
+        <li><a href="#">Cómo Funciona</a></li>
+        <li><a href="#">Planes y Precios</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Soporte</h4>
+      <ul>
+        <li><a href="#">Contacto</a></li>
+        <li><a href="#">Preguntas Frecuentes</a></li>
+        <li><a href="#">Políticas de Privacidad</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 EcoNexo. Todos los derechos reservados.</p>
+  </div>
+</footer>
