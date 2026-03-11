@@ -11,27 +11,39 @@ import { FormsModule } from '@angular/forms';
 })
 export class Negocios {
   searchQuery = '';
-  selectedFilter = 'Todos';
+  selectedFilter = 'Todas';
+  selectedSort = 'rating-desc';
+
+  readonly categoryOptions = [
+    'Todas',
+    'Frutas y Verduras',
+    'Panadería',
+    'Carnicería',
+    'Vinos',
+    'Floristería',
+    'Artesanía',
+    'Moda',
+  ];
 
   businesses = [
     {
-      name: 'Panadería Forn de la Plaça',
+      name: 'Forn de la Plaça',
       category: 'Panadería',
       badge: '',
       rating: 4.9,
-      reviews: 99,
-      desc: 'Panadería artesanal con más de 50 años de tradición. Pan de masa madre y bollería con recetas artesanales.',
+      reviews: 89,
+      desc: 'Panadería artesanal con más de 50 años de tradición. Pan de masa madre y bollería casera.',
       location: 'Plaça Sant Joan, Lleida',
       img: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500&q=80',
     },
     {
-      name: 'Floristería Flora María',
+      name: 'Flors Maria',
       category: 'Floristería',
       badge: 'Ecológico',
       rating: 4.9,
       reviews: 67,
-      desc: 'Floristerías con arreglos personalizados para todos los eventos. Envíos a domicilio en toda la zona.',
-      location: 'El Commercial, Lleida',
+      desc: 'Floristería con arreglos personalizados para todas las ocasiones. Flores frescas cada día.',
+      location: 'Eix Comercial, Lleida',
       img: 'https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=500&q=80',
     },
     {
@@ -40,7 +52,7 @@ export class Negocios {
       badge: 'Ecológico',
       rating: 4.8,
       reviews: 124,
-      desc: 'Productos frescos directamente del campo de Lleida. Frutas y verduras de temporada de máxima calidad.',
+      desc: 'Productos frescos directamente del campo de Lleida. Fruta de temporada y verduras ecológicas.',
       location: 'Centre Històric, Lleida',
       img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&q=80',
     },
@@ -49,29 +61,29 @@ export class Negocios {
       category: 'Vinos',
       badge: 'Ecológico',
       rating: 4.7,
-      reviews: 86,
-      desc: 'Bodega familiar con vino D.O. Costers del Segre. Visitas guiadas y catas personalizadas.',
+      reviews: 56,
+      desc: 'Bodega familiar con vinos D.O. Costers del Segre. Visitas guiadas y catas.',
       location: 'Raimat, Lleida',
       img: 'https://images.unsplash.com/photo-1474722883778-792e7990302f?w=500&q=80',
     },
     {
-      name: 'Carnicería Carne Artesanos Macià',
+      name: 'Carns Artesanes Macià',
       category: 'Carnicería',
       badge: '',
-      rating: 4.8,
+      rating: 4.6,
       reviews: 78,
-      desc: 'Carnicería artesana con productos de km 0. Elaborados artesanos de alta calidad con recetas traditioneles.',
+      desc: 'Carnicería tradicional con productos de km 0. Embutidos artesanales y carnes selectas.',
       location: 'Cappont, Lleida',
       img: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=500&q=80',
     },
     {
-      name: 'Artesanías Artisanes del Segre',
+      name: 'Artesanies del Segre',
       category: 'Artesanía',
-      badge: '',
+      badge: 'Ecológico',
       rating: 4.5,
-      reviews: 54,
-      desc: 'Productos artesanales hechos a mano. Cerámica, cerámica y decoración tradicional única.',
-      location: 'Ronda, Lleida',
+      reviews: 34,
+      desc: 'Productos artesanales hechos a mano. Cerámica, cestería y decoración tradicional.',
+      location: 'Bordeta, Lleida',
       img: 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=500&q=80',
     },
   ];
@@ -84,9 +96,9 @@ export class Negocios {
   }
 
   applyFilters() {
-    let filtered = this.businesses;
+    let filtered = [...this.businesses];
 
-    if (this.selectedFilter !== 'Todos') {
+    if (this.selectedFilter !== 'Todas') {
       filtered = filtered.filter(b => b.category === this.selectedFilter);
     }
 
@@ -99,6 +111,18 @@ export class Negocios {
       );
     }
 
+    switch (this.selectedSort) {
+      case 'reviews-desc':
+        filtered.sort((a, b) => b.reviews - a.reviews);
+        break;
+      case 'name-asc':
+        filtered.sort((a, b) => a.name.localeCompare(b.name, 'es'));
+        break;
+      default:
+        filtered.sort((a, b) => b.rating - a.rating || b.reviews - a.reviews);
+        break;
+    }
+
     this.filteredBusinesses = filtered;
   }
 
@@ -107,7 +131,12 @@ export class Negocios {
   }
 
   get categories() {
-    const cats = new Set(this.businesses.map(b => b.category));
-    return ['Todos', ...Array.from(cats)];
+    const usedCategories = new Set(this.businesses.map(b => b.category));
+    const presentOptions = this.categoryOptions.filter(cat => cat === 'Todas' || usedCategories.has(cat) || cat === 'Moda');
+    const extraCategories = this.businesses
+      .map(b => b.category)
+      .filter((cat, index, all) => !this.categoryOptions.includes(cat) && all.indexOf(cat) === index);
+
+    return [...presentOptions, ...extraCategories];
   }
 }

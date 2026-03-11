@@ -11,8 +11,20 @@ import { FormsModule } from '@angular/forms';
 })
 export class Productos {
   searchQuery = '';
-  selectedFilter = 'Todos';
-  cartItems: number = 0;
+  selectedFilter = 'Todas';
+  selectedSort = 'name-asc';
+  cartItems = 0;
+
+  readonly categoryOptions = [
+    'Todas',
+    'Frutas y Verduras',
+    'Panadería',
+    'Carnicería',
+    'Vinos',
+    'Floristería',
+    'Artesanía',
+    'Moda',
+  ];
 
   products = [
     {
@@ -137,7 +149,6 @@ export class Productos {
     },
   ];
 
-  categories = ['Todos', 'Frutas y Verduras', 'Panadería', 'Carnicería', 'Vinos', 'Floristería', 'Artesanía'];
   filteredProducts = [...this.products];
 
   filterByCategory(category: string) {
@@ -146,9 +157,9 @@ export class Productos {
   }
 
   applyFilters() {
-    let filtered = this.products;
+    let filtered = [...this.products];
 
-    if (this.selectedFilter !== 'Todos') {
+    if (this.selectedFilter !== 'Todas') {
       filtered = filtered.filter(p => p.category === this.selectedFilter);
     }
 
@@ -157,8 +168,21 @@ export class Productos {
       filtered = filtered.filter(p =>
         p.name.toLowerCase().includes(query) ||
         p.desc.toLowerCase().includes(query) ||
-        p.category.toLowerCase().includes(query)
+        p.category.toLowerCase().includes(query) ||
+        p.location.toLowerCase().includes(query)
       );
+    }
+
+    switch (this.selectedSort) {
+      case 'price-asc':
+        filtered.sort((a, b) => a.price - b.price || a.name.localeCompare(b.name, 'es'));
+        break;
+      case 'price-desc':
+        filtered.sort((a, b) => b.price - a.price || a.name.localeCompare(b.name, 'es'));
+        break;
+      default:
+        filtered.sort((a, b) => a.name.localeCompare(b.name, 'es'));
+        break;
     }
 
     this.filteredProducts = filtered;
@@ -171,5 +195,15 @@ export class Productos {
   addToCart(product: any) {
     this.cartItems++;
     console.log(`${product.name} añadido al carrito`);
+  }
+
+  get categories() {
+    const usedCategories = new Set(this.products.map(product => product.category));
+    const presentOptions = this.categoryOptions.filter(cat => cat === 'Todas' || usedCategories.has(cat) || cat === 'Moda');
+    const extraCategories = this.products
+      .map(product => product.category)
+      .filter((cat, index, all) => !this.categoryOptions.includes(cat) && all.indexOf(cat) === index);
+
+    return [...presentOptions, ...extraCategories];
   }
 }
