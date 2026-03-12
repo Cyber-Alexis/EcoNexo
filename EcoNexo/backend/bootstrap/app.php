@@ -11,7 +11,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias(['cors.api' => \App\Http\Middleware\CorsApi::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

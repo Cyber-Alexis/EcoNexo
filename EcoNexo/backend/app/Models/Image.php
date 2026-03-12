@@ -7,6 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class Image extends Model
 {
-    /** @use HasFactory<\Database\Factories\ImageFactory> */
     use HasFactory;
+
+    protected $fillable = [
+        'imageable_id', 'imageable_type', 'path', 'type',
+    ];
+
+    public function imageable()
+    {
+        return $this->morphTo();
+    }
 }

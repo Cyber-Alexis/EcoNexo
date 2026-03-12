@@ -105,30 +105,30 @@
       <a href="#" class="see-all-btn">Ver todos →</a>
     </div>
     <div class="businesses-grid">
-      @for (b of businesses; track b.name) {
-        <div class="business-card">
+      @for (b of businesses; track b.id) {
+        <a class="business-card" [routerLink]="['/negocios', b.id]">
           <div class="business-img-wrap">
-            <img [src]="b.img" [alt]="b.name" class="business-img" />
-            @if (b.badge) {
-              <span class="badge-eco">{{ b.badge }}</span>
+            <img [src]="businessImage(b)" [alt]="b.name" class="business-img" />
+            @if (b.categories?.[0]) {
+              <span class="badge-eco">{{ b.categories[0].name }}</span>
             }
           </div>
           <div class="business-body">
             <div class="business-top-row">
-              <span class="business-catbadge">{{ b.category }}</span>
-              <span class="business-rating">★ {{ b.rating }} ({{ b.reviews }})</span>
+              <span class="business-catbadge">{{ b.city }}</span>
+              <span class="business-rating">★ {{ (b.reviews_avg_rating ?? 0) | number:'1.1-1' }} ({{ b.reviews_count }})</span>
             </div>
             <h3 class="business-name">{{ b.name }}</h3>
-            <p class="business-desc">{{ b.desc }}</p>
+            <p class="business-desc">{{ b.description }}</p>
             <p class="business-location">
               <svg viewBox="0 0 16 16" fill="none" width="12" height="12">
                 <path d="M8 1.5C5.51 1.5 3.5 3.51 3.5 6c0 3.75 4.5 8.5 4.5 8.5S12.5 9.75 12.5 6c0-2.49-2.01-4.5-4.5-4.5z" fill="#9ca3af"/>
                 <circle cx="8" cy="6" r="1.5" fill="white"/>
               </svg>
-              {{ b.location }}
+              {{ b.address }}, {{ b.city }}
             </p>
           </div>
-        </div>
+        </a>
       }
     </div>
   </div>

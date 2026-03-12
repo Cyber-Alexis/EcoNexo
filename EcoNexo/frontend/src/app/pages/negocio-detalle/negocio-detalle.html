@@ -1,0 +1,204 @@
+@if (loading) {
+  <div class="loading-state">
+    <div class="container">
+      <p>Cargando negocio...</p>
+    </div>
+  </div>
+} @else if (error) {
+  <div class="not-found">
+    <div class="container">
+      <h2>No se pudo cargar el negocio.</h2>
+      <a routerLink="/negocios" class="btn-back">Volver a Negocios</a>
+    </div>
+  </div>
+} @else if (business) {
+  <div class="detail-page">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-bar">
+      <div class="container">
+        <a routerLink="/negocios" class="breadcrumb-link">
+          <svg viewBox="0 0 16 16" fill="none" width="14" height="14"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Volver a Negocios
+        </a>
+      </div>
+    </div>
+
+    <div class="container">
+
+      <!-- Header -->
+      <div class="business-header">
+        <div class="header-left">
+          <p class="business-subtitle">{{ business.city }}</p>
+          <h1 class="business-title">{{ business.name }}</h1>
+          <div class="header-meta">
+            <span class="location-badge">
+              <svg viewBox="0 0 16 16" fill="none" width="14" height="14"><path d="M8 1.5C5.51 1.5 3.5 3.51 3.5 6c0 3.75 4.5 8.5 4.5 8.5S12.5 9.75 12.5 6c0-2.49-2.01-4.5-4.5-4.5z" fill="#6B7280"/><circle cx="8" cy="6" r="1.5" fill="white"/></svg>
+              {{ business.city }}
+            </span>
+            <span class="rating-row">
+              @for (star of getRatingStars(avgRating); track $index) {
+                <svg viewBox="0 0 16 16" fill="none" width="16" height="16">
+                  <path d="M8 1l1.796 3.64L14 5.278l-3 2.924.708 4.128L8 10.35l-3.708 1.98L5 8.202 2 5.278l4.204-.638L8 1z"
+                    [attr.fill]="star ? '#F59E0B' : '#E5E7EB'" stroke="none"/>
+                </svg>
+              }
+              <span class="rating-number">{{ avgRating | number:'1.1-1' }}</span>
+              <span class="rating-count">({{ business.reviews_count }})</span>
+            </span>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button class="action-btn" [class.liked]="liked" (click)="toggleLike()" aria-label="Guardar en favoritos">
+            <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
+              <path d="M12 21C12 21 3 13.5 3 7.5C3 5.01 5.01 3 7.5 3C9.24 3 10.77 3.93 11.56 5.32C11.76 5.68 12.24 5.68 12.44 5.32C13.23 3.93 14.76 3 16.5 3C18.99 3 21 5.01 21 7.5C21 13.5 12 21 12 21Z"
+                [attr.fill]="liked ? '#EF4444' : 'none'" [attr.stroke]="liked ? '#EF4444' : '#6B7280'" stroke-width="1.8"/>
+            </svg>
+          </button>
+          <button class="action-btn" aria-label="Compartir">
+            <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
+              <circle cx="18" cy="5" r="3" stroke="#6B7280" stroke-width="1.8"/>
+              <circle cx="6" cy="12" r="3" stroke="#6B7280" stroke-width="1.8"/>
+              <circle cx="18" cy="19" r="3" stroke="#6B7280" stroke-width="1.8"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" stroke="#6B7280" stroke-width="1.8"/>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" stroke="#6B7280" stroke-width="1.8"/>
+            </svg>
+          </button>
+          <a routerLink="/productos" class="btn-ver-productos">
+            Ver Productos
+          </a>
+        </div>
+      </div>
+
+      <!-- Gallery -->
+      <div class="gallery-grid">
+        <div class="gallery-main">
+          <img [src]="mainGalleryImage()" [alt]="business.name" class="gallery-img-main" />
+        </div>
+        <div class="gallery-side">
+          @for (img of galleryPreview.slice(1); track $index) {
+            <div class="gallery-thumb-wrap" [class.last-thumb]="$index === 2">
+              <img [src]="img.path" [alt]="business.name" class="gallery-thumb" />
+              @if ($index === 2) {
+                <button class="see-all-overlay" (click)="showAllPhotos = true">
+                  Ver todas las fotos
+                </button>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Tabs (description / products / map / reviews) -->
+      <div class="tabs-bar">
+        <button class="tab-btn" [class.active]="activeTab === 'desc'" (click)="activeTab = 'desc'">Descripción</button>
+        <button class="tab-btn" [class.active]="activeTab === 'productos'" (click)="activeTab = 'productos'">Productos</button>
+        <button class="tab-btn" [class.active]="activeTab === 'mapa'" (click)="activeTab = 'mapa'">Mapa</button>
+        <button class="tab-btn" [class.active]="activeTab === 'comentarios'" (click)="activeTab = 'comentarios'">Comentarios</button>
+      </div>
+
+      <!-- Description -->
+      <section class="detail-section" [class.hidden]="activeTab !== 'desc'">
+        <h2 class="section-title">Descripción general</h2>
+        @for (p of descParagraphs; track $index) {
+          <p class="desc-paragraph">{{ p }}</p>
+        }
+      </section>
+
+      <!-- Products catalog -->
+      <section class="detail-section" [class.hidden]="activeTab !== 'productos'">
+        <h2 class="section-title">Catálogo de Productos</h2>
+        <div class="products-grid">
+          @for (p of business.products; track p.id) {
+            <div class="product-card">
+              <img [src]="productImage(p.images)" [alt]="p.name" class="product-img" />
+              <div class="product-info">
+                <h4 class="product-name">{{ p.name }}</h4>
+                <p class="product-desc">{{ p.description }}</p>
+                @if (p.price) {
+                  <span class="product-price">{{ p.price | number:'1.2-2' }} €</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- Map -->
+      <section class="detail-section" [class.hidden]="activeTab !== 'mapa'">
+        <h2 class="section-title">Ubicación/Mapa</h2>
+        <div class="map-wrapper">
+          <iframe
+            [src]="mapEmbedSafe"
+            width="100%"
+            height="360"
+            style="border:0;"
+            allowfullscreen
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            title="Ubicación del negocio">
+          </iframe>
+        </div>
+        <p class="map-address">
+          <svg viewBox="0 0 16 16" fill="none" width="14" height="14"><path d="M8 1.5C5.51 1.5 3.5 3.51 3.5 6c0 3.75 4.5 8.5 4.5 8.5S12.5 9.75 12.5 6c0-2.49-2.01-4.5-4.5-4.5z" fill="#6B7280"/><circle cx="8" cy="6" r="1.5" fill="white"/></svg>
+          {{ business.address }}, {{ business.city }}
+        </p>
+      </section>
+
+      <!-- Reviews -->
+      <section class="detail-section" [class.hidden]="activeTab !== 'comentarios'">
+        <h2 class="section-title">Comentarios</h2>
+        <div class="rating-summary">
+          <span class="rating-big">{{ avgRating | number:'1.1-1' }}</span>
+          <div class="rating-summary-right">
+            <p class="rating-label">{{ ratingLabel }}</p>
+            <p class="rating-verified">{{ business.reviews_count }} Reseñas verificadas</p>
+          </div>
+        </div>
+
+        <div class="add-comment">
+          <div class="comment-avatar placeholder-avatar">
+            <svg viewBox="0 0 24 24" fill="none" width="22" height="22"><circle cx="12" cy="8" r="4" stroke="#9CA3AF" stroke-width="1.5"/><path d="M4 20c0-4 3.582-7 8-7s8 3 8 7" stroke="#9CA3AF" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <input class="comment-input" type="text" placeholder="Añade un comentario..." />
+        </div>
+
+        <div class="reviews-list">
+          @for (r of business.reviews; track r.id) {
+            <article class="review-item">
+              <div class="review-avatar comment-avatar placeholder-avatar">
+                <svg viewBox="0 0 24 24" fill="none" width="22" height="22"><circle cx="12" cy="8" r="4" stroke="#9CA3AF" stroke-width="1.5"/><path d="M4 20c0-4 3.582-7 8-7s8 3 8 7" stroke="#9CA3AF" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+              <div class="review-body">
+                <div class="review-header">
+                  <strong class="review-author">{{ r.user.name }}</strong>
+                  <span class="review-time">{{ r.created_at | date:'dd/MM/yyyy' }}</span>
+                </div>
+                <div class="review-stars">
+                  @for (star of getRatingStars(r.rating); track $index) {
+                    <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
+                      <path d="M8 1l1.796 3.64L14 5.278l-3 2.924.708 4.128L8 10.35l-3.708 1.98L5 8.202 2 5.278l4.204-.638L8 1z"
+                        [attr.fill]="star ? '#F59E0B' : '#E5E7EB'" stroke="none"/>
+                    </svg>
+                  }
+                </div>
+                <p class="review-text">{{ r.comment }}</p>
+                <div class="review-actions">
+                  <button class="review-reply-btn">Responder</button>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+
+    </div>
+  </div>
+} @else {
+  <div class="not-found">
+    <div class="container">
+      <h2>Negocio no encontrado</h2>
+      <a routerLink="/negocios" class="btn-back">Volver a Negocios</a>
+    </div>
+  </div>
+}

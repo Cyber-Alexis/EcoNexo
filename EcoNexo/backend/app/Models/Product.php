@@ -7,6 +7,24 @@ use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
-    /** @use HasFactory<\Database\Factories\ProductFactory> */
     use HasFactory;
+
+    protected $fillable = [
+        'business_id', 'category_id', 'name', 'description', 'price', 'stock', 'active',
+    ];
+
+    public function business()
+    {
+        return $this->belongsTo(Business::class);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function images()
+    {
+        return $this->morphMany(Image::class, 'imageable');
+    }
 }

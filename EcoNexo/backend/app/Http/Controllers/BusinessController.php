@@ -8,33 +8,45 @@ use Illuminate\Http\Request;
 class BusinessController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * GET /api/negocios
+     * Returns all active businesses with avg rating, review count and main image.
      */
     public function index()
     {
-        //
+        $businesses = Business::where('status', 'active')
+            ->withAvg('reviews', 'rating')
+            ->withCount('reviews')
+            ->with([
+                'images'     => fn ($q) => $q->where('type', 'main')->limit(1),
+                'categories' => fn ($q) => $q->select(['id', 'business_id', 'name']),
+            ])
+            ->get();
+
+        return response()->json($businesses);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * GET /api/negocios/{id}
+     * Returns a single business with its products (with images), reviews (with user) and gallery images.
      */
-    public function create()
+    public function show(Business $business)
     {
-        //
+        $business->load([
+            'images',
+            'products' => fn ($q) => $q->where('active', true)->with('images'),
+            'reviews'  => fn ($q) => $q->with('user')->latest()->limit(20),
+        ]);
+
+        $business->loadAvg('reviews', 'rating');
+        $business->loadCount('reviews');
+
+        return response()->json($business);
     }
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Business $business)
     {
         //
     }
