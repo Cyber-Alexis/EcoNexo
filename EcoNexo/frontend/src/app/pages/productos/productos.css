@@ -266,36 +266,37 @@
   overflow: hidden;
 }
 
-.quantity-control span {
+.qty-btn-card {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 2rem;
-  height: 100%;
+  height: 40px;
+  background: none;
+  border: none;
   cursor: pointer;
   user-select: none;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #374151;
   transition: background 0.2s ease;
 }
 
-.quantity-control span:hover {
+.qty-btn-card:hover {
   background: #eef2f7;
 }
 
 .quantity-input {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 2.4rem;
-  height: 100%;
-  border: 0;
-  outline: 0;
+  height: 40px;
   background: transparent;
   text-align: center;
   font-weight: 700;
   color: #1f2937;
-}
-
-.quantity-input::-webkit-outer-spin-button,
-.quantity-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+  font-size: 0.9rem;
 }
 
 .btn-add-cart {

@@ -1,7 +1,8 @@
-import { Component, HostListener, inject } from '@angular/core';
+import { Component, HostListener, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
+import { CartService } from '../../../services/cart.service';
 
 @Component({
   selector: 'app-header',
@@ -10,12 +11,24 @@ import { AuthService } from '../../../services/auth.service';
   templateUrl: './header.html',
   styleUrl: './header.css',
 })
-export class Header {
+export class Header implements OnInit {
   protected readonly router = inject(Router);
   private readonly authService = inject(AuthService);
+  private readonly cartService = inject(CartService);
 
   dropdownOpen = false;
   notificationCount = 0;
+  cartCount = 0;
+
+  ngOnInit(): void {
+    this.cartService.items$.subscribe(() => {
+      this.cartCount = this.cartService.totalCount;
+    });
+  }
+
+  openCart(): void {
+    this.cartService.toggle();
+  }
 
   get isLoggedIn(): boolean {
     return this.authService.isLoggedIn();
