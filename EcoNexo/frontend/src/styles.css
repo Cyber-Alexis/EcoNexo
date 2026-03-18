@@ -5,6 +5,7 @@
   padding: 0;
 }
 
-body {
+html, body {
+  height: 100%;
   font-family: 'Segoe UI', Arial, sans-serif;
 }
