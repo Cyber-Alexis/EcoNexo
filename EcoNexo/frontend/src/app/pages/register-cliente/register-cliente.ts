@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
 
 function passwordsMatch(control: AbstractControl): ValidationErrors | null {
   const password = control.get('password')?.value;
@@ -17,6 +18,7 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
 export class RegisterCliente {
   private router = inject(Router);
   private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
 
   isLoading = false;
   message = '';
@@ -42,10 +44,21 @@ export class RegisterCliente {
       return;
     }
     this.isLoading = true;
-    setTimeout(() => {
-      this.message = '✓ Cuenta creada correctamente. Redirigiendo...';
-      this.isLoading = false;
-      setTimeout(() => this.router.navigate(['/login']), 1000);
-    }, 800);
+    this.message = '';
+
+    const { nombre, apellidos, email, password } = this.form.value;
+    const name = `${nombre} ${apellidos}`.trim();
+
+    this.authService.registerCliente(name, email!, password!).subscribe({
+      next: () => {
+        this.message = '✓ Cuenta creada correctamente. Redirigiendo...';
+        this.isLoading = false;
+        setTimeout(() => this.router.navigate(['/home']), 1000);
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.message = err.error?.message ?? 'Error al registrarse. Inténtalo de nuevo.';
+      },
+    });
   }
 }

@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -13,6 +14,7 @@ import { RouterLink, Router } from '@angular/router';
 export class Login {
   private router = inject(Router);
   private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
 
   isLoading = false;
   message = '';
@@ -32,20 +34,20 @@ export class Login {
     }
 
     this.isLoading = true;
+    this.message = '';
 
-    setTimeout(() => {
-      const { email } = this.form.value;
-      const userData = {
-        email,
-        name: email!.split('@')[0],
-        token: 'fake-jwt-token',
-      };
+    const { email, password } = this.form.value;
 
-      localStorage.setItem('user', JSON.stringify(userData));
-      this.message = '✓ Iniciando sesión...';
-      this.isLoading = false;
-
-      setTimeout(() => this.router.navigate(['/home']), 500);
-    }, 800);
+    this.authService.login(email!, password!).subscribe({
+      next: () => {
+        this.message = '✓ Iniciando sesión...';
+        this.isLoading = false;
+        setTimeout(() => this.router.navigate(['/home']), 500);
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.message = err.error?.message ?? 'Error al iniciar sesión. Verifica tus datos.';
+      },
+    });
   }
 }
