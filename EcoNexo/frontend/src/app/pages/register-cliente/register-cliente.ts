@@ -47,9 +47,8 @@ export class RegisterCliente {
     this.message = '';
 
     const { nombre, apellidos, email, password } = this.form.value;
-    const name = `${nombre} ${apellidos}`.trim();
 
-    this.authService.registerCliente(name, email!, password!).subscribe({
+    this.authService.registerCliente(nombre!, apellidos!, email!, password!).subscribe({
       next: () => {
         this.message = '✓ Cuenta creada correctamente. Redirigiendo...';
         this.isLoading = false;

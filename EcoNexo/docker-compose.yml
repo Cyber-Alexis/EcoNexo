@@ -47,10 +47,13 @@ services:
     command: >
       sh -c "
         composer install --no-interaction --prefer-dist &&
+        [ ! -f .env ] && cp .env.example .env || true &&
         php artisan key:generate --force &&
-        php artisan migrate --force &&
-        apache2-foreground &&
-        composer update --no-interaction --prefer-dist 
+        php artisan jwt:secret --force &&
+        php artisan migrate:fresh --force &&
+        chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache &&
+        chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache &&
+        apache2-foreground
       "
 
   # Servicio Base de Datos - MySQL

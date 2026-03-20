@@ -20,10 +20,42 @@ class User extends Authenticatable implements JWTSubject
      */
     protected $fillable = [
         'name',
+        'last_name',
         'email',
         'password',
         'role',
+        'phone',
     ];
+
+    public function businesses()
+    {
+        return $this->hasMany(Business::class);
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function productReviews()
+    {
+        return $this->hasMany(ProductReview::class);
+    }
+
+    public function businessReviews()
+    {
+        return $this->hasMany(BusinessReview::class);
+    }
+
+    public function images()
+    {
+        return $this->morphMany(Image::class, 'imageable');
+    }
+
+    public function avatar()
+    {
+        return $this->morphOne(Image::class, 'imageable')->where('type', 'avatar');
+    }
 
     public function getJWTIdentifier(): mixed
     {

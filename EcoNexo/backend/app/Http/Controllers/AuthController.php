@@ -32,16 +32,18 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $data = $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|email|max:255|unique:users',
-            'password' => 'required|string|min:6',
+            'name'      => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email'     => 'required|email|max:255|unique:users',
+            'password'  => 'required|string|min:6',
         ]);
 
         $user = User::create([
-            'name'     => $data['name'],
-            'email'    => $data['email'],
-            'password' => Hash::make($data['password']),
-            'role'     => 'client',
+            'name'      => $data['name'],
+            'last_name' => $data['last_name'],
+            'email'     => $data['email'],
+            'password'  => Hash::make($data['password']),
+            'role'      => 'consumer',
         ]);
 
         $token = auth('api')->login($user);
@@ -56,16 +58,18 @@ class AuthController extends Controller
     {
         $data = $request->validate([
             'name'          => 'required|string|max:255',
+            'last_name'     => 'required|string|max:255',
             'email'         => 'required|email|max:255|unique:users',
             'password'      => 'required|string|min:6',
             'business_name' => 'required|string|max:255',
         ]);
 
         $user = User::create([
-            'name'     => $data['name'],
-            'email'    => $data['email'],
-            'password' => Hash::make($data['password']),
-            'role'     => 'business',
+            'name'      => $data['name'],
+            'last_name' => $data['last_name'],
+            'email'     => $data['email'],
+            'password'  => Hash::make($data['password']),
+            'role'      => 'business',
         ]);
 
         Business::create([

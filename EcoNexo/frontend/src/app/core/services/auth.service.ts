@@ -29,15 +29,15 @@ export class AuthService {
       .pipe(tap(res => this.storeAuth(res)));
   }
 
-  registerCliente(name: string, email: string, password: string): Observable<AuthResponse> {
+  registerCliente(name: string, last_name: string, email: string, password: string): Observable<AuthResponse> {
     return this.http
-      .post<AuthResponse>(`${this.base}/auth/register`, { name, email, password })
+      .post<AuthResponse>(`${this.base}/auth/register`, { name, last_name, email, password })
       .pipe(tap(res => this.storeAuth(res)));
   }
 
-  registerNegocio(name: string, email: string, password: string, business_name: string): Observable<AuthResponse> {
+  registerNegocio(name: string, last_name: string, email: string, password: string, business_name: string): Observable<AuthResponse> {
     return this.http
-      .post<AuthResponse>(`${this.base}/auth/register-negocio`, { name, email, password, business_name })
+      .post<AuthResponse>(`${this.base}/auth/register-negocio`, { name, last_name, email, password, business_name })
       .pipe(tap(res => this.storeAuth(res)));
   }
 

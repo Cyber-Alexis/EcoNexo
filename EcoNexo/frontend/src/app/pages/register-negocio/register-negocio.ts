@@ -49,9 +49,8 @@ export class RegisterNegocio {
     this.message = '';
 
     const { nombre, apellidos, nombreNegocio, email, password } = this.form.value;
-    const name = `${nombre} ${apellidos}`.trim();
 
-    this.authService.registerNegocio(name, email!, password!, nombreNegocio!).subscribe({
+    this.authService.registerNegocio(nombre!, apellidos!, email!, password!, nombreNegocio!).subscribe({
       next: () => {
         this.message = '✓ Negocio registrado correctamente. Redirigiendo...';
         this.isLoading = false;
