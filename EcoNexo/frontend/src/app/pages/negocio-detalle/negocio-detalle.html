@@ -27,80 +27,92 @@
       </div>
     </div>
 
+    <!-- Hero background image -->
+    <div class="hero-section" [style.backgroundImage]="'url(' + mainGalleryImage() + ')'">
+      <div class="hero-overlay"></div>
+    </div>
+
     <div class="container">
 
-      <!-- Gallery preview (3 images) -->
-      <div class="gallery-preview-row">
-        @for (img of galleryPreview.slice(0, 3); track $index) {
-          <div class="gallery-thumb-item">
-            <img [src]="img.path" [alt]="business.name" class="gallery-preview-img" />
-            @if ($index === 2 && galleryPreview.length > 3) {
-              <button class="gallery-overlay-btn" (click)="showAllPhotos = true">
-                <svg viewBox="0 0 20 20" fill="none" width="16" height="16">
-                  <rect x="2" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/>
-                  <rect x="11" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/>
-                  <rect x="2" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/>
-                  <rect x="11" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/>
-                </svg>
-              </button>
-            }
-          </div>
-        }
+      <!-- Gallery grid (1 large + 3 small) -->
+      <div class="gallery-grid-layout">
+        <div class="gallery-main-cell">
+          <img [src]="galleryPreview[0]?.path || mainGalleryImage()" [alt]="business.name" class="gallery-main-img" />
+        </div>
+        <div class="gallery-side-grid">
+          @for (img of galleryPreview.slice(1, 4); track $index) {
+            <div class="gallery-side-cell">
+              <img [src]="img.path" [alt]="business.name" class="gallery-side-img" />
+              @if ($index === 2 && galleryPreview.length > 4) {
+                <button class="gallery-overlay-btn" (click)="showAllPhotos = true">
+                  <svg viewBox="0 0 20 20" fill="none" width="18" height="18">
+                    <rect x="2" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/>
+                    <rect x="11" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/>
+                    <rect x="2" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/>
+                    <rect x="11" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/>
+                  </svg>
+                </button>
+              }
+            </div>
+          }
+        </div>
       </div>
 
       <!-- Business info card -->
       <div class="info-card">
-        <div class="info-card-top">
-          <div class="tag-row">
-            @for (cat of businessCategories; track cat) {
-              <span class="tag">{{ cat }}</span>
+        <div class="info-header">
+          <div class="info-head-top">
+            <div class="badge-group">
+              @for (cat of businessCategories.slice(0, 1); track cat) {
+                <span class="badge-cat">{{ cat }}</span>
+              }
+              <span class="badge-eco">
+                <svg viewBox="0 0 16 16" fill="none" width="9" height="9">
+                  <path d="M3 8l4 4 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Ecológico
+              </span>
+            </div>
+            <div class="action-icons">
+              <button class="icon-heart" [class.liked]="liked" (click)="toggleLike()" aria-label="Favorito">
+                <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
+                  <path d="M12 21C12 21 3 13.5 3 7.5C3 5.01 5.01 3 7.5 3C9.24 3 10.77 3.93 11.56 5.32C11.76 5.68 12.24 5.68 12.44 5.32C13.23 3.93 14.76 3 16.5 3C18.99 3 21 5.01 21 7.5C21 13.5 12 21 12 21Z"
+                    [attr.fill]="liked ? '#EF4444' : 'none'" [attr.stroke]="liked ? '#EF4444' : '#6B7280'" stroke-width="1.8"/>
+                </svg>
+              </button>
+              <button class="icon-share" aria-label="Compartir">
+                <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
+                  <circle cx="18" cy="5" r="3" stroke="#6B7280" stroke-width="1.8"/>
+                  <circle cx="6" cy="12" r="3" stroke="#6B7280" stroke-width="1.8"/>
+                  <circle cx="18" cy="19" r="3" stroke="#6B7280" stroke-width="1.8"/>
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" stroke="#6B7280" stroke-width="1.8"/>
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" stroke="#6B7280" stroke-width="1.8"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <h1 class="biz-title">{{ business.name }}</h1>
+
+          <div class="rating-row">
+            @for (star of getRatingStars(avgRating); track $index) {
+              <svg viewBox="0 0 16 16" fill="none" width="16" height="16">
+                <path d="M8 1l1.796 3.64L14 5.278l-3 2.924.708 4.128L8 10.35l-3.708 1.98L5 8.202 2 5.278l4.204-.638L8 1z"
+                  [attr.fill]="star ? '#F59E0B' : '#E5E7EB'" stroke="none"/>
+              </svg>
             }
-            <span class="tag tag-eco">
-              <svg viewBox="0 0 16 16" fill="none" width="10" height="10">
-                <path d="M3 8l4 4 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              Ecológico
-            </span>
+            <span class="rating-num">{{ avgRating | number:'1.1-1' }}</span>
+            <span class="rating-count">({{ business.reviews_count }} reseñas)</span>
           </div>
-          <div class="info-card-actions">
-            <button class="action-btn" [class.liked]="liked" (click)="toggleLike()" aria-label="Guardar en favoritos">
-              <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
-                <path d="M12 21C12 21 3 13.5 3 7.5C3 5.01 5.01 3 7.5 3C9.24 3 10.77 3.93 11.56 5.32C11.76 5.68 12.24 5.68 12.44 5.32C13.23 3.93 14.76 3 16.5 3C18.99 3 21 5.01 21 7.5C21 13.5 12 21 12 21Z"
-                  [attr.fill]="liked ? '#EF4444' : 'none'" [attr.stroke]="liked ? '#EF4444' : '#6B7280'" stroke-width="1.8"/>
-              </svg>
-            </button>
-            <button class="action-btn" aria-label="Compartir">
-              <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
-                <circle cx="18" cy="5" r="3" stroke="#6B7280" stroke-width="1.8"/>
-                <circle cx="6" cy="12" r="3" stroke="#6B7280" stroke-width="1.8"/>
-                <circle cx="18" cy="19" r="3" stroke="#6B7280" stroke-width="1.8"/>
-                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" stroke="#6B7280" stroke-width="1.8"/>
-                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" stroke="#6B7280" stroke-width="1.8"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <h1 class="biz-name">{{ business.name }}</h1>
-
-        <div class="rating-inline">
-          @for (star of getRatingStars(avgRating); track $index) {
-            <svg viewBox="0 0 16 16" fill="none" width="16" height="16">
-              <path d="M8 1l1.796 3.64L14 5.278l-3 2.924.708 4.128L8 10.35l-3.708 1.98L5 8.202 2 5.278l4.204-.638L8 1z"
-                [attr.fill]="star ? '#F59E0B' : '#E5E7EB'" stroke="none"/>
-            </svg>
-          }
-          <span class="rating-val">{{ avgRating | number:'1.1-1' }}</span>
-          <span class="rating-cnt">({{ business.reviews_count }} reseñas)</span>
         </div>
 
         @if (business.description) {
           <p class="biz-desc">{{ business.description }}</p>
         }
 
-        <div class="meta-rows">
-          <div class="meta-row">
-            <svg viewBox="0 0 20 20" fill="none" width="16" height="16" class="meta-icon">
+        <div class="info-meta">
+          <div class="meta-item">
+            <svg viewBox="0 0 20 20" fill="none" width="16" height="16">
               <path d="M10 2C7.24 2 5 4.24 5 7c0 4.25 5 11 5 11s5-6.75 5-11c0-2.76-2.24-5-5-5z" fill="#2D6A4F"/>
               <circle cx="10" cy="7" r="2" fill="#fff"/>
             </svg>
