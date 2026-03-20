@@ -31,7 +31,7 @@ class BusinessSeeder extends Seeder
                 'address'     => 'Plaça Paeria, 3',
                 'city'        => 'Lleida',
                 'status'      => 'active',
-                'img_main'    => 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&q=80',
+                'img_main'    => 'https://panet.cat/es/botigues/panet-lleida/',
                 'img_gallery' => [
                     'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800&q=80',
                     'https://images.unsplash.com/photo-1585518419759-aedc8dbd1e5a?w=800&q=80',

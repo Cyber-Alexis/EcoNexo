@@ -86,4 +86,28 @@ export class NegocioDetalle implements OnInit {
   mainGalleryImage(): string {
     return this.business?.images?.[0]?.path ?? 'https://placehold.co/800x450?text=Sin+imagen';
   }
+
+  get businessCategories(): string[] {
+    if (!this.business) return [];
+    const cats = new Set<string>();
+    this.business.products.forEach(p => {
+      if (p.category?.name) cats.add(p.category.name);
+    });
+    return Array.from(cats).slice(0, 3);
+  }
+
+  private quantities = new Map<number, number>();
+
+  getQty(id: number): number {
+    return this.quantities.get(id) ?? 1;
+  }
+
+  incrementQty(id: number): void {
+    this.quantities.set(id, this.getQty(id) + 1);
+  }
+
+  decrementQty(id: number): void {
+    const curr = this.getQty(id);
+    if (curr > 1) this.quantities.set(id, curr - 1);
+  }
 }
