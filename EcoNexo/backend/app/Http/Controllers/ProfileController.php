@@ -56,10 +56,10 @@ class ProfileController extends Controller
     {
         $user = auth('api')->user();
 
-        // Remove avatar file if exists
         $avatar = $user->avatar;
         if ($avatar) {
             Storage::disk('public')->delete($avatar->path);
+            $avatar->delete();
         }
 
         auth('api')->logout();
@@ -74,7 +74,7 @@ class ProfileController extends Controller
     public function uploadAvatar(Request $request)
     {
         $request->validate([
-            'avatar' => 'required|image|mimes:jpeg,png|max:2048',
+            'avatar' => 'required|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         $user = auth('api')->user();
@@ -87,64 +87,6 @@ class ProfileController extends Controller
 
         $path = $request->file('avatar')->store('avatars', 'public');
 
-        $user->images()->create([
-            'path' => $path,
-            'type' => 'avatar',
-        ]);
-
-        $avatarUrl = Storage::disk('public')->url($path);
-
-        return response()->json([
-            'avatar_url' => $avatarUrl,
-            'user'       => array_merge($user->toArray(), ['avatar_url' => $avatarUrl]),
-        ]);
-    }
-}
-
-    /**
-     * PUT /api/perfil
-     * Update the authenticated user's personal info and delivery address.
-     */
-    public function update(Request $request)
-    {
-        $data = $request->validate([
-            'name'        => 'sometimes|string|max:255',
-            'email'       => 'sometimes|email|max:255|unique:users,email,' . auth('api')->id(),
-            'phone'       => 'nullable|string|max:30',
-            'address'     => 'nullable|string|max:255',
-            'city'        => 'nullable|string|max:100',
-            'postal_code' => 'nullable|string|max:20',
-        ]);
-
-        $user = auth('api')->user();
-        $user->update($data);
-
-        return response()->json(['user' => $user->fresh()]);
-    }
-
-    /**
-     * POST /api/perfil/avatar
-     * Upload or replace the authenticated user's avatar.
-     */
-    public function uploadAvatar(Request $request)
-    {
-        $request->validate([
-            'avatar' => 'required|image|mimes:jpeg,png|max:2048',
-        ]);
-
-        $user = auth('api')->user();
-
-        // Remove old avatar record and file
-        $oldAvatar = $user->avatar;
-        if ($oldAvatar) {
-            Storage::disk('public')->delete($oldAvatar->path);
-            $oldAvatar->delete();
-        }
-
-        // Store the new file under storage/app/public/avatars/
-        $path = $request->file('avatar')->store('avatars', 'public');
-
-        // Create polymorphic image record
         $user->images()->create([
             'path' => $path,
             'type' => 'avatar',
