@@ -1,13 +1,20 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap, timeout } from 'rxjs';
 import { environment } from '../../../environments/environment';
+
+const REQUEST_TIMEOUT_MS = 10_000; // 10 s
 
 export interface AuthUser {
   id: number;
   name: string;
   email: string;
   role: string;
+  avatar_url?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  postal_code?: string;
 }
 
 export interface AuthResponse {
@@ -20,6 +27,9 @@ export interface AuthResponse {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly base = environment.apiUrl;
+  private readonly _user$ = new BehaviorSubject<AuthUser | null>(this.restoreUser());
+
+  readonly user$ = this._user$.asObservable();
 
   constructor(private http: HttpClient) {}
 
@@ -47,26 +57,83 @@ export class AuthService {
       .pipe(tap(() => this.clearAuth()));
   }
 
+  uploadAvatar(file: File): Observable<{ avatar_url: string; user: AuthUser }> {
+    const fd = new FormData();
+    fd.append('avatar', file);
+    return this.http
+      .post<{ avatar_url: string; user: AuthUser }>(`${this.base}/perfil/avatar`, fd)
+      .pipe(tap(res => this.patchUser(res.user)));
+  }
+
+  updateProfile(data: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+    city?: string;
+    postal_code?: string;
+  }): Observable<{ user: AuthUser }> {
+    return this.http
+      .put<{ user: AuthUser }>(`${this.base}/perfil`, data)
+      .pipe(
+        timeout(REQUEST_TIMEOUT_MS),
+        tap(res => this.patchUser(res.user)),
+      );
+  }
+
+  changePassword(current_password: string, new_password: string): Observable<{ message: string }> {
+    return this.http
+      .put<{ message: string }>(`${this.base}/perfil/password`, {
+        current_password,
+        new_password,
+        new_password_confirmation: new_password,
+      })
+      .pipe(timeout(REQUEST_TIMEOUT_MS));
+  }
+
+  deleteAccount(): Observable<{ message: string }> {
+    return this.http
+      .delete<{ message: string }>(`${this.base}/perfil`)
+      .pipe(
+        timeout(REQUEST_TIMEOUT_MS),
+        tap(() => this.clearAuth()),
+      );
+  }
+
+  patchUser(partial: Partial<AuthUser>): void {
+    const current = this._user$.value;
+    if (!current) return;
+    const updated = { ...current, ...partial };
+    localStorage.setItem('auth_user', JSON.stringify(updated));
+    this._user$.next(updated);
+  }
+
+  clearAuth(): void {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('auth_user');
+    this._user$.next(null);
+  }
+
   getToken(): string | null {
     return localStorage.getItem('access_token');
   }
 
   getUser(): AuthUser | null {
-    const raw = localStorage.getItem('auth_user');
-    return raw ? JSON.parse(raw) : null;
+    return this._user$.value;
   }
 
   isLoggedIn(): boolean {
     return !!this.getToken();
   }
 
+  private restoreUser(): AuthUser | null {
+    const raw = localStorage.getItem('auth_user');
+    return raw ? JSON.parse(raw) : null;
+  }
+
   private storeAuth(res: AuthResponse): void {
     localStorage.setItem('access_token', res.access_token);
     localStorage.setItem('auth_user', JSON.stringify(res.user));
-  }
-
-  private clearAuth(): void {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('auth_user');
+    this._user$.next(res.user);
   }
 }

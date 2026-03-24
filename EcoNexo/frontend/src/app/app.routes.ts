@@ -7,6 +7,8 @@ import { Negocios } from './pages/negocios/negocios';
 import { Productos } from './pages/productos/productos';
 import { About } from './pages/about/about';
 import { NegocioDetalle } from './pages/negocio-detalle/negocio-detalle';
+import { Perfil } from './pages/perfil/perfil';
+import { Configuracion } from './pages/configuracion/configuracion';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -19,4 +21,6 @@ export const routes: Routes = [
   { path: 'negocios/:id', component: NegocioDetalle },
   { path: 'productos', component: Productos },
   { path: 'about', component: About },
+  { path: 'perfil', component: Perfil },
+  { path: 'configuracion', component: Configuracion },
 ];

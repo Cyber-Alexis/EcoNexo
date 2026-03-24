@@ -1,7 +1,8 @@
-import { Component, HostListener, inject, OnInit } from '@angular/core';
+import { Component, HostListener, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { AuthService } from '../../../services/auth.service';
+import { Subject, takeUntil } from 'rxjs';
+import { AuthService, AuthUser } from '../../../services/auth.service';
 import { CartService } from '../../../services/cart.service';
 import { environment } from '../../../../../environments/environment';
 
@@ -12,22 +13,33 @@ import { environment } from '../../../../../environments/environment';
   templateUrl: './header.html',
   styleUrl: './header.css',
 })
-export class Header implements OnInit {
+export class Header implements OnInit, OnDestroy {
   protected readonly router = inject(Router);
   private readonly authService = inject(AuthService);
   private readonly cartService = inject(CartService);
   private readonly backendOrigin = this.resolveBackendOrigin();
+  private readonly destroy$ = new Subject<void>();
 
   dropdownOpen = false;
   notificationCount = 0;
   cartCount = 0;
+  currentUser: AuthUser | null = null;
 
   ngOnInit(): void {
     this.cartService.items$.subscribe(() => {
       this.cartCount = this.cartService.totalCount;
     });
 
+    this.authService.user$.pipe(takeUntil(this.destroy$)).subscribe(user => {
+      this.currentUser = user;
+    });
+
     this.loadNotificationState();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   openCart(): void {
@@ -38,12 +50,8 @@ export class Header implements OnInit {
     return this.authService.isLoggedIn();
   }
 
-  get user() {
-    return this.authService.getUser();
-  }
-
   get userDisplayName(): string {
-    const user = this.user as Record<string, unknown> | null;
+    const user = this.currentUser as Record<string, unknown> | null;
     if (!user) {
       return 'Usuario';
     }
@@ -74,7 +82,7 @@ export class Header implements OnInit {
   }
 
   get userAvatarUrl(): string | null {
-    const user = this.user as Record<string, unknown> | null;
+    const user = this.currentUser as Record<string, unknown> | null;
     if (!user) {
       return null;
     }

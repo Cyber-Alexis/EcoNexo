@@ -25,6 +25,9 @@ class User extends Authenticatable implements JWTSubject
         'password',
         'role',
         'phone',
+        'address',
+        'city',
+        'postal_code',
     ];
 
     public function businesses()
