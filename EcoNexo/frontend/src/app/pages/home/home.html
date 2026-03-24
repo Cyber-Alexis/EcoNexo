@@ -134,44 +134,102 @@
   </div>
 </section>
 
-<!-- Products -->
-<section class="products-section">
+<!-- How it works -->
+<section class="how-section">
   <div class="container">
-    <div class="section-header-row products-header">
-      <div>
-        <h2 class="section-title section-title--left">Productos populares</h2>
-        <p class="section-subtitle section-subtitle--left">Destinos favoritos según las opiniones de los clientes</p>
-      </div>
-      <div class="filter-pills">
-        <button class="filter-pill">Rango de precios <span>▾</span></button>
-        <button class="filter-pill">Fecha de Caducidad <span>▾</span></button>
-        <button class="filter-pill">Categorías <span>▾</span></button>
-        <button class="filter-pill">Reseñas/Calificaciones <span>▾</span></button>
-      </div>
+    <div class="how-header">
+      <h2 class="section-title">¿Cómo Funciona?</h2>
+      <p class="section-subtitle">Conectar con el comercio local nunca fue tan fácil</p>
     </div>
-    <div class="products-grid">
-      @for (p of products; track p.name) {
-        <div class="product-card">
-          <div class="product-img-wrap">
-            <img [src]="p.img" [alt]="p.name" class="product-img" />
-          </div>
-          <div class="product-info">
-            <span class="product-name">{{ p.name }}</span>
-            <span class="product-price">{{ p.price }}</span>
-          </div>
-          <button class="add-btn" aria-label="Añadir">+</button>
-        </div>
-      }
-      <div class="explore-card">
-        <p>Tus productos más<br>cerca de casa</p>
-        <a href="#" class="explore-inner-btn">
-          <span class="explore-label">Explorar</span>
-          Todos los productos
-          <svg viewBox="0 0 20 20" fill="none" width="14" height="14">
-            <circle cx="10" cy="10" r="9" stroke="white" stroke-width="1.5"/>
-            <path d="M8 6l4 4-4 4" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <div class="how-steps">
+      <div class="how-line" aria-hidden="true"></div>
+
+      <article class="how-step">
+        <div class="how-step-icon">
+          <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
+            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/>
+            <line x1="16" y1="16" x2="21" y2="21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
           </svg>
-        </a>
+          <span class="how-step-num">1</span>
+        </div>
+        <h3>Explora</h3>
+        <p>Busca entre cientos de negocios locales y encuentra productos únicos de Lleida.</p>
+      </article>
+
+      <article class="how-step">
+        <div class="how-step-icon">
+          <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+            <path d="M16 10a4 4 0 0 1-8 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="how-step-num">2</span>
+        </div>
+        <h3>Descubre</h3>
+        <p>Conoce la historia de cada negocio, sus productos y lee opiniones de otros clientes.</p>
+      </article>
+
+      <article class="how-step">
+        <div class="how-step-icon">
+          <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
+            <rect x="4" y="4" width="16" height="16" rx="3" stroke="currentColor" stroke-width="1.7"/>
+            <path d="M8 12h8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+            <path d="M12 8v8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+          <span class="how-step-num">3</span>
+        </div>
+        <h3>Compra</h3>
+        <p>Realiza pedidos directamente a los productores locales de forma fácil y segura.</p>
+      </article>
+
+      <article class="how-step">
+        <div class="how-step-icon">
+          <svg viewBox="0 0 20 20" fill="none" width="20" height="20">
+            <path d="M10 3C6 5, 5 10, 10 14C15 10, 14 5, 10 3Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+            <line x1="10" y1="8" x2="10" y2="14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+          <span class="how-step-num">4</span>
+        </div>
+        <h3>Apoya</h3>
+        <p>Contribuye a la economía local y a un consumo más responsable y sostenible.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- Business CTA -->
+<section class="business-cta-section">
+  <div class="container">
+    <div class="business-cta-card">
+      <div class="business-cta-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" width="24" height="24">
+          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          <path d="M16 10a4 4 0 0 1-8 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h2>¿Tienes un negocio en Lleida?</h2>
+      <p>Únete a nuestra comunidad de productores locales. Crea tu tienda online, gestiona tus productos y conecta con miles de clientes de tu ciudad.</p>
+
+      <div class="business-cta-actions">
+        <a routerLink="/register/negocio" class="business-cta-primary">Registrar mi Negocio <span>→</span></a>
+        <a routerLink="/about" class="business-cta-outline">Saber más</a>
+      </div>
+
+      <div class="business-cta-stats">
+        <div class="business-cta-stat">
+          <strong>Gratis</strong>
+          <span>Para empezar</span>
+        </div>
+        <div class="business-cta-stat">
+          <strong>24h</strong>
+          <span>Tu tienda activa</span>
+        </div>
+        <div class="business-cta-stat">
+          <strong>0%</strong>
+          <span>Comisión inicial</span>
+        </div>
       </div>
     </div>
   </div>

@@ -14,49 +14,23 @@
 } @else if (business) {
   <div class="detail-page">
 
-    <!-- Breadcrumb -->
-    <div class="breadcrumb-bar">
-      <div class="container">
-        <nav class="bc-nav">
-          <a routerLink="/" class="bc-link">Inicio</a>
-          <span class="bc-sep">›</span>
-          <a routerLink="/negocios" class="bc-link">Negocios</a>
-          <span class="bc-sep">›</span>
-          <span class="bc-current">{{ business.name }}</span>
-        </nav>
-      </div>
-    </div>
-
     <!-- Hero background image -->
     <div class="hero-section" [style.backgroundImage]="'url(' + mainGalleryImage() + ')'">
+      <div class="breadcrumb-bar">
+        <div class="container">
+          <nav class="bc-nav">
+            <a routerLink="/" class="bc-link">Inicio</a>
+            <span class="bc-sep">›</span>
+            <a routerLink="/negocios" class="bc-link">Negocios</a>
+            <span class="bc-sep">›</span>
+            <span class="bc-current">{{ business.name }}</span>
+          </nav>
+        </div>
+      </div>
       <div class="hero-overlay"></div>
     </div>
 
     <div class="container">
-
-      <!-- Gallery grid (1 large + 3 small) -->
-      <div class="gallery-grid-layout">
-        <div class="gallery-main-cell">
-          <img [src]="galleryPreview[0]?.path || mainGalleryImage()" [alt]="business.name" class="gallery-main-img" />
-        </div>
-        <div class="gallery-side-grid">
-          @for (img of galleryPreview.slice(1, 4); track $index) {
-            <div class="gallery-side-cell">
-              <img [src]="img.path" [alt]="business.name" class="gallery-side-img" />
-              @if ($index === 2 && galleryPreview.length > 4) {
-                <button class="gallery-overlay-btn" (click)="showAllPhotos = true">
-                  <svg viewBox="0 0 20 20" fill="none" width="18" height="18">
-                    <rect x="2" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/>
-                    <rect x="11" y="2" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/>
-                    <rect x="2" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/>
-                    <rect x="11" y="11" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/>
-                  </svg>
-                </button>
-              }
-            </div>
-          }
-        </div>
-      </div>
 
       <!-- Business info card -->
       <div class="info-card">
@@ -149,20 +123,22 @@
                 <p class="product-price">
                   {{ p.price | number:'1.2-2' }}€<span class="price-unit">/{{ p.category?.name ?? 'unidad' }}</span>
                 </p>
-                <p class="product-stock">Stock: {{ p.stock }}</p>
-                <div class="product-footer">
-                  <div class="qty-ctrl">
-                    <button type="button" class="qty-btn" (click)="decrementQty(p.id)" aria-label="Reducir">−</button>
-                    <span class="qty-val">{{ getQty(p.id) }}</span>
-                    <button type="button" class="qty-btn qty-btn-add" (click)="incrementQty(p.id)" aria-label="Aumentar">+</button>
+                <div class="product-stock-row">
+                  <p class="product-stock">Stock: {{ p.stock }}</p>
+                  <div class="product-footer">
+                    <div class="qty-ctrl">
+                      <button type="button" class="qty-btn qty-btn-minus" (click)="decrementQty(p.id)" aria-label="Reducir">−</button>
+                      <span class="qty-val">{{ getQty(p.id) }}</span>
+                      <button type="button" class="qty-btn qty-btn-plus" (click)="incrementQty(p.id)" aria-label="Aumentar">+</button>
+                    </div>
+                    <button type="button" class="btn-cart" aria-label="Añadir al carrito">
+                      <svg viewBox="0 0 24 24" fill="none" width="17" height="17">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                        <path d="M16 10a4 4 0 0 1-8 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
                   </div>
-                  <button type="button" class="btn-cart" aria-label="Añadir al carrito">
-                    <svg viewBox="0 0 24 24" fill="none" width="17" height="17">
-                      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                      <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                      <path d="M16 10a4 4 0 0 1-8 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </button>
                 </div>
               </div>
             </div>
@@ -202,37 +178,29 @@
           </div>
         </div>
 
-        <div class="add-comment">
-          <div class="comment-avatar placeholder-avatar">
-            <svg viewBox="0 0 24 24" fill="none" width="22" height="22"><circle cx="12" cy="8" r="4" stroke="#9CA3AF" stroke-width="1.5"/><path d="M4 20c0-4 3.582-7 8-7s8 3 8 7" stroke="#9CA3AF" stroke-width="1.5" stroke-linecap="round"/></svg>
-          </div>
-          <input class="comment-input" type="text" placeholder="Añade un comentario..." />
-        </div>
+        <p class="reviews-readonly-note">Solo los usuarios con pedidos completados pueden dejar una reseña.</p>
 
         <div class="reviews-list">
           @for (r of business.reviews; track r.id) {
             <article class="review-item">
-              <div class="review-avatar comment-avatar placeholder-avatar">
-                <svg viewBox="0 0 24 24" fill="none" width="22" height="22"><circle cx="12" cy="8" r="4" stroke="#9CA3AF" stroke-width="1.5"/><path d="M4 20c0-4 3.582-7 8-7s8 3 8 7" stroke="#9CA3AF" stroke-width="1.5" stroke-linecap="round"/></svg>
+              <div class="review-top-row">
+                <div class="review-user-block">
+                  <div class="review-avatar" aria-hidden="true">{{ (r.user.name ?? '?') | slice:0:1 | uppercase }}</div>
+                  <div class="review-user-meta">
+                    <strong class="review-author">{{ r.user.name }}</strong>
+                    <div class="review-stars">
+                      @for (star of getRatingStars(r.rating); track $index) {
+                        <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
+                          <path d="M8 1l1.796 3.64L14 5.278l-3 2.924.708 4.128L8 10.35l-3.708 1.98L5 8.202 2 5.278l4.204-.638L8 1z"
+                            [attr.fill]="star ? '#F59E0B' : '#E5E7EB'" stroke="none"/>
+                        </svg>
+                      }
+                    </div>
+                  </div>
+                </div>
+                <span class="review-time">{{ r.created_at | date:'dd/MM/yyyy' }}</span>
               </div>
-              <div class="review-body">
-                <div class="review-header">
-                  <strong class="review-author">{{ r.user.name }}</strong>
-                  <span class="review-time">{{ r.created_at | date:'dd/MM/yyyy' }}</span>
-                </div>
-                <div class="review-stars">
-                  @for (star of getRatingStars(r.rating); track $index) {
-                    <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
-                      <path d="M8 1l1.796 3.64L14 5.278l-3 2.924.708 4.128L8 10.35l-3.708 1.98L5 8.202 2 5.278l4.204-.638L8 1z"
-                        [attr.fill]="star ? '#F59E0B' : '#E5E7EB'" stroke="none"/>
-                    </svg>
-                  }
-                </div>
-                <p class="review-text">{{ r.comment }}</p>
-                <div class="review-actions">
-                  <button class="review-reply-btn">Responder</button>
-                </div>
-              </div>
+              <p class="review-text">{{ r.comment }}</p>
             </article>
           }
         </div>

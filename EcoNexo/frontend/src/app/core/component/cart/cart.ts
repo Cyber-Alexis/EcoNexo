@@ -1,7 +1,8 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CartService, CartItem, CartGroup } from '../../services/cart.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-cart',
@@ -12,6 +13,8 @@ import { CartService, CartItem, CartGroup } from '../../services/cart.service';
 })
 export class CartComponent implements OnInit {
   private readonly cartService = inject(CartService);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
   isOpen = false;
   groupedItems: CartGroup[] = [];
@@ -32,4 +35,14 @@ export class CartComponent implements OnInit {
   decrement(item: CartItem): void { this.cartService.updateQuantity(item.id, item.quantity - 1); }
   remove(item: CartItem): void { this.cartService.removeItem(item.id); }
   clear(): void { this.cartService.clear(); }
+
+  checkout(): void {
+    if (!this.authService.isLoggedIn()) {
+      this.close();
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    this.close();
+  }
 }
