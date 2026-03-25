@@ -55,40 +55,56 @@
 <!-- Categories -->
 <section class="categories-section">
   <div class="container">
-    <h2 class="section-title">Explora por Categorías</h2>
-    <p class="section-subtitle">Encuentra exactamente lo que buscas. Desde productos frescos del campo hasta artesanía única de Lleida.</p>
-    <div class="categories-row">
-      <button class="category-pill">
-        <span class="cat-icon" style="background:#f0fdf4">🍎</span>
-        <span>Frutas y Verduras</span>
+    <h2 class="section-title categories-title">Explora por Categorías</h2>
+    <p class="section-subtitle categories-subtitle">Encuentra exactamente lo que buscas. Desde productos frescos del campo hasta artesanía única de Lleida.</p>
+    <div class="categories-grid">
+      <button class="category-card">
+        <span class="category-icon-wrap category-icon-wrap--green">
+          <i class="fa-solid fa-carrot category-icon category-icon--green" aria-hidden="true"></i>
+        </span>
+        <span class="category-label">Frutas y Verduras</span>
       </button>
-      <button class="category-pill">
-        <span class="cat-icon" style="background:#fffbeb">🥖</span>
-        <span>Panadería</span>
+      <button class="category-card">
+        <span class="category-icon-wrap category-icon-wrap--amber">
+          <i class="fa-solid fa-bread-slice category-icon category-icon--amber" aria-hidden="true"></i>
+        </span>
+        <span class="category-label">Panadería</span>
       </button>
-      <button class="category-pill">
-        <span class="cat-icon" style="background:#fef2f2">🥩</span>
-        <span>Carnicería</span>
+      <button class="category-card">
+        <span class="category-icon-wrap category-icon-wrap--red">
+          <i class="fa-solid fa-drumstick-bite category-icon category-icon--red" aria-hidden="true"></i>
+        </span>
+        <span class="category-label">Carnicería</span>
       </button>
-      <button class="category-pill">
-        <span class="cat-icon" style="background:#f5f3ff">🍷</span>
-        <span>Vinos y Licores</span>
+      <button class="category-card">
+        <span class="category-icon-wrap category-icon-wrap--purple">
+          <i class="fa-solid fa-wine-glass category-icon category-icon--purple" aria-hidden="true"></i>
+        </span>
+        <span class="category-label">Vinos y Licores</span>
       </button>
-      <button class="category-pill">
-        <span class="cat-icon" style="background:#fdf4ff">🌸</span>
-        <span>Floristerría</span>
+      <button class="category-card">
+        <span class="category-icon-wrap category-icon-wrap--pink">
+          <i class="fa-solid fa-leaf category-icon category-icon--pink" aria-hidden="true"></i>
+        </span>
+        <span class="category-label">Floristería</span>
       </button>
-      <button class="category-pill">
-        <span class="cat-icon" style="background:#eff6ff">👕</span>
-        <span>Moda Local</span>
+      <button class="category-card">
+        <span class="category-icon-wrap category-icon-wrap--blue">
+          <i class="fa-solid fa-shirt category-icon category-icon--blue" aria-hidden="true"></i>
+        </span>
+        <span class="category-label">Moda Local</span>
       </button>
-      <button class="category-pill">
-        <span class="cat-icon" style="background:#fffbeb">🪵</span>
-        <span>Artesanía</span>
+      <button class="category-card">
+        <span class="category-icon-wrap category-icon-wrap--orange">
+          <i class="fa-solid fa-hammer category-icon category-icon--orange" aria-hidden="true"></i>
+        </span>
+        <span class="category-label">Artesanía</span>
       </button>
-      <button class="category-pill">
-        <span class="cat-icon" style="background:#f0f9ff">🎨</span>
-        <span>Arte y Diseño</span>
+      <button class="category-card">
+        <span class="category-icon-wrap category-icon-wrap--indigo">
+          <i class="fa-solid fa-palette category-icon category-icon--indigo" aria-hidden="true"></i>
+        </span>
+        <span class="category-label">Arte y Diseño</span>
       </button>
     </div>
   </div>
@@ -102,7 +118,10 @@
         <h2 class="section-title section-title--left">Negocios Destacados</h2>
         <p class="section-subtitle section-subtitle--left">Descubre los negocios mejor valorados por nuestra comunidad</p>
       </div>
-      <a href="#" class="see-all-btn">Ver todos →</a>
+      <a routerLink="/negocios" class="see-all-btn">
+        <span>Ver todos</span>
+        <span class="see-all-arrow" aria-hidden="true">→</span>
+      </a>
     </div>
     <div class="businesses-grid">
       @for (b of businesses; track b.id) {
@@ -115,8 +134,12 @@
           </div>
           <div class="business-body">
             <div class="business-top-row">
-              <span class="business-catbadge">{{ b.city }}</span>
-              <span class="business-rating">★ {{ (b.reviews_avg_rating ?? 0) | number:'1.1-1' }} ({{ b.reviews_count }})</span>
+              <span class="business-category">{{ b.city }}</span>
+              <span class="business-rating">
+                <span class="rating-star">★</span>
+                {{ (b.reviews_avg_rating ?? 0) | number:'1.1-1' }}
+                <span class="rating-count">({{ b.reviews_count }})</span>
+              </span>
             </div>
             <h3 class="business-name">{{ b.name }}</h3>
             <p class="business-desc">{{ b.description }}</p>
@@ -147,10 +170,7 @@
 
       <article class="how-step">
         <div class="how-step-icon">
-          <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
-            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/>
-            <line x1="16" y1="16" x2="21" y2="21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          </svg>
+          <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
           <span class="how-step-num">1</span>
         </div>
         <h3>Explora</h3>
@@ -159,11 +179,7 @@
 
       <article class="how-step">
         <div class="how-step-icon">
-          <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
-            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-            <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-            <path d="M16 10a4 4 0 0 1-8 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+          <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i>
           <span class="how-step-num">2</span>
         </div>
         <h3>Descubre</h3>
@@ -172,11 +188,7 @@
 
       <article class="how-step">
         <div class="how-step-icon">
-          <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
-            <rect x="4" y="4" width="16" height="16" rx="3" stroke="currentColor" stroke-width="1.7"/>
-            <path d="M8 12h8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-            <path d="M12 8v8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-          </svg>
+          <i class="fa-solid fa-shopping-cart" aria-hidden="true"></i>
           <span class="how-step-num">3</span>
         </div>
         <h3>Compra</h3>
@@ -185,10 +197,7 @@
 
       <article class="how-step">
         <div class="how-step-icon">
-          <svg viewBox="0 0 20 20" fill="none" width="20" height="20">
-            <path d="M10 3C6 5, 5 10, 10 14C15 10, 14 5, 10 3Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-            <line x1="10" y1="8" x2="10" y2="14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-          </svg>
+          <i class="fa-solid fa-thumbs-up" aria-hidden="true"></i>
           <span class="how-step-num">4</span>
         </div>
         <h3>Apoya</h3>

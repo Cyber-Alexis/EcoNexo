@@ -1,7 +1,7 @@
 /* ─── Global ─── */
 :host {
   display: block;
-  font-family: 'Segoe UI', Arial, sans-serif;
+  font-family: inherit;
   color: #1a1a1a;
 }
 
@@ -103,6 +103,8 @@ ul { list-style: none; }
   border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
   margin: 0 auto 1rem;
+  color: #2D6A4F;
+  font-size: 1.3rem;
 }
 .valor-card h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.6rem; color: #111827; }
 .valor-card p { font-size: 0.85rem; color: #6b7280; line-height: 1.6; }
