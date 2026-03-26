@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias(['cors.api' => \App\Http\Middleware\CorsApi::class]);
+        $middleware->alias(['check.admin' => \App\Http\Middleware\CheckAdmin::class]);
         $middleware->validateCsrfTokens(except: ['api/*']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

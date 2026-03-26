@@ -1,0 +1,354 @@
+<div class="admin-container">
+  <!-- Header -->
+  <div class="admin-header">
+    <div class="header-content">
+      <h1>Administración de Usuarios</h1>
+      <p class="subtitle">Gestiona todos los usuarios de la plataforma</p>
+    </div>
+    <button class="btn btn-primary" (click)="openCreateUserModal()">
+      <span>➕</span> Crear Usuario
+    </button>
+  </div>
+
+  <!-- Statistics -->
+  <div class="statistics-container" *ngIf="statistics">
+    <div class="stat-card">
+      <div class="stat-value">{{ statistics.total_users }}</div>
+      <div class="stat-label">Total Usuarios</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ statistics.admin_users }}</div>
+      <div class="stat-label">Administradores</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ statistics.business_users }}</div>
+      <div class="stat-label">Negocios</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ statistics.consumer_users }}</div>
+      <div class="stat-label">Consumidores</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ statistics.active_users }}</div>
+      <div class="stat-label">Activos</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ statistics.blocked_users }}</div>
+      <div class="stat-label">Bloqueados</div>
+    </div>
+  </div>
+
+  <!-- Alerts -->
+  <div *ngIf="error" class="alert alert-danger alert-dismissible" role="alert">
+    <strong>⚠️ Error:</strong> {{ error }}
+    <button type="button" class="btn-close" (click)="error = null"></button>
+  </div>
+
+  <div *ngIf="successMessage" class="alert alert-success alert-dismissible" role="alert">
+    <strong>✅ Éxito:</strong> {{ successMessage }}
+    <button type="button" class="btn-close" (click)="successMessage = null"></button>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="filter-group">
+      <label for="search">Buscar por nombre o email:</label>
+      <input
+        type="text"
+        id="search"
+        class="form-control"
+        placeholder="Escribe el nombre o email..."
+        [(ngModel)]="searchQuery"
+        (keyup)="applyFilters()"
+      />
+    </div>
+
+    <div class="filter-group">
+      <label for="role">Rol:</label>
+      <select
+        id="role"
+        class="form-control"
+        [(ngModel)]="selectedRole"
+        (change)="applyFilters()"
+      >
+        <option value="todos">Todos los roles</option>
+        <option value="admin">Administrador</option>
+        <option value="business">Negocio</option>
+        <option value="consumer">Consumidor</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="status">Estado:</label>
+      <select
+        id="status"
+        class="form-control"
+        [(ngModel)]="selectedStatus"
+        (change)="applyFilters()"
+      >
+        <option value="todos">Todos los estados</option>
+        <option value="activo">Activo</option>
+        <option value="inactivo">Inactivo</option>
+        <option value="bloqueado">Bloqueado</option>
+        <option value="pendiente">Pendiente</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Users Table -->
+  <div class="table-container">
+    <table class="users-table" *ngIf="!isLoading">
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Email</th>
+          <th>Rol</th>
+          <th>Estado</th>
+          <th>Fecha Registro</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users" class="user-row">
+          <td class="user-name">
+            <div class="user-info">
+              <div class="user-avatar">{{ user.name.charAt(0).toUpperCase() }}</div>
+              <div>
+                <div class="name">{{ user.name }} {{ user.last_name }}</div>
+                <small *ngIf="user.phone" class="phone">{{ user.phone }}</small>
+              </div>
+            </div>
+          </td>
+          <td>{{ user.email }}</td>
+          <td>
+            <span class="badge" [ngClass]="getRoleBadgeColor(user.role)">
+              {{ user.role === 'admin' ? '👨‍💼 Admin' : user.role === 'business' ? '🏢 Negocio' : '👤 Consumidor' }}
+            </span>
+          </td>
+          <td>
+            <span class="badge" [ngClass]="getStatusColor(user.status)">
+              <ng-container [ngSwitch]="user.status">
+                <ng-container *ngSwitchCase="'activo'">✅ Activo</ng-container>
+                <ng-container *ngSwitchCase="'inactivo'">⏸️ Inactivo</ng-container>
+                <ng-container *ngSwitchCase="'bloqueado'">🚫 Bloqueado</ng-container>
+                <ng-container *ngSwitchCase="'pendiente'">⏳ Pendiente</ng-container>
+              </ng-container>
+            </span>
+          </td>
+          <td>{{ formatDate(user.created_at) }}</td>
+          <td class="actions">
+            <div class="action-buttons">
+              <button
+                class="btn btn-sm btn-info"
+                title="Editar"
+                (click)="openEditUserModal(user)"
+              >
+                ✏️
+              </button>
+              <button
+                class="btn btn-sm btn-warning"
+                *ngIf="user.status !== 'bloqueado'"
+                title="Bloquear"
+                (click)="changeUserStatus(user, 'bloqueado')"
+              >
+                🚫
+              </button>
+              <button
+                class="btn btn-sm btn-success"
+                *ngIf="user.status !== 'activo'"
+                title="Activar"
+                (click)="changeUserStatus(user, 'activo')"
+              >
+                ✅
+              </button>
+              <button
+                class="btn btn-sm btn-danger"
+                title="Eliminar"
+                (click)="deleteUser(user)"
+              >
+                🗑️
+              </button>
+            </div>
+          </td>
+        </tr>
+
+        <tr *ngIf="users.length === 0" class="no-data">
+          <td colspan="6" class="text-center">
+            <p>No hay usuarios que coincidan con los filtros</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="isLoading" class="loading">
+      <div class="spinner"></div>
+      <p>Cargando usuarios...</p>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-container" *ngIf="totalPages > 1">
+    <button
+      class="btn btn-sm"
+      [disabled]="currentPage === 1"
+      (click)="goToPage(currentPage - 1)"
+    >
+      ← Anterior
+    </button>
+
+    <div class="page-info">
+      Página {{ currentPage }} de {{ totalPages }}
+    </div>
+
+    <button
+      class="btn btn-sm"
+      [disabled]="currentPage === totalPages"
+      (click)="goToPage(currentPage + 1)"
+    >
+      Siguiente →
+    </button>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal" *ngIf="showModal" [class.show]="showModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>{{ isEditMode ? 'Editar Usuario' : 'Crear Nuevo Usuario' }}</h2>
+        <button class="close-btn" (click)="closeModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <form>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="name">Nombre:</label>
+              <input
+                type="text"
+                id="name"
+                class="form-control"
+                [(ngModel)]="formData.name"
+                [attr.name]="'name'"
+                placeholder="Nombre"
+              />
+            </div>
+            <div class="form-group">
+              <label for="last_name">Apellido:</label>
+              <input
+                type="text"
+                id="last_name"
+                class="form-control"
+                [(ngModel)]="formData.last_name"
+                [attr.name]="'last_name'"
+                placeholder="Apellido"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email:</label>
+            <input
+              type="email"
+              id="email"
+              class="form-control"
+              [(ngModel)]="formData.email"
+              [attr.name]="'email'"
+              placeholder="correo@ejemplo.com"
+              [readonly]="isEditMode"
+            />
+          </div>
+
+          <div class="form-group" *ngIf="!isEditMode">
+            <label for="password">Contraseña:</label>
+            <input
+              type="password"
+              id="password"
+              class="form-control"
+              [(ngModel)]="formData.password"
+              [attr.name]="'password'"
+              placeholder="Contraseña segura"
+            />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="role">Rol:</label>
+              <select id="role" class="form-control" [(ngModel)]="formData.role" [attr.name]="'role'">
+                <option value="consumer">Consumidor</option>
+                <option value="business">Negocio</option>
+                <option value="admin">Administrador</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="status">Estado:</label>
+              <select id="status" class="form-control" [(ngModel)]="formData.status" [attr.name]="'status'">
+                <option value="pendiente">Pendiente</option>
+                <option value="activo">Activo</option>
+                <option value="inactivo">Inactivo</option>
+                <option value="bloqueado">Bloqueado</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="phone">Teléfono:</label>
+              <input
+                type="tel"
+                id="phone"
+                class="form-control"
+                [(ngModel)]="formData.phone"
+                [attr.name]="'phone'"
+                placeholder="+34 666 000 000"
+              />
+            </div>
+            <div class="form-group">
+              <label for="city">Ciudad:</label>
+              <input
+                type="text"
+                id="city"
+                class="form-control"
+                [(ngModel)]="formData.city"
+                [attr.name]="'city'"
+                placeholder="Madrid"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="address">Dirección:</label>
+            <input
+              type="text"
+              id="address"
+              class="form-control"
+              [(ngModel)]="formData.address"
+              [attr.name]="'address'"
+              placeholder="Calle Principal, 123"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="postal_code">Código Postal:</label>
+            <input
+              type="text"
+              id="postal_code"
+              class="form-control"
+              [(ngModel)]="formData.postal_code"
+              [attr.name]="'postal_code'"
+              placeholder="28001"
+            />
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
+        <button class="btn btn-primary" (click)="saveUser()" [disabled]="isLoading">
+          {{ isLoading ? 'Guardando...' : 'Guardar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Overlay -->
+  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()"></div>
+</div>

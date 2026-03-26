@@ -42,7 +42,15 @@ export class Login {
       next: () => {
         this.message = '✓ Iniciando sesión...';
         this.isLoading = false;
-        setTimeout(() => this.router.navigate(['/home']), 500);
+        
+        // Get user role and redirect accordingly
+        this.authService.user$.subscribe(user => {
+          if (user?.role === 'admin') {
+            setTimeout(() => this.router.navigate(['/admin']), 500);
+          } else {
+            setTimeout(() => this.router.navigate(['/home']), 500);
+          }
+        }).unsubscribe();
       },
       error: (err) => {
         this.isLoading = false;

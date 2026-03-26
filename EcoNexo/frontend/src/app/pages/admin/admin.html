@@ -1,0 +1,287 @@
+<div class="admin-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">🌿</span>
+      <span class="logo-text">EcoNexo</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <p class="nav-section-title">Administración</p>
+
+      <a class="nav-item" [class.active]="activeSection === 'dashboard'" (click)="setSection('dashboard')">
+        <span class="nav-icon">📊</span>
+        <span>Dashboard</span>
+      </a>
+      <a class="nav-item" [class.active]="activeSection === 'usuarios'" (click)="setSection('usuarios')">
+        <span class="nav-icon">👥</span>
+        <span>Usuarios</span>
+      </a>
+      <a class="nav-item" [class.active]="activeSection === 'negocios'" (click)="setSection('negocios')">
+        <span class="nav-icon">🛒</span>
+        <span>Productos y Ventas</span>
+      </a>
+      <a class="nav-item" [class.active]="activeSection === 'seguridad'" (click)="setSection('seguridad')">
+        <span class="nav-icon">🔒</span>
+        <span>Seguridad</span>
+      </a>
+      <a class="nav-item" [class.active]="activeSection === 'analisis'" (click)="setSection('analisis')">
+        <span class="nav-icon">📈</span>
+        <span>Análisis</span>
+      </a>
+      <a class="nav-item" [class.active]="activeSection === 'soporte'" (click)="setSection('soporte')">
+        <span class="nav-icon">🔧</span>
+        <span>Soporte Técnico</span>
+      </a>
+      <a class="nav-item" [class.active]="activeSection === 'configuracion'" (click)="setSection('configuracion')">
+        <span class="nav-icon">⚙️</span>
+        <span>Configuración</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar">{{ currentUser?.name?.charAt(0) || 'A' }}</div>
+        <div class="user-details">
+          <span class="user-name">{{ currentUser?.name || 'Admin' }}</span>
+          <span class="user-role">Administrador</span>
+        </div>
+      </div>
+      <button class="logout-btn" (click)="logout()">
+        <span>↩</span> Cerrar Sesión
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <!-- ========== USUARIOS SECTION ========== -->
+    <div *ngIf="activeSection === 'usuarios'">
+      <div class="page-header">
+        <h1>Administración de Usuarios</h1>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid" *ngIf="statistics">
+        <div class="stat-card">
+          <div class="stat-number">{{ statistics.total_users }}</div>
+          <div class="stat-label">Total Usuarios</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">{{ statistics.consumer_users }}</div>
+          <div class="stat-label">Clientes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">{{ statistics.business_users }}</div>
+          <div class="stat-label">Productores</div>
+        </div>
+        <div class="stat-card stat-blocked">
+          <div class="stat-number">{{ statistics.blocked_users }}</div>
+          <div class="stat-label">Bloqueados</div>
+        </div>
+      </div>
+
+      <!-- Alerts -->
+      <div *ngIf="successMessage" class="alert alert-success">✅ {{ successMessage }}</div>
+      <div *ngIf="error && !showModal" class="alert alert-error">⚠️ {{ error }}</div>
+
+      <!-- Users Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Usuarios</h2>
+          <button class="btn btn-primary" (click)="openCreateModal()">
+            ✨ Crear Usuario
+          </button>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-row">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input
+              type="text"
+              placeholder="Buscar por nombre o email..."
+              [(ngModel)]="searchQuery"
+              (input)="applyFilters()"
+            />
+          </div>
+          <select [(ngModel)]="selectedRole" (change)="applyFilters()" class="role-filter">
+            <option value="todos">Todos los roles</option>
+            <option value="admin">Admin</option>
+            <option value="business">Productor</option>
+            <option value="consumer">Cliente</option>
+          </select>
+        </div>
+
+        <!-- Table -->
+        <div class="table-wrapper">
+          <div *ngIf="isLoading$ | async" class="loading-state">
+            <div class="spinner"></div>
+            <p>Cargando usuarios...</p>
+          </div>
+
+          <table *ngIf="!(isLoading$ | async)" class="users-table">
+            <thead>
+              <tr>
+                <th>Usuario</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th>Fecha Registro</th>
+                <th>Pedidos</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let user of (users$ | async) || []">
+                <td class="user-cell">
+                  <div class="user-avatar-sm">{{ user.name.charAt(0) }}</div>
+                  <div>
+                    <div class="user-full-name">{{ user.name }} {{ user.last_name }}</div>
+                    <div class="user-email">{{ user.email }}</div>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="getRoleBadge(user.role)">
+                    {{ getRoleLabel(user.role) }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="getStatusBadge(user.status)">
+                    <ng-container [ngSwitch]="user.status">
+                      <ng-container *ngSwitchCase="'activo'">Activo</ng-container>
+                      <ng-container *ngSwitchCase="'inactivo'">Inactivo</ng-container>
+                      <ng-container *ngSwitchCase="'bloqueado'">Bloqueado</ng-container>
+                      <ng-container *ngSwitchCase="'pendiente'">Pendiente</ng-container>
+                    </ng-container>
+                  </span>
+                </td>
+                <td class="date-cell">{{ formatDate(user.created_at) }}</td>
+                <td>0</td>
+                <td class="actions-cell">
+                  <div class="action-menu">
+                    <button class="action-btn" title="Editar" (click)="openEditModal(user)">✏️</button>
+                    <button class="action-btn" title="Activar" *ngIf="user.status !== 'activo'" (click)="changeStatus(user, 'activo')">✅</button>
+                    <button class="action-btn" title="Bloquear" *ngIf="user.status !== 'bloqueado'" (click)="changeStatus(user, 'bloqueado')">🚫</button>
+                    <button class="action-btn action-delete" title="Eliminar" (click)="deleteUser(user)">🗑️</button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="((users$ | async)?.length ?? 0) === 0 && !(isLoading$ | async)">
+                <td colspan="6" class="empty-state">No hay usuarios que coincidan con los filtros</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" *ngIf="totalPages > 1">
+          <button [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">← Anterior</button>
+          <span>Página {{ currentPage }} de {{ totalPages }}</span>
+          <button [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">Siguiente →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== DASHBOARD SECTION ========== -->
+    <div *ngIf="activeSection === 'dashboard'">
+      <div class="page-header"><h1>Dashboard</h1></div>
+      <div class="stats-grid" *ngIf="statistics">
+        <div class="stat-card">
+          <div class="stat-number">{{ statistics.total_users }}</div>
+          <div class="stat-label">Total Usuarios</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">{{ statistics.active_users }}</div>
+          <div class="stat-label">Usuarios Activos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">{{ statistics.business_users }}</div>
+          <div class="stat-label">Productores</div>
+        </div>
+        <div class="stat-card stat-blocked">
+          <div class="stat-number">{{ statistics.blocked_users }}</div>
+          <div class="stat-label">Bloqueados</div>
+        </div>
+      </div>
+      <div class="panel coming-soon">
+        <p>📊 Más estadísticas proximamente...</p>
+      </div>
+    </div>
+
+    <!-- ========== OTHER SECTIONS (placeholders) ========== -->
+    <div *ngIf="activeSection !== 'usuarios' && activeSection !== 'dashboard'">
+      <div class="page-header"><h1>{{ activeSection | titlecase }}</h1></div>
+      <div class="panel coming-soon">
+        <p>🚧 Sección en construcción...</p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ========== MODAL CREATE/EDIT ========== -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ isEditMode ? 'Editar Usuario' : 'Crear Usuario' }}</h2>
+      <button class="modal-close" (click)="closeModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div *ngIf="error" class="alert alert-error">⚠️ {{ error }}</div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Nombre *</label>
+          <input type="text" [(ngModel)]="formData.name" placeholder="Nombre" />
+        </div>
+        <div class="form-group">
+          <label>Apellido *</label>
+          <input type="text" [(ngModel)]="formData.last_name" placeholder="Apellido" />
+        </div>
+        <div class="form-group form-full">
+          <label>Email *</label>
+          <input type="email" [(ngModel)]="formData.email" placeholder="correo@ejemplo.com" />
+        </div>
+        <div class="form-group form-full" *ngIf="!isEditMode">
+          <label>Contraseña *</label>
+          <input type="password" [(ngModel)]="formData.password" placeholder="Mínimo 6 caracteres" />
+        </div>
+        <div class="form-group">
+          <label>Rol</label>
+          <select [(ngModel)]="formData.role">
+            <option value="consumer">Cliente</option>
+            <option value="business">Productor</option>
+            <option value="admin">Administrador</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Estado</label>
+          <select [(ngModel)]="formData.status">
+            <option value="activo">Activo</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="inactivo">Inactivo</option>
+            <option value="bloqueado">Bloqueado</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input type="text" [(ngModel)]="formData.phone" placeholder="+34 666 000 000" />
+        </div>
+        <div class="form-group">
+          <label>Ciudad</label>
+          <input type="text" [(ngModel)]="formData.city" placeholder="Ciudad" />
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" (click)="saveUser()" [disabled]="isLoading">
+        {{ isLoading ? 'Guardando...' : (isEditMode ? 'Actualizar' : 'Crear Usuario') }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -9,6 +9,7 @@ import { About } from './pages/about/about';
 import { NegocioDetalle } from './pages/negocio-detalle/negocio-detalle';
 import { Perfil } from './pages/perfil/perfil';
 import { Configuracion } from './pages/configuracion/configuracion';
+import { Admin } from './pages/admin/admin';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -23,4 +24,5 @@ export const routes: Routes = [
   { path: 'about', component: About },
   { path: 'perfil', component: Perfil },
   { path: 'configuracion', component: Configuracion },
+  { path: 'admin', component: Admin },
 ];
