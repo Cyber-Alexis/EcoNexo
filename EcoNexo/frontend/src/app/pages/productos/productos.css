@@ -6,10 +6,35 @@
   box-sizing: border-box;
 }
 
+/* ─── Page Hero ─── */
+.page-hero {
+  background: #f0f4f1;
+  padding: 1.75rem 1rem 1.5rem;
+}
+.page-hero-inner {
+  max-width: 1220px;
+  margin: 0 auto;
+  padding: 0 0.95rem;
+}
+.page-hero-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1a3328;
+  margin-bottom: 0.25rem;
+}
+.page-hero-subtitle {
+  font-size: 0.9rem;
+  color: #4b7a62;
+}
+.page-hero-highlight {
+  color: #2D6A4F;
+  font-weight: 600;
+}
+
 .page-container {
   min-height: 100%;
-  background: #f5f6f8;
-  padding: 1.4rem 0 3rem;
+  background: #fff;
+  padding: 1.5rem 0 3rem;
   color: #172033;
 }
 
@@ -243,10 +268,9 @@
   display: inline-flex;
   align-items: center;
   min-height: 40px;
-  border: 1px solid #d9dfe8;
-  border-radius: 10px;
-  background: #f8fafc;
-  color: #6b7280;
+  border: 1.5px solid #d1d5db;
+  border-radius: 4px;
+  background: #fff;
   overflow: hidden;
 }
 
@@ -260,56 +284,55 @@
   border: none;
   cursor: pointer;
   user-select: none;
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 1.05rem;
+  font-weight: 500;
   color: #374151;
-  transition: background 0.2s ease;
+  transition: background 0.15s;
 }
 
 .qty-btn-card:hover {
-  background: #eef2f7;
+  background: #f3f4f6;
 }
 
 .quantity-input {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.4rem;
+  width: 2.2rem;
   height: 40px;
   background: transparent;
   text-align: center;
-  font-weight: 700;
-  color: #1f2937;
+  font-weight: 600;
+  color: #111827;
   font-size: 0.9rem;
 }
 
 .btn-add-cart {
   flex: 1;
   min-height: 40px;
-  padding: 0.55rem 0.85rem;
+  padding: 0.55rem 1rem;
   border: 0;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #0d7f5e 0%, #12936d 100%);
+  border-radius: 4px;
+  background: #2D6A4F;
   color: #fff;
-  font-size: 0.85rem;
-  font-weight: 700;
+  font-size: 0.88rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  transition: background 0.18s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
   white-space: nowrap;
+  letter-spacing: 0.01em;
 }
 
 .btn-add-cart:hover {
-  filter: brightness(0.98);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(13, 127, 94, 0.2);
+  background: #245841;
 }
 
 .btn-add-cart:active {
-  transform: translateY(0);
+  background: #1e4d38;
 }
 
 .no-results {
