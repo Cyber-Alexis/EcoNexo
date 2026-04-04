@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { Header } from './core/component/layout/header/header';
 import { Footer } from './core/component/layout/footer/footer';
 import { CartComponent } from './core/component/cart/cart';
@@ -10,4 +10,10 @@ import { CartComponent } from './core/component/cart/cart';
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App {}
+export class App {
+  constructor(private router: Router) {}
+
+  isAdminRoute(): boolean {
+    return this.router.url.startsWith('/admin');
+  }
+}
