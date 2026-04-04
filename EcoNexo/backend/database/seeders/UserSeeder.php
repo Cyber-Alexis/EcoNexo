@@ -18,6 +18,10 @@ class UserSeeder extends Seeder
                 'email'     => 'pere@calpep.com',
                 'phone'     => '973100001',
                 'role'      => 'business',
+                'status'    => 'activo',
+                'address'   => 'Carrer Major, 12',
+                'city'      => 'Lleida',
+                'postal_code' => '25001',
                 'password'  => Hash::make('password'),
             ],
             [
@@ -26,6 +30,10 @@ class UserSeeder extends Seeder
                 'email'     => 'rosa@forndelaplaca.com',
                 'phone'     => '973100002',
                 'role'      => 'business',
+                'status'    => 'activo',
+                'address'   => 'Carrer Sant Martí, 5',
+                'city'      => 'Lleida',
+                'postal_code' => '25002',
                 'password'  => Hash::make('password'),
             ],
             [
@@ -34,6 +42,10 @@ class UserSeeder extends Seeder
                 'email'     => 'miquel@bodegasiurana.com',
                 'phone'     => '973100003',
                 'role'      => 'business',
+                'status'    => 'activo',
+                'address'   => 'Plaça del Mercat, 3',
+                'city'      => 'Lleida',
+                'postal_code' => '25003',
                 'password'  => Hash::make('password'),
             ],
             [
@@ -42,6 +54,10 @@ class UserSeeder extends Seeder
                 'email'     => 'anna@carnisseriamolins.com',
                 'phone'     => '973100004',
                 'role'      => 'business',
+                'status'    => 'activo',
+                'address'   => 'Carrer de la Pau, 8',
+                'city'      => 'Lleida',
+                'postal_code' => '25004',
                 'password'  => Hash::make('password'),
             ],
             [
@@ -50,6 +66,10 @@ class UserSeeder extends Seeder
                 'email'     => 'clara@floristeria.com',
                 'phone'     => '973100005',
                 'role'      => 'business',
+                'status'    => 'activo',
+                'address'   => 'Carrer Osca, 21',
+                'city'      => 'Lleida',
+                'postal_code' => '25005',
                 'password'  => Hash::make('password'),
             ],
         ];
@@ -67,6 +87,10 @@ class UserSeeder extends Seeder
                 'email'     => 'client@econexo.com',
                 'phone'     => '973200001',
                 'role'      => 'consumer',
+                'status'    => 'activo',
+                'address'   => 'Avinguda Catalunya, 10',
+                'city'      => 'Lleida',
+                'postal_code' => '25006',
                 'password'  => Hash::make('password'),
             ]
         );
@@ -80,6 +104,10 @@ class UserSeeder extends Seeder
                 'email'     => 'admin@econexo.com',
                 'phone'     => '973000000',
                 'role'      => 'admin',
+                'status'    => 'activo',
+                'address'   => 'Calle Admin, 1',
+                'city'      => 'Madrid',
+                'postal_code' => '28001',
                 'password'  => Hash::make('password'),
             ]
         );

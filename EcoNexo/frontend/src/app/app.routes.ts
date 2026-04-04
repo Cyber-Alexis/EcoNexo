@@ -7,8 +7,8 @@ import { Negocios } from './pages/negocios/negocios';
 import { Productos } from './pages/productos/productos';
 import { About } from './pages/about/about';
 import { NegocioDetalle } from './pages/negocio-detalle/negocio-detalle';
-import { Perfil } from './pages/perfil/perfil';
-import { Configuracion } from './pages/configuracion/configuracion';
+import { Perfil } from './pages/pages_consumer/perfil/perfil';
+import { Configuracion } from './pages/pages_consumer/configuracion/configuracion';
 import { Admin } from './pages/admin/admin';
 
 export const routes: Routes = [

@@ -7,6 +7,9 @@
     <router-outlet></router-outlet>
   </main>
 
-  <app-footer></app-footer>
+  @if (!isProfileRoute()) {
+    <app-footer></app-footer>
+  }
+
   <app-cart></app-cart>
-}
+} 

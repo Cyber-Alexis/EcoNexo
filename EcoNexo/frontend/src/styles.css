@@ -49,3 +49,24 @@ html, body {
   height: 100%;
   font-family: 'Manrope', 'Segoe UI', Arial, sans-serif;
 }
+
+/* Header height variable used across the app to keep main offset in sync */
+:root {
+  --header-height: 62px;
+}
+/* Reserve exact space for fixed header so no white gap appears under it */
+main {
+  padding-top: var(--header-height); /* match .navbar height */
+}
+
+/* If any app-header host element adds default margins, ensure none */
+app-header {
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+
+/* Ensure app-header doesn't introduce extra bottom spacing */
+app-header {
+  margin-bottom: 0;
+}

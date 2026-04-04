@@ -16,4 +16,10 @@ export class App {
   isAdminRoute(): boolean {
     return this.router.url.startsWith('/admin');
   }
+
+  isProfileRoute(): boolean {
+    // Consider both the main profile page and the "configuracion" section
+    const url = this.router.url || '';
+    return url.startsWith('/perfil') || url.startsWith('/configuracion') || url.includes('/perfil/');
+  }
 }

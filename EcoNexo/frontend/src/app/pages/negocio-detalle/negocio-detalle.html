@@ -185,7 +185,7 @@
             <article class="review-item">
               <div class="review-top-row">
                 <div class="review-user-block">
-                  <div class="review-avatar" aria-hidden="true">{{ (r.user.name ?? '?') | slice:0:1 | uppercase }}</div>
+                  <div class="review-avatar" aria-hidden="true">{{ r.user.name | slice:0:1 | uppercase }}</div>
                   <div class="review-user-meta">
                     <strong class="review-author">{{ r.user.name }}</strong>
                     <div class="review-stars">

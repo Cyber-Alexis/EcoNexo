@@ -66,7 +66,7 @@
             <div class="business-img-wrap">
               <img [src]="businessImage(b)" [alt]="b.name" class="business-img" />
 
-              @if (b.categories?.[0]) {
+              @if (b.categories[0]) {
                 <span class="badge-eco">{{ b.categories[0].name }}</span>
               }
             </div>
