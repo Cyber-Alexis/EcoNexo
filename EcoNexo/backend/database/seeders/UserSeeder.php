@@ -111,5 +111,85 @@ class UserSeeder extends Seeder
                 'password'  => Hash::make('password'),
             ]
         );
+
+        // ── Review users (for testing reviews) ────────────────────
+        $reviewUsers = [
+            [
+                'name'      => 'Maria',
+                'last_name' => 'G.',
+                'email'     => 'maria.garcia@example.com',
+                'phone'     => '973300001',
+                'role'      => 'consumer',
+                'status'    => 'activo',
+                'address'   => 'Carrer Exemple, 1',
+                'city'      => 'Lleida',
+                'postal_code' => '25007',
+                'password'  => Hash::make('password'),
+            ],
+            [
+                'name'      => 'Joan',
+                'last_name' => 'M.',
+                'email'     => 'joan.martinez@example.com',
+                'phone'     => '973300002',
+                'role'      => 'consumer',
+                'status'    => 'activo',
+                'address'   => 'Carrer Exemple, 2',
+                'city'      => 'Lleida',
+                'postal_code' => '25008',
+                'password'  => Hash::make('password'),
+            ],
+            [
+                'name'      => 'Laura',
+                'last_name' => 'S.',
+                'email'     => 'laura.sanchez@example.com',
+                'phone'     => '973300003',
+                'role'      => 'consumer',
+                'status'    => 'activo',
+                'address'   => 'Carrer Exemple, 3',
+                'city'      => 'Lleida',
+                'postal_code' => '25009',
+                'password'  => Hash::make('password'),
+            ],
+            [
+                'name'      => 'Pere',
+                'last_name' => 'L.',
+                'email'     => 'pere.lopez@example.com',
+                'phone'     => '973300004',
+                'role'      => 'consumer',
+                'status'    => 'activo',
+                'address'   => 'Carrer Exemple, 4',
+                'city'      => 'Lleida',
+                'postal_code' => '25010',
+                'password'  => Hash::make('password'),
+            ],
+            [
+                'name'      => 'Anna',
+                'last_name' => 'R.',
+                'email'     => 'anna.rodriguez@example.com',
+                'phone'     => '973300005',
+                'role'      => 'consumer',
+                'status'    => 'activo',
+                'address'   => 'Carrer Exemple, 5',
+                'city'      => 'Lleida',
+                'postal_code' => '25011',
+                'password'  => Hash::make('password'),
+            ],
+            [
+                'name'      => 'Carles',
+                'last_name' => 'F.',
+                'email'     => 'carles.fernandez@example.com',
+                'phone'     => '973300006',
+                'role'      => 'consumer',
+                'status'    => 'activo',
+                'address'   => 'Carrer Exemple, 6',
+                'city'      => 'Lleida',
+                'postal_code' => '25012',
+                'password'  => Hash::make('password'),
+            ],
+        ];
+
+        foreach ($reviewUsers as $userData) {
+            User::firstOrCreate(['email' => $userData['email']], $userData);
+        }
     }
 }

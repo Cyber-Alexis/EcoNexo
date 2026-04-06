@@ -24,6 +24,7 @@ export interface ApiProduct {
 export interface ApiUser {
   id: number;
   name: string;
+  last_name: string;
 }
 
 export interface ApiReview {
@@ -40,10 +41,13 @@ export interface ApiBusiness {
   description: string | null;
   address: string;
   city: string;
+  phone: string | null;
+  opening_hours: string | null;
   status: string;
   reviews_avg_rating: number | null;
   reviews_count: number;
   images: ApiImage[];
+  categories: ApiCategory[];
   products: ApiProduct[];
   reviews: ApiReview[];
 }
@@ -54,6 +58,8 @@ export interface ApiBusinessListItem {
   description: string | null;
   address: string;
   city: string;
+  phone: string | null;
+  opening_hours: string | null;
   status: string;
   reviews_avg_rating: number | null;
   reviews_count: number;

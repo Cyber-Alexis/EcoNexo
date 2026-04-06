@@ -41,72 +41,115 @@
               <path d="M4 6L8 10L12 6" stroke="#6B7280" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </label>
-        </div>
 
-        <label class="select-shell sort-filter" aria-label="Ordenar productos">
-          <select
-            class="toolbar-select"
-            [(ngModel)]="selectedSort"
-            (ngModelChange)="applyFilters()"
-          >
-            <option value="name-asc">Nombre A-Z</option>
-            <option value="price-asc">Precio menor</option>
-            <option value="price-desc">Precio mayor</option>
-          </select>
-          <svg class="select-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path d="M4 6L8 10L12 6" stroke="#6B7280" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </label>
+          <label class="select-shell sort-filter" aria-label="Ordenar productos">
+            <select
+              class="toolbar-select"
+              [(ngModel)]="selectedSort"
+              (ngModelChange)="onSortChange()"
+            >
+              <option value="name-asc">Nombre A-Z</option>
+              <option value="price-asc">Precio menor</option>
+              <option value="price-desc">Precio mayor</option>
+            </select>
+            <svg class="select-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M4 6L8 10L12 6" stroke="#6B7280" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </label>
+        </div>
       </div>
 
-      <p class="results-count">{{ filteredProducts.length }} productos encontrados</p>
+      @if (loading) {
+        <div class="loading-container">
+          <p>Cargando productos...</p>
+        </div>
+      } @else {
+        <p class="results-count">{{ totalProducts }} producto{{ totalProducts !== 1 ? 's' : '' }} encontrado{{ totalProducts !== 1 ? 's' : '' }}</p>
 
-      <div class="products-grid">
-        @for (p of filteredProducts; track p.name) {
-          <article class="product-card">
-            <div class="product-img-wrap">
-              <img [src]="p.img" [alt]="p.name" class="product-img" />
-
-              @if (p.badge) {
-                <span class="badge-eco">{{ p.badge }}</span>
-              }
-            </div>
-
-            <div class="product-body">
-              <div class="product-top-row">
-                <span class="product-category">{{ p.category }}</span>
-                <span class="product-origin">{{ p.location }}</span>
+        <div class="products-grid">
+          @for (p of filteredProducts; track p.id) {
+            <article class="product-card">
+              <div class="product-img-wrap">
+                <img [src]="getProductImage(p)" [alt]="p.name" class="product-img" />
               </div>
 
-              <h3 class="product-name">{{ p.name }}</h3>
-              <p class="product-desc">{{ p.desc }}</p>
-              <p class="product-price">{{ p.price.toFixed(2) }}€ <span class="price-unit">/ {{ p.priceUnit }}</span></p>
-
-              <div class="product-footer">
-                <div class="quantity-control">
-                  <button type="button" class="qty-btn-card" (click)="decrementQty(p.name)" aria-label="Reducir cantidad">−</button>
-                  <span class="quantity-input">{{ getQty(p.name) }}</span>
-                  <button type="button" class="qty-btn-card" (click)="incrementQty(p.name)" aria-label="Aumentar cantidad">+</button>
+              <div class="product-body">
+                <div class="product-top-row">
+                  <span class="product-category">{{ p.category?.name ?? 'Sin categoría' }}</span>
+                  <span class="product-business">{{ p.business?.name ?? 'Negocio' }}</span>
                 </div>
 
-                <button type="button" class="btn-add-cart" (click)="addToCart(p)">
-                  <svg viewBox="0 0 24 24" fill="none" width="18" height="18" aria-hidden="true">
-                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                    <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                    <path d="M16 10a4 4 0 0 1-8 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  Añadir
-                </button>
-              </div>
-            </div>
-          </article>
-        }
-      </div>
+                <h3 class="product-name">{{ p.name }}</h3>
+                <p class="product-desc">{{ p.description ?? 'Sin descripción' }}</p>
+                <p class="product-price">{{ (p.price ?? 0) | number:'1.2-2' }}€ <span class="price-unit">/ {{ p.category?.name ?? 'unidad' }}</span></p>
 
-      @if (filteredProducts.length === 0) {
-        <div class="no-results">
-          <p>No se encontraron productos con los criterios de búsqueda.</p>
+                <div class="product-footer">
+                  <div class="quantity-control">
+                    <button type="button" class="qty-btn-card" (click)="decrementQty(p.id)" aria-label="Reducir cantidad">−</button>
+                    <span class="quantity-input">{{ getQty(p.id) }}</span>
+                    <button type="button" class="qty-btn-card" (click)="incrementQty(p.id)" aria-label="Aumentar cantidad">+</button>
+                  </div>
+
+                  <button type="button" class="btn-add-cart" (click)="addToCart(p)">
+                    <svg viewBox="0 0 24 24" fill="none" width="18" height="18" aria-hidden="true">
+                      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                      <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                      <path d="M16 10a4 4 0 0 1-8 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Añadir
+                  </button>
+                </div>
+              </div>
+            </article>
+          }
         </div>
+
+        @if (loading) {
+          <div class="no-results">
+            <p>Cargando productos...</p>
+          </div>
+        } @else if (filteredProducts.length === 0) {
+          <div class="no-results">
+            <p>No se encontraron productos con los criterios de búsqueda.</p>
+          </div>
+        }
+
+        <!-- Pagination -->
+        @if (totalPages > 1) {
+          <div class="pagination">
+            <button 
+              class="pagination-btn" 
+              [disabled]="currentPage === 1" 
+              (click)="goToPage(currentPage - 1)"
+              aria-label="Página anterior"
+            >
+              ‹
+            </button>
+
+            @for (page of paginationPages; track page) {
+              @if (page === '...') {
+                <span class="pagination-dots">...</span>
+              } @else {
+                <button 
+                  class="pagination-btn" 
+                  [class.active]="page === currentPage"
+                  (click)="goToPage($any(page))"
+                >
+                  {{ page }}
+                </button>
+              }
+            }
+
+            <button 
+              class="pagination-btn" 
+              [disabled]="currentPage === totalPages" 
+              (click)="goToPage(currentPage + 1)"
+              aria-label="Página siguiente"
+            >
+              ›
+            </button>
+          </div>
+        }
       }
     </section>
   </div>

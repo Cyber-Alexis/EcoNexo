@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CartService } from '../../core/services/cart.service';
+import { ProductService, ApiProductWithBusiness, PaginatedResponse } from '../../core/services/product.service';
 
 @Component({
   selector: 'app-productos',
@@ -9,235 +10,227 @@ import { CartService } from '../../core/services/cart.service';
   templateUrl: './productos.html',
   styleUrl: './productos.css',
 })
-export class Productos {
+export class Productos implements OnInit, OnDestroy {
   searchQuery = '';
   selectedFilter = 'Todas';
   selectedSort = 'name-asc';
+  
+  // All products cache (loaded once)
+  allProducts: ApiProductWithBusiness[] = [];
+  
+  // Displayed products (current page)
+  products: ApiProductWithBusiness[] = [];
+  filteredProducts: ApiProductWithBusiness[] = [];
+  productQty = new Map<number, number>();
+  
+  // Pagination
+  currentPage = 1;
+  totalPages = 1;
+  perPage = 12;
+  totalProducts = 0;
+  loading = false;
+  
+  // Categories from API
+  availableCategories: string[] = ['Todas'];
 
-  private readonly cartService: CartService;
+  constructor(
+    private cartService: CartService,
+    private productService: ProductService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
-  constructor(cartSvc: CartService) {
-    this.cartService = cartSvc;
+  ngOnInit(): void {
+    // Load categories first
+    this.loadCategories();
+    
+    // Initial load - get ALL products at once for better UX
+    this.loadAllProducts();
+    
+    // Polling disabled by default for better pagination stability
+    // If you need real-time updates, set POLLING_INTERVAL to 30000 (30 seconds)
+  }
+  
+  ngOnDestroy(): void {
+    // Clean up if needed
   }
 
-  readonly categoryOptions = [
-    'Todas',
-    'Frutas y Verduras',
-    'Panadería',
-    'Carnicería',
-    'Vinos',
-    'Floristería',
-    'Artesanía',
-    'Moda',
-  ];
-
-  products = [
-    {
-      name: 'Cava Brut Nature',
-      category: 'Vinos',
-      badge: '',
-      price: 9.50,
-      priceUnit: 'botella',
-      desc: 'Cava espumoso de excelente calidad',
-      location: 'Penedès',
-      business: 'Vinya del Segre',
-      img: 'https://images.unsplash.com/photo-1510812431401-41d2cab2707d?w=500&q=80',
-    },
-    {
-      name: 'Chuleta de Ternera',
-      category: 'Carnicería',
-      badge: '',
-      price: 22.00,
-      priceUnit: 'kg',
-      desc: 'Carne fresca de primera calidad',
-      location: 'Local',
-      business: 'Carns Macià',
-      img: 'https://images.unsplash.com/photo-1432139555190-58524dae6a55?w=500&q=80',
-    },
-    {
-      name: 'Coca de Reçapte',
-      category: 'Panadería',
-      badge: '',
-      price: 12.50,
-      priceUnit: 'unitat',
-      desc: 'Tradicional coca de recapte artesana',
-      location: 'Local',
-      business: 'Forn del Barri',
-      img: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&q=80',
-    },
-    {
-      name: 'Croissant de Mantequilla',
-      category: 'Panadería',
-      badge: '',
-      price: 1.80,
-      priceUnit: 'unitat',
-      desc: 'Croissants artesanos de mantequilla',
-      location: 'Local',
-      business: 'Forn del Barri',
-      img: 'https://images.unsplash.com/photo-1585518419759-aedc8dbd1e5a?w=500&q=80',
-    },
-    {
-      name: 'Lechugas Ecológicas',
-      category: 'Frutas y Verduras',
-      badge: 'Bio',
-      price: 1.50,
-      priceUnit: 'unitat',
-      desc: 'Lechuga fresca de cultivo ecológico',
-      location: 'Eco Farm',
-      business: 'Cal Pep',
-      img: 'https://images.unsplash.com/photo-1599599810694-b5ac4dd37e06?w=500&q=80',
-    },
-    {
-      name: 'Manzanas Golden',
-      category: 'Frutas y Verduras',
-      badge: 'De Temporada',
-      price: 2.80,
-      priceUnit: 'kg',
-      desc: 'Manzanas Golden de temporada, dulces y crujientes',
-      location: 'Eco Farm',
-      business: 'Cal Pep',
-      img: 'https://images.unsplash.com/photo-1560806887-1295c3f759a8?w=500&q=80',
-    },
-    {
-      name: 'Tomates de Pera',
-      category: 'Frutas y Verduras',
-      badge: 'De Temporada',
-      price: 2.80,
-      priceUnit: 'kg',
-      desc: 'Tomates de pera frescos y sabrosos',
-      location: 'Eco Farm',
-      business: 'Cal Pep',
-      img: 'https://images.unsplash.com/photo-1657360435199-4ca2f2a01d47?w=500&q=80',
-    },
-    {
-      name: 'Naranjas de Valencia',
-      category: 'Frutas y Verduras',
-      badge: 'De Temporada',
-      price: 2.20,
-      priceUnit: 'kg',
-      desc: 'Naranjas de Valencia, jugosas y aromáticas',
-      location: 'Valencia',
-      business: 'Fruites del Segre',
-      img: 'https://images.unsplash.com/photo-1582979519885-69613b4c54fd?w=500&q=80',
-    },
-    {
-      name: 'Pan de Masa Madre',
-      category: 'Panadería',
-      badge: '',
-      price: 4.20,
-      priceUnit: 'unitat',
-      desc: 'Pan artesano hecho con masa madre tradicional',
-      location: 'Local',
-      business: 'Forn del Barri',
-      img: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500&q=80',
-    },
-    {
-      name: 'Plato de Cerámica Artesanal',
-      category: 'Artesanía',
-      badge: '',
-      price: 25.00,
-      priceUnit: 'unitat',
-      desc: 'Plato de cerámica hecho a mano',
-      location: 'Local',
-      business: 'Artesans Lleida',
-      img: 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=500&q=80',
-    },
-    {
-      name: 'Ramo de Rosas',
-      category: 'Floristería',
-      badge: 'De Temporada',
-      price: 18.00,
-      priceUnit: 'ram',
-      desc: 'Ramo de rosas frescas de temporada',
-      location: 'Local',
-      business: 'Floristeria Montserrat',
-      img: 'https://images.unsplash.com/photo-1577279607108-7b3e14675d94?w=500&q=80',
-    },
-    {
-      name: 'Vino Blanco Joven',
-      category: 'Vinos',
-      badge: '',
-      price: 12.00,
-      priceUnit: 'botella',
-      desc: 'Vino blanco joven criado en bodega',
-      location: 'Local',
-      business: 'Vinya del Segre',
-      img: 'https://images.unsplash.com/photo-1510812431401-41d2cab2707d?w=500&q=80',
-    },
-  ];
-
-  productQty: Map<string, number> = new Map(this.products.map(p => [p.name, 1]));
-
-  filteredProducts = [...this.products];
-
-  filterByCategory(category: string) {
-    this.selectedFilter = category;
-    this.applyFilters();
+  loadCategories(): void {
+    this.productService.getCategories().subscribe({
+      next: (response) => {
+        this.availableCategories = ['Todas', ...response.categories];
+      },
+      error: (err) => {
+        console.error('Error loading categories:', err);
+      }
+    });
   }
 
-  applyFilters() {
-    let filtered = [...this.products];
+  loadAllProducts(): void {
+    this.loading = true;
+    
+    // Load ALL products in a single request (no pagination on backend)
+    this.productService.getAll({ per_page: 1000 }).subscribe({
+      next: (response: PaginatedResponse<ApiProductWithBusiness>) => {
+        this.allProducts = response.data;
+        
+        // Initialize quantities for all products
+        this.allProducts.forEach(p => {
+          if (!this.productQty.has(p.id)) {
+            this.productQty.set(p.id, 1);
+          }
+        });
+        
+        // Apply filters and show first page
+        this.applyFiltersAndPagination();
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error loading products:', err);
+        this.loading = false;
+      }
+    });
+  }
 
+  private applyFiltersAndPagination(): void {
+    let filtered = [...this.allProducts];
+
+    // Filter by category
     if (this.selectedFilter !== 'Todas') {
-      filtered = filtered.filter(p => p.category === this.selectedFilter);
+      filtered = filtered.filter(p => p.category?.name === this.selectedFilter);
     }
 
+    // Filter by search query
     if (this.searchQuery.trim()) {
       const query = this.searchQuery.toLowerCase();
       filtered = filtered.filter(p =>
         p.name.toLowerCase().includes(query) ||
-        p.desc.toLowerCase().includes(query) ||
-        p.category.toLowerCase().includes(query) ||
-        p.location.toLowerCase().includes(query)
+        (p.description ?? '').toLowerCase().includes(query) ||
+        p.business?.name.toLowerCase().includes(query) ||
+        p.category?.name.toLowerCase().includes(query)
       );
     }
 
-    switch (this.selectedSort) {
-      case 'price-asc':
-        filtered.sort((a, b) => a.price - b.price || a.name.localeCompare(b.name, 'es'));
-        break;
-      case 'price-desc':
-        filtered.sort((a, b) => b.price - a.price || a.name.localeCompare(b.name, 'es'));
-        break;
-      default:
-        filtered.sort((a, b) => a.name.localeCompare(b.name, 'es'));
-        break;
+    // Sort
+    const [sortBy, sortOrder] = this.parseSortValue(this.selectedSort);
+    filtered.sort((a, b) => {
+      let compareValue = 0;
+      if (sortBy === 'price') {
+        compareValue = Number(a.price) - Number(b.price);
+      } else {
+        compareValue = a.name.localeCompare(b.name, 'es');
+      }
+      return sortOrder === 'desc' ? -compareValue : compareValue;
+    });
+
+    // Calculate pagination
+    this.totalProducts = filtered.length;
+    this.totalPages = Math.ceil(this.totalProducts / this.perPage);
+    
+    // Ensure current page is valid
+    if (this.currentPage > this.totalPages && this.totalPages > 0) {
+      this.currentPage = this.totalPages;
+    }
+    if (this.currentPage < 1) {
+      this.currentPage = 1;
     }
 
-    this.filteredProducts = filtered;
+    // Get products for current page
+    const startIndex = (this.currentPage - 1) * this.perPage;
+    const endIndex = startIndex + this.perPage;
+    this.products = filtered.slice(startIndex, endIndex);
+    this.filteredProducts = this.products;
+    
+    // Force Angular to detect changes and update the view
+    this.cdr.detectChanges();
   }
 
-  onSearchChange() {
-    this.applyFilters();
+  loadProducts(): void {
+    // Legacy method - now just applies filters locally
+    this.applyFiltersAndPagination();
   }
 
-  addToCart(product: any) {
-    const qty = this.productQty.get(product.name) ?? 1;
-    this.cartService.addItem(product, qty);
-    this.productQty.set(product.name, 1);
+  parseSortValue(value: string): ['name' | 'price', 'asc' | 'desc'] {
+    if (value === 'price-asc') return ['price', 'asc'];
+    if (value === 'price-desc') return ['price', 'desc'];
+    return ['name', 'asc'];
+  }
+
+  filterByCategory(category: string): void {
+    this.selectedFilter = category;
+    this.currentPage = 1;
+    this.applyFiltersAndPagination();
+  }
+
+  onSearchChange(): void {
+    this.currentPage = 1;
+    this.applyFiltersAndPagination();
+  }
+
+  onSortChange(): void {
+    this.currentPage = 1;
+    this.applyFiltersAndPagination();
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
+      this.currentPage = page;
+      this.applyFiltersAndPagination();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  get paginationPages(): (number | string)[] {
+    const pages: (number | string)[] = [];
+    const delta = 2;
+    const left = Math.max(2, this.currentPage - delta);
+    const right = Math.min(this.totalPages - 1, this.currentPage + delta);
+
+    pages.push(1);
+
+    if (left > 2) pages.push('...');
+
+    for (let i = left; i <= right; i++) {
+      pages.push(i);
+    }
+
+    if (right < this.totalPages - 1) pages.push('...');
+
+    if (this.totalPages > 1) pages.push(this.totalPages);
+
+    return pages;
+  }
+
+  addToCart(product: ApiProductWithBusiness): void {
+    const qty = this.getQty(product.id);
+    this.cartService.addItem({
+      name: product.name,
+      price: Number(product.price),
+      priceUnit: product.category?.name ?? 'unidad',
+      img: this.getProductImage(product),
+      business: product.business?.name ?? 'Negocio',
+    }, qty);
+    this.productQty.set(product.id, 1);
     this.cartService.open();
   }
 
-  getQty(name: string): number {
-    return this.productQty.get(name) ?? 1;
+  getProductImage(product: ApiProductWithBusiness): string {
+    return product.images?.[0]?.path ?? 'https://placehold.co/300x300?text=Sin+imagen';
   }
 
-  incrementQty(name: string): void {
-    this.productQty.set(name, (this.productQty.get(name) ?? 1) + 1);
+  getQty(id: number): number {
+    return this.productQty.get(id) ?? 1;
   }
 
-  decrementQty(name: string): void {
-    const current = this.productQty.get(name) ?? 1;
-    if (current > 1) this.productQty.set(name, current - 1);
+  incrementQty(id: number): void {
+    this.productQty.set(id, this.getQty(id) + 1);
   }
 
-  get categories() {
-    const usedCategories = new Set(this.products.map(product => product.category));
-    const presentOptions = this.categoryOptions.filter(cat => cat === 'Todas' || usedCategories.has(cat) || cat === 'Moda');
-    const extraCategories = this.products
-      .map(product => product.category)
-      .filter((cat, index, all) => !this.categoryOptions.includes(cat) && all.indexOf(cat) === index);
+  decrementQty(id: number): void {
+    const current = this.getQty(id);
+    if (current > 1) this.productQty.set(id, current - 1);
+  }
 
-    return [...presentOptions, ...extraCategories];
+  get categories(): string[] {
+    return this.availableCategories;
   }
 }

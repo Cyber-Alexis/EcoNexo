@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -11,7 +11,7 @@ import { ApiBusinessListItem } from '../../core/models/business.model';
   templateUrl: './negocios.html',
   styleUrl: './negocios.css',
 })
-export class Negocios implements OnInit {
+export class Negocios implements OnInit, OnDestroy {
   searchQuery = '';
   selectedFilter = 'Todas';
   selectedSort = 'rating-desc';
@@ -21,20 +21,38 @@ export class Negocios implements OnInit {
   businesses: ApiBusinessListItem[] = [];
   filteredBusinesses: ApiBusinessListItem[] = [];
 
-  constructor(private businessService: BusinessService) {}
+  constructor(
+    private businessService: BusinessService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
+    // Initial load - get all businesses at once
+    this.loadBusinesses();
+  }
+  
+  ngOnDestroy(): void {
+    // Clean up if needed
+  }
+  
+  private loadBusinesses(): void {
     this.businessService.getAll().subscribe({
       next: (data) => {
         this.businesses = data;
         this.applyFilters();
         this.loading = false;
       },
-      error: () => {
+      error: (err) => {
+        console.error('Error loading businesses:', err);
         this.error = true;
         this.loading = false;
       },
     });
+  }
+  
+  private updateBusinessesData(data: ApiBusinessListItem[]): void {
+    this.businesses = data;
+    this.applyFilters();
   }
 
   get categories(): string[] {
@@ -83,6 +101,9 @@ export class Negocios implements OnInit {
     }
 
     this.filteredBusinesses = filtered;
+    
+    // Force Angular to detect changes and update the view
+    this.cdr.detectChanges();
   }
 
   onSearchChange() {

@@ -52,9 +52,8 @@ export class RegisterNegocio {
 
     this.authService.registerNegocio(nombre!, apellidos!, email!, password!, nombreNegocio!).subscribe({
       next: () => {
-        this.message = '✓ Negocio registrado correctamente. Redirigiendo...';
         this.isLoading = false;
-        setTimeout(() => this.router.navigate(['/login']), 1000);
+        this.router.navigate(['/login']);
       },
       error: (err) => {
         this.isLoading = false;

@@ -14,6 +14,11 @@ class Order extends Model
         'user_id', 'business_id', 'total_price', 'status', 'payment_method', 'pickup_date',
     ];
 
+    protected $casts = [
+        'total_price' => 'float',
+        'pickup_date' => 'datetime',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);

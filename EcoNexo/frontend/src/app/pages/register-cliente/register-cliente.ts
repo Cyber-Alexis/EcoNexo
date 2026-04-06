@@ -50,9 +50,8 @@ export class RegisterCliente {
 
     this.authService.registerCliente(nombre!, apellidos!, email!, password!).subscribe({
       next: () => {
-        this.message = '✓ Cuenta creada correctamente. Redirigiendo...';
         this.isLoading = false;
-        setTimeout(() => this.router.navigate(['/home']), 1000);
+        this.router.navigate(['/home']);
       },
       error: (err) => {
         this.isLoading = false;

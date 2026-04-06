@@ -13,6 +13,12 @@ class Product extends Model
         'business_id', 'category_id', 'name', 'description', 'price', 'stock', 'active',
     ];
 
+    protected $casts = [
+        'price' => 'float',
+        'stock' => 'integer',
+        'active' => 'boolean',
+    ];
+
     public function business()
     {
         return $this->belongsTo(Business::class);

@@ -21,6 +21,7 @@ export class Header implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
 
   dropdownOpen = false;
+  mobileMenuOpen = false;
   notificationCount = 0;
   cartCount = 0;
   currentUser: AuthUser | null = null;
@@ -162,11 +163,19 @@ export class Header implements OnInit, OnDestroy {
     this.dropdownOpen = !this.dropdownOpen;
   }
 
+  toggleMobileMenu(): void {
+    this.mobileMenuOpen = !this.mobileMenuOpen;
+  }
+
+  closeMobileMenu(): void {
+    this.mobileMenuOpen = false;
+  }
+
   logout(): void {
     this.dropdownOpen = false;
+    this.cartService.clear();
     this.authService.logout().subscribe({
-      next: () => this.router.navigate(['/login']),
-      error: () => this.router.navigate(['/login']),
+      complete: () => this.router.navigate(['/login']),
     });
   }
 
@@ -175,6 +184,9 @@ export class Header implements OnInit, OnDestroy {
     const target = event.target as HTMLElement;
     if (!target.closest('.user-menu')) {
       this.dropdownOpen = false;
+    }
+    if (!target.closest('.mobile-menu-container') && !target.closest('.hamburger-btn')) {
+      this.mobileMenuOpen = false;
     }
   }
 }

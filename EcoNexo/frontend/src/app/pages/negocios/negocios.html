@@ -40,22 +40,22 @@
               <path d="M4 6L8 10L12 6" stroke="#6B7280" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </label>
-        </div>
 
-        <label class="select-shell sort-filter" aria-label="Ordenar negocios">
-          <select
-            class="toolbar-select"
-            [(ngModel)]="selectedSort"
-            (ngModelChange)="applyFilters()"
-          >
-            <option value="rating-desc">Mejor valorados</option>
-            <option value="reviews-desc">Más reseñas</option>
-            <option value="name-asc">Nombre A-Z</option>
-          </select>
-          <svg class="select-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path d="M4 6L8 10L12 6" stroke="#6B7280" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </label>
+          <label class="select-shell sort-filter" aria-label="Ordenar negocios">
+            <select
+              class="toolbar-select"
+              [(ngModel)]="selectedSort"
+              (ngModelChange)="applyFilters()"
+            >
+              <option value="rating-desc">Mejor valorados</option>
+              <option value="reviews-desc">Más reseñas</option>
+              <option value="name-asc">Nombre A-Z</option>
+            </select>
+            <svg class="select-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M4 6L8 10L12 6" stroke="#6B7280" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </label>
+        </div>
       </div>
 
       <p class="results-count">{{ filteredBusinesses.length }} negocios encontrados</p>
@@ -96,7 +96,11 @@
         }
       </div>
 
-      @if (filteredBusinesses.length === 0) {
+      @if (loading) {
+        <div class="no-results">
+          <p>Cargando negocios...</p>
+        </div>
+      } @else if (filteredBusinesses.length === 0) {
         <div class="no-results">
           <p>No se encontraron negocios con los criterios de búsqueda.</p>
         </div>

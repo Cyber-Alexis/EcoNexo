@@ -33,6 +33,7 @@ class BusinessController extends Controller
     {
         $business->load([
             'images',
+            'categories' => fn ($q) => $q->select(['id', 'business_id', 'name']),
             'products' => fn ($q) => $q->where('active', true)->with('images'),
             'reviews'  => fn ($q) => $q->with('user')->latest()->limit(20),
         ]);

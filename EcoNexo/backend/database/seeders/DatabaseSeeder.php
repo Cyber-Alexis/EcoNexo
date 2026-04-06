@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             BusinessSeeder::class,
             CategorySeeder::class,
             ProductSeeder::class,
+            BusinessReviewSeeder::class,
         ]);
     }
 }

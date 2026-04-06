@@ -21,6 +21,8 @@ Route::post('/auth/register',           [AuthController::class, 'register']);
 Route::post('/auth/register-negocio',   [AuthController::class, 'registerBusiness']);
 Route::get('/negocios',              [BusinessController::class, 'index']);
 Route::get('/negocios/{business}',   [BusinessController::class, 'show']);
+Route::get('/productos',             [\App\Http\Controllers\ProductController::class, 'index']);
+Route::get('/categorias',            [\App\Http\Controllers\ProductController::class, 'categories']);
 
 /*
 |--------------------------------------------------------------------------

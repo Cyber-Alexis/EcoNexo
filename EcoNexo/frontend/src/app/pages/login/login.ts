@@ -40,15 +40,14 @@ export class Login {
 
     this.authService.login(email!, password!).subscribe({
       next: () => {
-        this.message = '✓ Iniciando sesión...';
         this.isLoading = false;
         
-        // Get user role and redirect accordingly
+        // Get user role and redirect immediately
         this.authService.user$.subscribe(user => {
           if (user?.role === 'admin') {
-            setTimeout(() => this.router.navigate(['/admin']), 500);
+            this.router.navigate(['/admin']);
           } else {
-            setTimeout(() => this.router.navigate(['/home']), 500);
+            this.router.navigate(['/home']);
           }
         }).unsubscribe();
       },
