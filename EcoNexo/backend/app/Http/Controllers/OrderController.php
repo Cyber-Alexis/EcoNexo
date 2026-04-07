@@ -1,0 +1,76 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Order;
+use App\Models\Product;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class OrderController extends Controller
+{
+    /**
+     * POST /api/orders
+     * Creates one order per business group with its items.
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'business_id'     => 'required|integer|exists:businesses,id',
+            'payment_method'  => 'required|string|max:50',
+            'delivery_method' => 'required|string|in:pickup,delivery',
+            'notes'           => 'nullable|string|max:500',
+            'items'           => 'required|array|min:1',
+            'items.*.product_id' => 'required|integer|exists:products,id',
+            'items.*.quantity'   => 'required|integer|min:1',
+            'items.*.unit_price' => 'required|numeric|min:0',
+        ]);
+
+        $order = DB::transaction(function () use ($validated, $request) {
+            $total = collect($validated['items'])
+                ->sum(fn ($i) => $i['unit_price'] * $i['quantity']);
+
+            $order = Order::create([
+                'user_id'        => $request->user()->id,
+                'business_id'    => $validated['business_id'],
+                'total_price'    => $total,
+                'status'         => 'pending',
+                'payment_method' => $validated['payment_method'],
+            ]);
+
+            foreach ($validated['items'] as $item) {
+                $order->items()->create([
+                    'product_id' => $item['product_id'],
+                    'quantity'   => $item['quantity'],
+                    'unit_price' => $item['unit_price'],
+                ]);
+            }
+
+            return $order;
+        });
+
+        $order->load('business:id,name');
+
+        return response()->json([
+            'id'            => $order->id,
+            'code'          => '#ORD-' . str_pad($order->id, 6, '0', STR_PAD_LEFT),
+            'status'        => $order->status,
+            'total_price'   => $order->total_price,
+            'business_name' => $order->business->name,
+        ], 201);
+    }
+
+    /**
+     * GET /api/orders
+     * Returns all orders for the authenticated user.
+     */
+    public function index(Request $request)
+    {
+        $orders = Order::where('user_id', $request->user()->id)
+            ->with(['business:id,name', 'items.product:id,name'])
+            ->latest()
+            ->get();
+
+        return response()->json($orders);
+    }
+}

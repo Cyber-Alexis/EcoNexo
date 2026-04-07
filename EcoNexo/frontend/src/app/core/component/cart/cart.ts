@@ -37,12 +37,11 @@ export class CartComponent implements OnInit {
   clear(): void { this.cartService.clear(); }
 
   checkout(): void {
+    this.close();
     if (!this.authService.isLoggedIn()) {
-      this.close();
       this.router.navigate(['/login']);
       return;
     }
-
-    this.close();
+    this.router.navigate(['/checkout']);
   }
 }

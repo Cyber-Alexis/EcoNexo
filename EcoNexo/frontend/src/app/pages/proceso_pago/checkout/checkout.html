@@ -1,0 +1,111 @@
+<div class="checkout-page">
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb" aria-label="Navegación">
+    <a routerLink="/home" class="bc-link">Inicio</a>
+    <span class="bc-sep">›</span>
+    <a routerLink="/negocios" class="bc-link">Negocios</a>
+    <span class="bc-sep">›</span>
+    <span class="bc-current">Checkout</span>
+  </nav>
+
+  <h1 class="page-title">Finalizar Pedido</h1>
+
+  <!-- Stepper (hidden on confirmation) -->
+  @if (step < 4) {
+    <div class="stepper">
+      <div class="step-item" [class.active]="step >= 1" [class.done]="step > 1">
+        <div class="step-bubble">1</div>
+        <span class="step-label">Datos</span>
+      </div>
+
+      <div class="step-line" [class.done]="step > 1"></div>
+
+      <div class="step-item" [class.active]="step >= 2" [class.done]="step > 2">
+        <div class="step-bubble">2</div>
+        <span class="step-label">Entrega</span>
+      </div>
+
+      <div class="step-line" [class.done]="step > 2"></div>
+
+      <div class="step-item" [class.active]="step >= 3">
+        <div class="step-bubble">3</div>
+        <span class="step-label">Pago</span>
+      </div>
+    </div>
+  }
+
+  <!-- Layout: main + sidebar -->
+  <div class="checkout-layout" [class.full-width]="step === 4">
+
+    <!-- Main column -->
+    <div class="main-col">
+      @if (step === 1) {
+        <app-paso-datos
+          [initialData]="state.contact ?? undefined"
+          (next)="onDatosNext($event)"
+        />
+      }
+      @if (step === 2) {
+        <app-paso-entrega
+          [groups]="cartGroups"
+          [deliveryFee]="3.5"
+          [initialMethod]="state.delivery?.method ?? 'pickup'"
+          (back)="onEntregaBack()"
+          (next)="onEntregaNext($event)"
+        />
+      }
+      @if (step === 3) {
+        <app-paso-pago
+          [total]="total"
+          [submitting]="submitting"
+          [submitError]="submitError"
+          (back)="onPagoBack()"
+          (confirm)="onPagoConfirm($event)"
+        />
+      }
+      @if (step === 4) {
+        <app-confirmacion [orders]="state.confirmedOrders" />
+      }
+    </div>
+
+    <!-- Order summary sidebar -->
+    @if (step < 4) {
+      <aside class="summary-col">
+        <div class="summary-card">
+          <h3 class="summary-title">Resumen del Pedido</h3>
+
+          @for (group of cartGroups; track group.business) {
+            <div class="summary-group">
+              <p class="summary-business">{{ group.business }}</p>
+              @for (item of group.items; track item.id) {
+                <div class="summary-item">
+                  <span class="summary-item-name">{{ item.quantity }}x {{ item.name }}</span>
+                  <span class="summary-item-price">{{ (item.price * item.quantity).toFixed(2) }}€</span>
+                </div>
+              }
+              <div class="summary-subtotal">
+                <span>Subtotal</span>
+                <span>{{ groupSubtotal(group) }}€</span>
+              </div>
+            </div>
+          }
+
+          <div class="summary-totals">
+            <div class="summary-total-row">
+              <span>Productos</span>
+              <span>{{ subtotal.toFixed(2) }}€</span>
+            </div>
+            <div class="summary-total-row">
+              <span>Envío</span>
+              <span [class.free-label]="deliveryFee === 0">{{ deliveryFee === 0 ? 'Gratis' : deliveryFee.toFixed(2) + '€' }}</span>
+            </div>
+            <div class="summary-total-row total-final">
+              <span>Total</span>
+              <span class="total-amount">{{ total.toFixed(2) }}€</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+    }
+  </div>
+</div>

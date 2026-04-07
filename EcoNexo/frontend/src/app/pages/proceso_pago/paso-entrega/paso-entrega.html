@@ -1,0 +1,92 @@
+<div class="step-card">
+  <div class="step-header">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="22" height="22">
+      <rect x="1" y="3" width="15" height="13" rx="1"/>
+      <path d="M16 8h4l3 5v3h-7V8z"/>
+      <circle cx="5.5" cy="18.5" r="2.5"/>
+      <circle cx="18.5" cy="18.5" r="2.5"/>
+    </svg>
+    <h2>Método de Entrega</h2>
+  </div>
+
+  <!-- Pickup option -->
+  <div
+    class="delivery-option"
+    [class.selected]="selectedMethod === 'pickup'"
+    (click)="selectMethod('pickup')"
+  >
+    <div class="delivery-radio">
+      <div class="radio-circle" [class.active]="selectedMethod === 'pickup'">
+        @if (selectedMethod === 'pickup') {
+          <div class="radio-dot"></div>
+        }
+      </div>
+    </div>
+    <div class="delivery-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+    </div>
+    <div class="delivery-info">
+      <span class="delivery-title">Recogida en tienda</span>
+      <span class="delivery-desc">Recoge tu pedido directamente en el negocio</span>
+    </div>
+    <span class="delivery-price free">Gratis</span>
+  </div>
+
+  <!-- Home delivery option -->
+  <div
+    class="delivery-option"
+    [class.selected]="selectedMethod === 'delivery'"
+    (click)="selectMethod('delivery')"
+  >
+    <div class="delivery-radio">
+      <div class="radio-circle" [class.active]="selectedMethod === 'delivery'">
+        @if (selectedMethod === 'delivery') {
+          <div class="radio-dot"></div>
+        }
+      </div>
+    </div>
+    <div class="delivery-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20">
+        <rect x="1" y="3" width="15" height="13" rx="1"/>
+        <path d="M16 8h4l3 5v3h-7V8z"/>
+        <circle cx="5.5" cy="18.5" r="2.5"/>
+        <circle cx="18.5" cy="18.5" r="2.5"/>
+      </svg>
+    </div>
+    <div class="delivery-info">
+      <span class="delivery-title">Entrega a domicilio</span>
+      <span class="delivery-desc">Recibe tu pedido en la dirección indicada</span>
+    </div>
+    <span class="delivery-price extra">+{{ deliveryFee.toFixed(2) }}€</span>
+  </div>
+
+  <!-- Store schedules -->
+  @if (groups.length > 0) {
+    <div class="schedules">
+      <h3 class="schedules-title">Horarios de recogida</h3>
+      @for (group of groups; track group.business) {
+        <div class="schedule-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16" class="clock-icon">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <span class="schedule-business">{{ group.business }}:</span>
+          <span class="schedule-hours">{{ group.openingHours ?? 'Lun-Sáb 8:00-20:00' }}</span>
+        </div>
+      }
+    </div>
+  }
+
+  <div class="step-actions step-actions--between">
+    <button class="btn-secondary" type="button" (click)="back.emit()">Atrás</button>
+    <button class="btn-primary" type="button" (click)="onContinuar()">
+      Continuar
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </button>
+  </div>
+</div>
