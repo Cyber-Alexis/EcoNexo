@@ -19,6 +19,14 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
+        $user = User::where('email', $credentials['email'])->first();
+
+        if ($user && $user->status === 'bloqueado') {
+            return response()->json([
+                'message' => 'Has sido bloqueado por incumplir las normativas',
+            ], 403);
+        }
+
         if (!$token = auth('api')->attempt($credentials)) {
             return response()->json(['message' => 'Credenciales incorrectas'], 401);
         }
@@ -44,6 +52,7 @@ class AuthController extends Controller
             'email'     => $data['email'],
             'password'  => Hash::make($data['password']),
             'role'      => 'consumer',
+            'status'    => 'activo',
         ]);
 
         $token = auth('api')->login($user);
@@ -70,6 +79,7 @@ class AuthController extends Controller
             'email'     => $data['email'],
             'password'  => Hash::make($data['password']),
             'role'      => 'business',
+            'status'    => 'activo',
         ]);
 
         Business::create([

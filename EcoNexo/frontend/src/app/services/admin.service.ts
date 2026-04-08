@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface User {
   id: number;
@@ -13,6 +14,7 @@ export interface User {
   address?: string;
   city?: string;
   postal_code?: string;
+  orders_count?: number;
   created_at: string;
   updated_at: string;
 }
@@ -43,7 +45,49 @@ export interface AdminStatistics {
   inactive_users: number;
   blocked_users: number;
   pending_users: number;
+  total_orders: number;
+  orders_today: number;
+  pending_orders: number;
+  completed_orders: number;
+  confirmed_orders: number;
+  cancelled_orders: number;
+  total_businesses: number;
+  active_businesses: number;
+  total_products: number;
+  active_products: number;
+  products_with_stock: number;
+  monthly_revenue: number;
+  previous_month_revenue: number;
   recent_users: User[];
+  overview_cards: AdminOverviewCard[];
+  system_status: AdminSystemStatusItem[];
+  recent_activity: AdminRecentActivityItem[];
+  last_updated_at: string;
+}
+
+export interface AdminOverviewCard {
+  key: string;
+  label: string;
+  value: number;
+  format: 'number' | 'currency';
+  change_percentage: number;
+  comparison_label: string;
+}
+
+export interface AdminSystemStatusItem {
+  key: string;
+  label: string;
+  detail: string;
+  metric: string;
+  status: 'operativo' | 'mantenimiento' | 'alerta';
+}
+
+export interface AdminRecentActivityItem {
+  type: 'user' | 'order' | 'business' | 'product';
+  title: string;
+  description: string;
+  status: 'info' | 'success' | 'warning';
+  occurred_at: string;
 }
 
 export interface StatisticsResponse {
@@ -55,7 +99,7 @@ export interface StatisticsResponse {
   providedIn: 'root'
 })
 export class AdminService {
-  private readonly baseUrl = 'http://localhost:8000/api/admin';
+  private readonly baseUrl = `${environment.apiUrl}/admin`;
 
   constructor(private http: HttpClient) { }
 

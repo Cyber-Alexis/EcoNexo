@@ -10,6 +10,7 @@ import { NegocioDetalle } from './pages/negocio-detalle/negocio-detalle';
 import { Perfil } from './pages/pages_consumer/perfil/perfil';
 import { Configuracion } from './pages/pages_consumer/configuracion/configuracion';
 import { Admin } from './pages/admin/admin';
+import { adminGuard } from './core/guards/admin.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -24,5 +25,5 @@ export const routes: Routes = [
   { path: 'about', component: About },
   { path: 'perfil', component: Perfil },
   { path: 'configuracion', component: Configuracion },
-  { path: 'admin', component: Admin },
+  { path: 'admin', component: Admin, canActivate: [adminGuard] },
 ];

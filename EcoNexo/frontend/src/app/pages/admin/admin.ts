@@ -1,11 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, NgZone, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subscription, interval } from 'rxjs';
 import { finalize } from 'rxjs/operators';
-import { AuthService } from '../../core/services/auth.service';
-import { AdminService, User, AdminStatistics } from '../../services/admin.service';
+import { AuthService, AuthUser } from '../../core/services/auth.service';
+import {
+  AdminOverviewCard,
+  AdminRecentActivityItem,
+  AdminService,
+  AdminStatistics,
+  AdminSystemStatusItem,
+  User
+} from '../../services/admin.service';
 
 interface UserForm {
   name: string;
@@ -28,8 +35,8 @@ interface UserForm {
   styleUrl: './admin.css',
 })
 export class Admin implements OnInit {
-  activeSection = 'usuarios';
-  currentUser: any = null;
+  activeSection = 'dashboard';
+  currentUser: AuthUser | null = null;
 
   // Users data
   users: User[] = [];
@@ -46,6 +53,7 @@ export class Admin implements OnInit {
 
   error: string | null = null;
   successMessage: string | null = null;
+  lastUpdatedAt: string | null = null;
 
   // Filters
   selectedRole = 'todos';
@@ -56,32 +64,52 @@ export class Admin implements OnInit {
   isEditMode = false;
   editingUserId: number | null = null;
   formData: UserForm = this.initForm();
+  private refreshSubscription?: Subscription;
 
   constructor(
     private adminService: AdminService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
   ) {}
 
   ngOnInit(): void {
-    this.authService.user$.subscribe(user => {
-      this.currentUser = user;
-      if (user && user.role !== 'admin') {
-        this.router.navigate(['/home']);
-        return;
-      }
+    this.currentUser = this.authService.getUser();
 
-      if (user && user.role === 'admin') {
-        this.loadUsers();
-        this.loadStatistics();
+    if (!this.authService.isLoggedIn()) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    this.authService.fetchMe().subscribe({
+      next: user => this.initializeAdminSession(user),
+      error: err => {
+        if (this.currentUser?.role === 'admin') {
+          this.initializeAdminSession(this.currentUser);
+          return;
+        }
+
+        console.error('Error verifying admin session:', err);
+        this.ngZone.run(() => {
+          this.authService.clearAuth();
+          this.router.navigate(['/login']);
+          this.cdr.detectChanges();
+        });
       }
     });
   }
 
+  ngOnDestroy(): void {
+    this.refreshSubscription?.unsubscribe();
+  }
+
   setSection(section: string): void {
     this.activeSection = section;
+    this.loadStatistics();
+
     if (section === 'usuarios') {
-      this.loadUsers();
+      this.loadUsers(this.currentPage);
     }
   }
 
@@ -92,23 +120,34 @@ export class Admin implements OnInit {
 
     this.adminService.getAllUsers(page, this.selectedRole, 'todos', this.searchQuery)
       .pipe(finalize(() => {
-        this.isLoading = false;
-        this.loadingSubject.next(false);
+        this.ngZone.run(() => {
+          this.isLoading = false;
+          this.loadingSubject.next(false);
+          this.cdr.detectChanges();
+        });
       }))
       .subscribe({
       next: (res: any) => {
-        const pageData = res?.data?.data ? res.data : res?.data ? res : null;
+        this.ngZone.run(() => {
+          const pageData = res?.data?.data ? res.data : res?.data ? res : null;
 
-        this.users = Array.isArray(pageData?.data) ? pageData.data : [];
-        this.usersSubject.next(this.users);
-        this.currentPage = Number(pageData?.current_page ?? 1);
-        this.totalPages = Number(pageData?.last_page ?? 1);
-        this.totalUsers = Number(pageData?.total ?? this.users.length);
+          this.users = Array.isArray(pageData?.data) ? pageData.data : [];
+          this.usersSubject.next(this.users);
+          this.currentPage = Number(pageData?.current_page ?? 1);
+          this.totalPages = Number(pageData?.last_page ?? 1);
+          this.totalUsers = Number(pageData?.total ?? this.users.length);
+          this.cdr.detectChanges();
+        });
       },
       error: (err) => {
         console.error('Error loading admin users:', err);
-        this.usersSubject.next([]);
-        this.error = 'Error al cargar los usuarios';
+        this.ngZone.run(() => {
+          this.usersSubject.next([]);
+          this.error = err.status === 403
+            ? 'No tienes permisos para consultar usuarios administradores.'
+            : 'Error al cargar los usuarios';
+          this.cdr.detectChanges();
+        });
       }
     });
   }
@@ -116,10 +155,20 @@ export class Admin implements OnInit {
   loadStatistics(): void {
     this.adminService.getStatistics().subscribe({
       next: (res: any) => {
-        this.statistics = res?.data ?? res ?? null;
+        this.ngZone.run(() => {
+          this.statistics = res?.data ?? res ?? null;
+          this.lastUpdatedAt = this.statistics?.last_updated_at ?? new Date().toISOString();
+          this.cdr.detectChanges();
+        });
       },
       error: (err) => {
         console.error('Error loading admin statistics:', err);
+        this.ngZone.run(() => {
+          this.error = err.status === 403
+            ? 'No tienes permisos para acceder al panel de administración.'
+            : 'No se pudieron cargar las métricas en tiempo real.';
+          this.cdr.detectChanges();
+        });
       }
     });
   }
@@ -257,8 +306,103 @@ export class Admin implements OnInit {
     return map[role] || role;
   }
 
+  getOverviewCards(): AdminOverviewCard[] {
+    return this.statistics?.overview_cards ?? [];
+  }
+
+  getSystemStatus(): AdminSystemStatusItem[] {
+    return this.statistics?.system_status ?? [];
+  }
+
+  getRecentActivity(): AdminRecentActivityItem[] {
+    return this.statistics?.recent_activity ?? [];
+  }
+
   formatDate(date: string): string {
-    return date ? date.split('T')[0] : '-';
+    return date ? new Date(date).toLocaleDateString('es-ES') : '-';
+  }
+
+  formatDateTime(date: string): string {
+    return date ? new Date(date).toLocaleString('es-ES') : '-';
+  }
+
+  formatCardValue(card: AdminOverviewCard): string {
+    if (card.format === 'currency') {
+      return new Intl.NumberFormat('es-ES', {
+        style: 'currency',
+        currency: 'EUR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(card.value);
+    }
+
+    return new Intl.NumberFormat('es-ES').format(card.value);
+  }
+
+  formatPercent(value: number): string {
+    return `${value > 0 ? '+' : ''}${value.toFixed(1)}%`;
+  }
+
+  getChangeClass(value: number): string {
+    if (value > 0) {
+      return 'trend-positive';
+    }
+
+    if (value < 0) {
+      return 'trend-negative';
+    }
+
+    return 'trend-neutral';
+  }
+
+  getSystemStatusClass(status: string): string {
+    const map: Record<string, string> = {
+      operativo: 'status-operativo',
+      mantenimiento: 'status-mantenimiento',
+      alerta: 'status-alerta',
+    };
+
+    return map[status] || 'status-mantenimiento';
+  }
+
+  getActivityStatusClass(status: string): string {
+    const map: Record<string, string> = {
+      info: 'activity-info',
+      success: 'activity-success',
+      warning: 'activity-warning',
+    };
+
+    return map[status] || 'activity-info';
+  }
+
+  getRelativeTime(date: string): string {
+    if (!date) {
+      return '-';
+    }
+
+    const now = Date.now();
+    const then = new Date(date).getTime();
+    const diffMinutes = Math.max(0, Math.floor((now - then) / 60000));
+
+    if (diffMinutes < 1) {
+      return 'Hace unos segundos';
+    }
+
+    if (diffMinutes < 60) {
+      return `Hace ${diffMinutes} min`;
+    }
+
+    const diffHours = Math.floor(diffMinutes / 60);
+    if (diffHours < 24) {
+      return `Hace ${diffHours} h`;
+    }
+
+    const diffDays = Math.floor(diffHours / 24);
+    return `Hace ${diffDays} d`;
+  }
+
+  getLastUpdatedLabel(): string {
+    return this.lastUpdatedAt ? this.formatDateTime(this.lastUpdatedAt) : 'Sin sincronizar';
   }
 
   private initForm(): UserForm {
@@ -269,5 +413,41 @@ export class Admin implements OnInit {
     this.successMessage = msg;
     this.isLoading = false;
     setTimeout(() => this.successMessage = null, 3000);
+  }
+
+  private initializeAdminSession(user: AuthUser): void {
+    this.ngZone.run(() => {
+      this.currentUser = user;
+
+      if (user.role !== 'admin') {
+        this.router.navigate(['/home']);
+        this.cdr.detectChanges();
+        return;
+      }
+
+      this.error = null;
+      this.loadStatistics();
+
+      if (this.activeSection === 'usuarios') {
+        this.loadUsers();
+      }
+
+      this.startAutoRefresh();
+      this.cdr.detectChanges();
+    });
+  }
+
+  private startAutoRefresh(): void {
+    if (this.refreshSubscription) {
+      return;
+    }
+
+    this.refreshSubscription = interval(30000).subscribe(() => {
+      this.loadStatistics();
+
+      if (this.activeSection === 'usuarios') {
+        this.loadUsers(this.currentPage);
+      }
+    });
   }
 }

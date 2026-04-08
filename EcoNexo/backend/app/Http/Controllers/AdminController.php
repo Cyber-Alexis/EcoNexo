@@ -2,8 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Business;
+use App\Models\Order;
+use App\Models\Product;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class AdminController extends Controller
@@ -13,7 +18,7 @@ class AdminController extends Controller
      */
     public function getAllUsers(Request $request)
     {
-        $query = User::query();
+        $query = User::query()->withCount('orders');
 
         // Filtrado por rol
         if ($request->has('role') && $request->role !== 'todos') {
@@ -166,21 +171,228 @@ class AdminController extends Controller
      */
     public function getStatistics()
     {
+        $now = now();
+        $today = $now->copy()->startOfDay();
+        $yesterday = $today->copy()->subDay();
+        $startOfMonth = $now->copy()->startOfMonth();
+        $startOfLastMonth = $startOfMonth->copy()->subMonthNoOverflow();
+        $endOfLastMonth = $startOfMonth->copy()->subSecond();
+
+        $totalUsers = User::count();
+        $adminUsers = User::where('role', 'admin')->count();
+        $businessUsers = User::where('role', 'business')->count();
+        $consumerUsers = User::where('role', 'consumer')->count();
+        $activeUsers = User::where('status', 'activo')->count();
+        $inactiveUsers = User::where('status', 'inactivo')->count();
+        $blockedUsers = User::where('status', 'bloqueado')->count();
+        $pendingUsers = User::where('status', 'pendiente')->count();
+
+        $previousTotalUsers = User::where('created_at', '<', $startOfMonth)->count();
+        $ordersToday = Order::where('created_at', '>=', $today)->count();
+        $ordersYesterday = Order::whereBetween('created_at', [$yesterday, $today])->count();
+        $totalOrders = Order::count();
+        $pendingOrders = Order::where('status', 'pending')->count();
+        $completedOrders = Order::where('status', 'completed')->count();
+        $confirmedOrders = Order::where('status', 'confirmed')->count();
+        $cancelledOrders = Order::where('status', 'cancelled')->count();
+
+        $totalBusinesses = Business::count();
+        $activeBusinesses = Business::where('status', 'active')->count();
+        $previousActiveBusinesses = Business::where('status', 'active')
+            ->where('created_at', '<', $startOfMonth)
+            ->count();
+
+        $totalProducts = Product::count();
+        $activeProducts = Product::where('active', true)->count();
+        $productsWithStock = Product::where('active', true)
+            ->where('stock', '>', 0)
+            ->count();
+
+        $monthlyRevenue = (float) Order::whereIn('status', ['confirmed', 'completed'])
+            ->whereBetween('created_at', [$startOfMonth, $now])
+            ->sum('total_price');
+
+        $previousMonthRevenue = (float) Order::whereIn('status', ['confirmed', 'completed'])
+            ->whereBetween('created_at', [$startOfLastMonth, $endOfLastMonth])
+            ->sum('total_price');
+
+        $dbStartedAt = microtime(true);
+        DB::select('select 1');
+        $databaseLatencyMs = (int) round((microtime(true) - $dbStartedAt) * 1000);
+
+        $configuredPaymentMethods = Order::query()
+            ->whereNotNull('payment_method')
+            ->where('payment_method', '!=', '')
+            ->distinct()
+            ->count('payment_method');
+
+        $recentUsers = User::latest('created_at')
+            ->take(5)
+            ->get(['id', 'name', 'last_name', 'email', 'role', 'status', 'created_at']);
+
         $statistics = [
-            'total_users' => User::count(),
-            'admin_users' => User::where('role', 'admin')->count(),
-            'business_users' => User::where('role', 'business')->count(),
-            'consumer_users' => User::where('role', 'consumer')->count(),
-            'active_users' => User::where('status', 'activo')->count(),
-            'inactive_users' => User::where('status', 'inactivo')->count(),
-            'blocked_users' => User::where('status', 'bloqueado')->count(),
-            'pending_users' => User::where('status', 'pendiente')->count(),
-            'recent_users' => User::latest('created_at')->take(5)->get(['id', 'name', 'last_name', 'email', 'role', 'status', 'created_at']),
+            'total_users' => $totalUsers,
+            'admin_users' => $adminUsers,
+            'business_users' => $businessUsers,
+            'consumer_users' => $consumerUsers,
+            'active_users' => $activeUsers,
+            'inactive_users' => $inactiveUsers,
+            'blocked_users' => $blockedUsers,
+            'pending_users' => $pendingUsers,
+            'total_orders' => $totalOrders,
+            'orders_today' => $ordersToday,
+            'pending_orders' => $pendingOrders,
+            'completed_orders' => $completedOrders,
+            'confirmed_orders' => $confirmedOrders,
+            'cancelled_orders' => $cancelledOrders,
+            'total_businesses' => $totalBusinesses,
+            'active_businesses' => $activeBusinesses,
+            'total_products' => $totalProducts,
+            'active_products' => $activeProducts,
+            'products_with_stock' => $productsWithStock,
+            'monthly_revenue' => round($monthlyRevenue, 2),
+            'previous_month_revenue' => round($previousMonthRevenue, 2),
+            'recent_users' => $recentUsers,
+            'overview_cards' => [
+                [
+                    'key' => 'total_users',
+                    'label' => 'Usuarios Totales',
+                    'value' => $totalUsers,
+                    'format' => 'number',
+                    'change_percentage' => $this->calculateChangePercentage($totalUsers, $previousTotalUsers),
+                    'comparison_label' => 'respecto al inicio de mes',
+                ],
+                [
+                    'key' => 'orders_today',
+                    'label' => 'Pedidos Hoy',
+                    'value' => $ordersToday,
+                    'format' => 'number',
+                    'change_percentage' => $this->calculateChangePercentage($ordersToday, $ordersYesterday),
+                    'comparison_label' => 'respecto a ayer',
+                ],
+                [
+                    'key' => 'active_businesses',
+                    'label' => 'Negocios Activos',
+                    'value' => $activeBusinesses,
+                    'format' => 'number',
+                    'change_percentage' => $this->calculateChangePercentage($activeBusinesses, $previousActiveBusinesses),
+                    'comparison_label' => 'respecto al inicio de mes',
+                ],
+                [
+                    'key' => 'monthly_revenue',
+                    'label' => 'Ingresos Mes',
+                    'value' => round($monthlyRevenue, 2),
+                    'format' => 'currency',
+                    'change_percentage' => $this->calculateChangePercentage($monthlyRevenue, $previousMonthRevenue),
+                    'comparison_label' => 'respecto al mes anterior',
+                ],
+            ],
+            'system_status' => [
+                [
+                    'key' => 'api',
+                    'label' => 'API Backend',
+                    'detail' => 'Ultima comprobacion correcta',
+                    'metric' => 'Online',
+                    'status' => 'operativo',
+                ],
+                [
+                    'key' => 'database',
+                    'label' => 'Base de Datos',
+                    'detail' => 'Conexion ' . DB::connection()->getName(),
+                    'metric' => $databaseLatencyMs . ' ms',
+                    'status' => $databaseLatencyMs <= 150 ? 'operativo' : 'mantenimiento',
+                ],
+                [
+                    'key' => 'storage',
+                    'label' => 'Almacenamiento',
+                    'detail' => 'Disco ' . config('filesystems.default', 'local'),
+                    'metric' => is_writable(storage_path('app')) ? 'Escritura OK' : 'Solo lectura',
+                    'status' => is_writable(storage_path('app')) ? 'operativo' : 'alerta',
+                ],
+                [
+                    'key' => 'payments',
+                    'label' => 'Pasarela de Pago',
+                    'detail' => 'Metodos detectados en pedidos',
+                    'metric' => $configuredPaymentMethods > 0 ? $configuredPaymentMethods . ' activos' : 'Sin configurar',
+                    'status' => $configuredPaymentMethods > 0 ? 'operativo' : 'mantenimiento',
+                ],
+            ],
+            'recent_activity' => $this->buildRecentActivity(),
+            'last_updated_at' => $now->toIso8601String(),
         ];
 
         return response()->json([
             'success' => true,
             'data' => $statistics,
         ], 200);
+    }
+
+    private function calculateChangePercentage(float|int $current, float|int $previous): float
+    {
+        if ((float) $previous === 0.0) {
+            return (float) $current > 0 ? 100.0 : 0.0;
+        }
+
+        return round((($current - $previous) / $previous) * 100, 1);
+    }
+
+    private function buildRecentActivity()
+    {
+        $users = User::latest('created_at')->take(4)->get();
+        $orders = Order::with(['user:id,name,last_name', 'business:id,name'])
+            ->latest('created_at')
+            ->take(4)
+            ->get();
+        $businesses = Business::with('user:id,name,last_name')
+            ->latest('created_at')
+            ->take(4)
+            ->get();
+        $products = Product::with('business:id,name')
+            ->latest('created_at')
+            ->take(4)
+            ->get();
+
+        return collect()
+            ->merge($users->map(function (User $user) {
+                return [
+                    'type' => 'user',
+                    'title' => 'Nuevo usuario registrado',
+                    'description' => trim($user->name . ' ' . $user->last_name),
+                    'status' => 'info',
+                    'occurred_at' => optional($user->created_at)->toIso8601String(),
+                ];
+            }))
+            ->merge($orders->map(function (Order $order) {
+                $isCompleted = $order->status === 'completed';
+
+                return [
+                    'type' => 'order',
+                    'title' => $isCompleted ? 'Pedido completado #' . $order->id : 'Nuevo pedido #' . $order->id,
+                    'description' => trim(optional($order->user)->name . ' ' . optional($order->user)->last_name) ?: optional($order->business)->name,
+                    'status' => $isCompleted ? 'success' : ($order->status === 'cancelled' ? 'warning' : 'info'),
+                    'occurred_at' => optional($isCompleted ? $order->updated_at : $order->created_at)->toIso8601String(),
+                ];
+            }))
+            ->merge($businesses->map(function (Business $business) {
+                return [
+                    'type' => 'business',
+                    'title' => 'Nuevo negocio registrado',
+                    'description' => $business->name,
+                    'status' => 'success',
+                    'occurred_at' => optional($business->created_at)->toIso8601String(),
+                ];
+            }))
+            ->merge($products->map(function (Product $product) {
+                return [
+                    'type' => 'product',
+                    'title' => 'Producto publicado',
+                    'description' => $product->name . ' · ' . optional($product->business)->name,
+                    'status' => $product->active ? 'success' : 'warning',
+                    'occurred_at' => optional($product->created_at)->toIso8601String(),
+                ];
+            }))
+            ->sortByDesc('occurred_at')
+            ->take(8)
+            ->values();
     }
 }

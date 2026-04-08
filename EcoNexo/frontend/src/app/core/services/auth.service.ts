@@ -57,6 +57,15 @@ export class AuthService {
       .pipe(tap(() => this.clearAuth()));
   }
 
+  fetchMe(): Observable<AuthUser> {
+    return this.http
+      .get<AuthUser>(`${this.base}/auth/me`)
+      .pipe(
+        timeout(REQUEST_TIMEOUT_MS),
+        tap(user => this.storeUser(user)),
+      );
+  }
+
   uploadAvatar(file: File): Observable<{ avatar_url: string; user: AuthUser }> {
     const fd = new FormData();
     fd.append('avatar', file);
@@ -133,7 +142,11 @@ export class AuthService {
 
   private storeAuth(res: AuthResponse): void {
     localStorage.setItem('access_token', res.access_token);
-    localStorage.setItem('auth_user', JSON.stringify(res.user));
-    this._user$.next(res.user);
+    this.storeUser(res.user);
+  }
+
+  private storeUser(user: AuthUser): void {
+    localStorage.setItem('auth_user', JSON.stringify(user));
+    this._user$.next(user);
   }
 }

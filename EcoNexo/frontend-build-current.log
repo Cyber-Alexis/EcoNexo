@@ -1,0 +1,99 @@
+time="2026-04-08T17:01:47+02:00" level=warning msg="C:\\Users\\alexisnbuza\\Documents\\GitHub\\EcoNexo\\EcoNexo\\docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+time="2026-04-08T17:01:47+02:00" level=warning msg="Found orphan containers ([econexo-frontend-run-47e7e8677c5d]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up."
+
+up to date, audited 578 packages in 9s
+
+109 packages are looking for funding
+  run `npm fund` for details
+
+11 vulnerabilities (8 moderate, 3 high)
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+npm notice
+npm notice New major version of npm available! 10.8.2 -> 11.12.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.12.1
+npm notice To update run: npm install -g npm@11.12.1
+npm notice
+
+> frontend@0.0.0 build
+> ng build
+
+? Building...
+? Building...
+Initial chunk files | Names         |  Raw size | Estimated transfer size
+main-RZ6LVSFJ.js    | main          | 578.85 kB |               128.12 kB
+styles-6DKGGR5F.css | styles        | 995 bytes |               995 bytes
+
+                    | Initial total | 579.84 kB |               129.12 kB
+
+Application bundle generation complete. [17.565 seconds] - 2026-04-08T15:02:38.952Z
+
+? [WARNING] NG8102: NG8102: The left side of this nullish coalescing operation does not include 'null' or 'undefined' in its type, therefore the '??' operator can be safely removed. Find more at https://v21.angular.dev/extended-diagnostics/NG8102 [plugin angular-compiler]
+System.Management.Automation.RemoteException
+    src/app/core/component/cart/cart.html:50:52:
+      50 ¦ ...rt-item-price-unit">{{ (item.price ?? 0).toFixed(2) }}€/{{ it...
+         ?                            ~~~~~~~~~~~~~~~
+System.Management.Automation.RemoteException
+  Warning occurs in the template of component CartComponent.
+System.Management.Automation.RemoteException
+    src/app/core/component/cart/cart.ts:11:15:
+      11 ¦   templateUrl: './cart.html',
+         ?                ~~~~~~~~~~~~~
+System.Management.Automation.RemoteException
+System.Management.Automation.RemoteException
+? [WARNING] NG8102: NG8102: The left side of this nullish coalescing operation does not include 'null' or 'undefined' in its type, therefore the '??' operator can be safely removed. Find more at https://v21.angular.dev/extended-diagnostics/NG8102 [plugin angular-compiler]
+System.Management.Automation.RemoteException
+    src/app/core/component/cart/cart.html:58:51:
+      58 ¦ ...="cart-item-total">{{ ((item.price ?? 0) * item.quantity).toFix...
+         ?                            ~~~~~~~~~~~~~~~
+System.Management.Automation.RemoteException
+  Warning occurs in the template of component CartComponent.
+System.Management.Automation.RemoteException
+    src/app/core/component/cart/cart.ts:11:15:
+      11 ¦   templateUrl: './cart.html',
+         ?                ~~~~~~~~~~~~~
+System.Management.Automation.RemoteException
+System.Management.Automation.RemoteException
+? [WARNING] NG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107 [plugin angular-compiler]
+System.Management.Automation.RemoteException
+    src/app/pages/productos/productos.html:79:64:
+      79 ¦ ...lass="product-business">{{ p.business?.name ?? 'Negocio' }}</span>
+         ?                                           ~~~~
+System.Management.Automation.RemoteException
+  Warning occurs in the template of component Productos.
+System.Management.Automation.RemoteException
+    src/app/pages/productos/productos.ts:10:15:
+      10 ¦   templateUrl: './productos.html',
+         ?                ~~~~~~~~~~~~~~~~~~
+System.Management.Automation.RemoteException
+System.Management.Automation.RemoteException
+? [WARNING] NG8102: NG8102: The left side of this nullish coalescing operation does not include 'null' or 'undefined' in its type, therefore the '??' operator can be safely removed. Find more at https://v21.angular.dev/extended-diagnostics/NG8102 [plugin angular-compiler]
+System.Management.Automation.RemoteException
+    src/app/pages/productos/productos.html:84:45:
+      84 ¦ ...class="product-price">{{ (p.price ?? 0) | number:'1.2-2' }}€ ...
+         ?                              ~~~~~~~~~~~~
+System.Management.Automation.RemoteException
+  Warning occurs in the template of component Productos.
+System.Management.Automation.RemoteException
+    src/app/pages/productos/productos.ts:10:15:
+      10 ¦   templateUrl: './productos.html',
+         ?                ~~~~~~~~~~~~~~~~~~
+System.Management.Automation.RemoteException
+System.Management.Automation.RemoteException
+? [WARNING] bundle initial exceeded maximum budget. Budget 500.00 kB was not met by 79.84 kB with a total of 579.84 kB.
+System.Management.Automation.RemoteException
+System.Management.Automation.RemoteException
+? [WARNING] src/app/pages/admin/admin.css exceeded maximum budget. Budget 10.00 kB was not met by 1.31 kB with a total of 11.31 kB.
+System.Management.Automation.RemoteException
+System.Management.Automation.RemoteException
+? [WARNING] src/app/pages/negocio-detalle/negocio-detalle.css exceeded maximum budget. Budget 10.00 kB was not met by 730 bytes with a total of 10.73 kB.
+System.Management.Automation.RemoteException
+System.Management.Automation.RemoteException
+? [WARNING] src/app/pages/home/home.css exceeded maximum budget. Budget 10.00 kB was not met by 1.52 kB with a total of 11.52 kB.
+System.Management.Automation.RemoteException
+System.Management.Automation.RemoteException
+Output location: /app/dist/frontend
+

@@ -158,7 +158,7 @@
                   </span>
                 </td>
                 <td class="date-cell">{{ formatDate(user.created_at) }}</td>
-                <td>0</td>
+                <td>{{ user.orders_count ?? 0 }}</td>
                 <td class="actions-cell">
                   <div class="action-menu">
                     <button class="action-btn" title="Editar" (click)="openEditModal(user)">✏️</button>
@@ -186,27 +186,88 @@
 
     <!-- ========== DASHBOARD SECTION ========== -->
     <div *ngIf="activeSection === 'dashboard'">
-      <div class="page-header"><h1>Dashboard</h1></div>
-      <div class="stats-grid" *ngIf="statistics">
-        <div class="stat-card">
-          <div class="stat-number">{{ statistics.total_users }}</div>
-          <div class="stat-label">Total Usuarios</div>
+      <div class="page-header dashboard-header">
+        <div>
+          <h1>Panel de Administración</h1>
+          <p class="page-subtitle">Datos conectados en tiempo real con la base de datos de EcoNexo.</p>
         </div>
-        <div class="stat-card">
-          <div class="stat-number">{{ statistics.active_users }}</div>
-          <div class="stat-label">Usuarios Activos</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number">{{ statistics.business_users }}</div>
-          <div class="stat-label">Productores</div>
-        </div>
-        <div class="stat-card stat-blocked">
-          <div class="stat-number">{{ statistics.blocked_users }}</div>
-          <div class="stat-label">Bloqueados</div>
+        <div class="dashboard-sync" *ngIf="statistics">
+          <span class="sync-label">Actualizado</span>
+          <strong>{{ getLastUpdatedLabel() }}</strong>
         </div>
       </div>
-      <div class="panel coming-soon">
-        <p>📊 Más estadísticas proximamente...</p>
+
+      <div class="dashboard-overview" *ngIf="statistics">
+        <article class="overview-card" *ngFor="let card of getOverviewCards()">
+          <div class="overview-card-label">{{ card.label }}</div>
+          <div class="overview-card-value">{{ formatCardValue(card) }}</div>
+          <div class="overview-card-trend" [ngClass]="getChangeClass(card.change_percentage)">
+            {{ formatPercent(card.change_percentage) }}
+            <span>{{ card.comparison_label }}</span>
+          </div>
+        </article>
+      </div>
+
+      <div class="dashboard-grid" *ngIf="statistics">
+        <section class="panel dashboard-panel">
+          <div class="panel-header panel-header-stack">
+            <div>
+              <h2>Estado del Sistema</h2>
+              <p class="panel-subtitle">Supervision operativa basada en el estado actual del backend y la plataforma.</p>
+            </div>
+          </div>
+
+          <div class="system-status-list">
+            <div class="system-status-item" *ngFor="let item of getSystemStatus()">
+              <div>
+                <div class="system-status-title">{{ item.label }}</div>
+                <div class="system-status-detail">{{ item.detail }}</div>
+              </div>
+              <div class="system-status-meta">
+                <span class="system-status-metric">{{ item.metric }}</span>
+                <span class="system-status-badge" [ngClass]="getSystemStatusClass(item.status)">{{ item.status }}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel dashboard-panel">
+          <div class="panel-header panel-header-stack">
+            <div>
+              <h2>Actividad Reciente</h2>
+              <p class="panel-subtitle">Ultimos movimientos detectados en usuarios, pedidos, negocios y catalogo.</p>
+            </div>
+          </div>
+
+          <div class="activity-list">
+            <div class="activity-item" *ngFor="let activity of getRecentActivity()">
+              <span class="activity-dot" [ngClass]="getActivityStatusClass(activity.status)"></span>
+              <div class="activity-content">
+                <div class="activity-title">{{ activity.title }}</div>
+                <div class="activity-detail">{{ activity.description }}</div>
+                <div class="activity-time">{{ getRelativeTime(activity.occurred_at) }}</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="dashboard-mini-grid" *ngIf="statistics">
+        <article class="mini-stat-card">
+          <span class="mini-stat-label">Pedidos totales</span>
+          <strong>{{ statistics.total_orders }}</strong>
+          <small>{{ statistics.completed_orders }} completados · {{ statistics.pending_orders }} pendientes</small>
+        </article>
+        <article class="mini-stat-card">
+          <span class="mini-stat-label">Catalogo activo</span>
+          <strong>{{ statistics.active_products }}</strong>
+          <small>{{ statistics.products_with_stock }} productos con stock</small>
+        </article>
+        <article class="mini-stat-card">
+          <span class="mini-stat-label">Base de clientes</span>
+          <strong>{{ statistics.consumer_users }}</strong>
+          <small>{{ statistics.active_users }} usuarios activos</small>
+        </article>
       </div>
     </div>
 
