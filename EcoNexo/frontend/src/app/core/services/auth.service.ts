@@ -1,7 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap, timeout } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { CartService } from './cart.service';
 
 const REQUEST_TIMEOUT_MS = 10_000; // 10 s
 
@@ -28,15 +29,22 @@ export interface AuthResponse {
 export class AuthService {
   private readonly base = environment.apiUrl;
   private readonly _user$ = new BehaviorSubject<AuthUser | null>(this.restoreUser());
+  private readonly cartService = inject(CartService);
 
   readonly user$ = this._user$.asObservable();
 
   constructor(private http: HttpClient) {}
 
   login(email: string, password: string): Observable<AuthResponse> {
+    const normalizedEmail = email.trim().toLowerCase();
+    this.clearAuth(false);
+
     return this.http
-      .post<AuthResponse>(`${this.base}/auth/login`, { email, password })
-      .pipe(tap(res => this.storeAuth(res)));
+      .post<AuthResponse>(`${this.base}/auth/login`, { email: normalizedEmail, password })
+      .pipe(
+        timeout(REQUEST_TIMEOUT_MS),
+        tap((res) => this.storeAuth(res)),
+      );
   }
 
   registerCliente(name: string, last_name: string, email: string, password: string): Observable<AuthResponse> {
@@ -54,7 +62,13 @@ export class AuthService {
   logout(): Observable<unknown> {
     return this.http
       .post(`${this.base}/auth/logout`, {})
-      .pipe(tap(() => this.clearAuth()));
+      .pipe(
+        timeout(REQUEST_TIMEOUT_MS),
+        tap({
+          next: () => this.clearAuth(),
+          error: () => this.clearAuth(),
+        }),
+      );
   }
 
   uploadAvatar(file: File): Observable<{ avatar_url: string; user: AuthUser }> {
@@ -108,9 +122,12 @@ export class AuthService {
     this._user$.next(updated);
   }
 
-  clearAuth(): void {
+  clearAuth(clearCart = true): void {
     localStorage.removeItem('access_token');
     localStorage.removeItem('auth_user');
+    if (clearCart) {
+      this.cartService.clear();
+    }
     this._user$.next(null);
   }
 

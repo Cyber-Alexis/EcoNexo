@@ -48,9 +48,10 @@
       @if (step === 2) {
         <app-paso-entrega
           [groups]="cartGroups"
-          [deliveryFee]="3.5"
-          [initialMethod]="state.delivery?.method ?? 'pickup'"
+          [deliveryFee]="homeDeliveryFee"
+          [initialData]="state.delivery"
           (back)="onEntregaBack()"
+          (deliveryChange)="onDeliveryChange($event)"
           (next)="onEntregaNext($event)"
         />
       }

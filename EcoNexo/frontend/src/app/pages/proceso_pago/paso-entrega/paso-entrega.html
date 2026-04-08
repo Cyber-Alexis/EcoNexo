@@ -1,92 +1,174 @@
 <div class="step-card">
   <div class="step-header">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="22" height="22">
-      <rect x="1" y="3" width="15" height="13" rx="1"/>
-      <path d="M16 8h4l3 5v3h-7V8z"/>
-      <circle cx="5.5" cy="18.5" r="2.5"/>
-      <circle cx="18.5" cy="18.5" r="2.5"/>
+      <rect x="1" y="3" width="15" height="13" rx="1" />
+      <path d="M16 8h4l3 5v3h-7V8z" />
+      <circle cx="5.5" cy="18.5" r="2.5" />
+      <circle cx="18.5" cy="18.5" r="2.5" />
     </svg>
     <h2>Método de Entrega</h2>
   </div>
 
-  <!-- Pickup option -->
-  <div
-    class="delivery-option"
-    [class.selected]="selectedMethod === 'pickup'"
-    (click)="selectMethod('pickup')"
-  >
-    <div class="delivery-radio">
-      <div class="radio-circle" [class.active]="selectedMethod === 'pickup'">
-        @if (selectedMethod === 'pickup') {
-          <div class="radio-dot"></div>
-        }
+  <form [formGroup]="form" (ngSubmit)="onContinuar()" novalidate>
+    <div
+      class="delivery-option"
+      [class.selected]="selectedMethod === 'pickup'"
+      (click)="selectMethod('pickup')"
+    >
+      <div class="delivery-radio">
+        <div class="radio-circle" [class.active]="selectedMethod === 'pickup'">
+          @if (selectedMethod === 'pickup') {
+            <div class="radio-dot"></div>
+          }
+        </div>
       </div>
-    </div>
-    <div class="delivery-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20">
-        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-        <polyline points="9 22 9 12 15 12 15 22"/>
-      </svg>
-    </div>
-    <div class="delivery-info">
-      <span class="delivery-title">Recogida en tienda</span>
-      <span class="delivery-desc">Recoge tu pedido directamente en el negocio</span>
-    </div>
-    <span class="delivery-price free">Gratis</span>
-  </div>
-
-  <!-- Home delivery option -->
-  <div
-    class="delivery-option"
-    [class.selected]="selectedMethod === 'delivery'"
-    (click)="selectMethod('delivery')"
-  >
-    <div class="delivery-radio">
-      <div class="radio-circle" [class.active]="selectedMethod === 'delivery'">
-        @if (selectedMethod === 'delivery') {
-          <div class="radio-dot"></div>
-        }
+      <div class="delivery-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
       </div>
+      <div class="delivery-info">
+        <span class="delivery-title">Recogida en tienda</span>
+        <span class="delivery-desc">Recoge tu pedido directamente en el negocio</span>
+      </div>
+      <span class="delivery-price free">Gratis</span>
     </div>
-    <div class="delivery-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20">
-        <rect x="1" y="3" width="15" height="13" rx="1"/>
-        <path d="M16 8h4l3 5v3h-7V8z"/>
-        <circle cx="5.5" cy="18.5" r="2.5"/>
-        <circle cx="18.5" cy="18.5" r="2.5"/>
-      </svg>
-    </div>
-    <div class="delivery-info">
-      <span class="delivery-title">Entrega a domicilio</span>
-      <span class="delivery-desc">Recibe tu pedido en la dirección indicada</span>
-    </div>
-    <span class="delivery-price extra">+{{ deliveryFee.toFixed(2) }}€</span>
-  </div>
 
-  <!-- Store schedules -->
-  @if (groups.length > 0) {
-    <div class="schedules">
-      <h3 class="schedules-title">Horarios de recogida</h3>
-      @for (group of groups; track group.business) {
-        <div class="schedule-row">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16" class="clock-icon">
-            <circle cx="12" cy="12" r="10"/>
-            <polyline points="12 6 12 12 16 14"/>
+    <div
+      class="delivery-option"
+      [class.selected]="selectedMethod === 'delivery'"
+      (click)="selectMethod('delivery')"
+    >
+      <div class="delivery-radio">
+        <div class="radio-circle" [class.active]="selectedMethod === 'delivery'">
+          @if (selectedMethod === 'delivery') {
+            <div class="radio-dot"></div>
+          }
+        </div>
+      </div>
+      <div class="delivery-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20">
+          <rect x="1" y="3" width="15" height="13" rx="1" />
+          <path d="M16 8h4l3 5v3h-7V8z" />
+          <circle cx="5.5" cy="18.5" r="2.5" />
+          <circle cx="18.5" cy="18.5" r="2.5" />
+        </svg>
+      </div>
+      <div class="delivery-info">
+        <span class="delivery-title">Entrega a domicilio</span>
+        <span class="delivery-desc">Recibe tu pedido en la dirección indicada</span>
+      </div>
+      <span class="delivery-price extra">+{{ deliveryFee.toFixed(2) }}€</span>
+    </div>
+
+    <div class="delivery-details">
+      <div class="form-group">
+        <label class="form-label">
+          {{ selectedMethod === 'delivery' ? '¿Qué día quieres recibir tu pedido?' : '¿Qué día quieres recoger tu pedido?' }}
+          <span class="required">*</span>
+        </label>
+        <div class="date-input-wrapper">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18" class="date-input-icon">
+            <rect x="3" y="4" width="18" height="18" rx="2" />
+            <path d="M16 2v4M8 2v4M3 10h18" />
           </svg>
-          <span class="schedule-business">{{ group.business }}:</span>
-          <span class="schedule-hours">{{ group.openingHours ?? 'Lun-Sáb 8:00-20:00' }}</span>
+          <input
+            class="form-input form-input--date"
+            [class.invalid]="isFieldInvalid('date')"
+            formControlName="date"
+            type="date"
+            [min]="minDate"
+            [max]="maxDate"
+            placeholder="Selecciona una fecha"
+          />
+        </div>
+        <span class="helper-text">Disponible a partir de mañana y hasta 30 días vista. Domingos no disponibles.</span>
+        @if (isFieldInvalid('date')) {
+          <span class="error-msg">{{ getErrorMessage('date') }}</span>
+        }
+      </div>
+
+      @if (selectedMethod === 'delivery') {
+        <div class="address-section">
+          <h3 class="section-title">Dirección de entrega</h3>
+
+          <div class="form-group">
+            <label class="form-label">Dirección <span class="required">*</span></label>
+            <input
+              class="form-input"
+              [class.invalid]="isFieldInvalid('address')"
+              formControlName="address"
+              type="text"
+              placeholder="Calle, número, piso..."
+            />
+            @if (isFieldInvalid('address')) {
+              <span class="error-msg">{{ getErrorMessage('address') }}</span>
+            }
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Ciudad <span class="required">*</span></label>
+              <input
+                class="form-input"
+                [class.invalid]="isFieldInvalid('city')"
+                formControlName="city"
+                type="text"
+                placeholder="Lleida"
+              />
+              @if (isFieldInvalid('city')) {
+                <span class="error-msg">{{ getErrorMessage('city') }}</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Código Postal <span class="required">*</span></label>
+              <input
+                class="form-input"
+                [class.invalid]="isFieldInvalid('postalCode')"
+                formControlName="postalCode"
+                type="text"
+                inputmode="numeric"
+                maxlength="5"
+                placeholder="25001"
+              />
+              @if (isFieldInvalid('postalCode')) {
+                <span class="error-msg">{{ getErrorMessage('postalCode') }}</span>
+              }
+            </div>
+          </div>
         </div>
       }
     </div>
-  }
 
-  <div class="step-actions step-actions--between">
-    <button class="btn-secondary" type="button" (click)="back.emit()">Atrás</button>
-    <button class="btn-primary" type="button" (click)="onContinuar()">
-      Continuar
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-        <polyline points="9 18 15 12 9 6"/>
-      </svg>
-    </button>
-  </div>
+    @if (groups.length > 0) {
+      <div class="schedules">
+        <h3 class="schedules-title">Horarios de recogida</h3>
+        @if (selectedMethod === 'delivery') {
+          <p class="schedules-helper">Consulta también el horario del negocio aunque elijas entrega a domicilio.</p>
+        }
+        @for (group of groups; track group.business) {
+          <div class="schedule-row">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16" class="clock-icon">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            <span class="schedule-business">{{ group.business }}:</span>
+            <span class="schedule-hours">{{ group.openingHours ?? 'Lun-Sáb 8:00-20:00' }}</span>
+          </div>
+        }
+      </div>
+    }
+
+    <div class="step-actions step-actions--between">
+      <button class="btn-secondary" type="button" (click)="back.emit()">Atrás</button>
+      <button class="btn-primary" type="submit">
+        Continuar
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
+      </button>
+    </div>
+  </form>
 </div>

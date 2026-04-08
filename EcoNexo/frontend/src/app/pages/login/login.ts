@@ -28,6 +28,10 @@ export class Login {
   get password() { return this.form.get('password')!; }
 
   onSubmit(): void {
+    if (this.isLoading) {
+      return;
+    }
+
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -36,20 +40,13 @@ export class Login {
     this.isLoading = true;
     this.message = '';
 
-    const { email, password } = this.form.value;
+    const { email, password } = this.form.getRawValue();
 
-    this.authService.login(email!, password!).subscribe({
-      next: () => {
+    this.authService.login(email ?? '', password ?? '').subscribe({
+      next: (response) => {
         this.isLoading = false;
-        
-        // Get user role and redirect immediately
-        this.authService.user$.subscribe(user => {
-          if (user?.role === 'admin') {
-            this.router.navigate(['/admin']);
-          } else {
-            this.router.navigate(['/home']);
-          }
-        }).unsubscribe();
+        const targetRoute = response.user?.role === 'admin' ? '/admin' : '/home';
+        this.router.navigate([targetRoute]);
       },
       error: (err) => {
         this.isLoading = false;
