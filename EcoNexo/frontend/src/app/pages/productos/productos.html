@@ -76,12 +76,12 @@
               <div class="product-body">
                 <div class="product-top-row">
                   <span class="product-category">{{ p.category?.name ?? 'Sin categoría' }}</span>
-                  <span class="product-business">{{ p.business?.name ?? 'Negocio' }}</span>
+                  <span class="product-business">{{ p.business.name }}</span>
                 </div>
 
                 <h3 class="product-name">{{ p.name }}</h3>
                 <p class="product-desc">{{ p.description ?? 'Sin descripción' }}</p>
-                <p class="product-price">{{ (p.price ?? 0) | number:'1.2-2' }}€ <span class="price-unit">/ {{ p.category?.name ?? 'unidad' }}</span></p>
+                <p class="product-price">{{ p.price | number:'1.2-2' }}€ <span class="price-unit">/ {{ p.category?.name ?? 'unidad' }}</span></p>
 
                 <div class="product-footer">
                   <div class="quantity-control">

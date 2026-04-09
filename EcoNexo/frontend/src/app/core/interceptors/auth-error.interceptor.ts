@@ -12,10 +12,11 @@ export const authErrorInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
 
   const isAuthEndpoint = AUTH_ENDPOINTS.some(path => req.url.includes(path));
+  const isOrderCreation = req.method === 'POST' && req.url.includes('/orders');
 
   return next(req).pipe(
     catchError(err => {
-      if (!isAuthEndpoint && err?.status === HttpStatusCode.Unauthorized) {
+      if (!isAuthEndpoint && !isOrderCreation && err?.status === HttpStatusCode.Unauthorized) {
         authService.clearAuth();
         router.navigate(['/login']);
       }

@@ -1,0 +1,93 @@
+<div class="step-card">
+  <div class="step-header">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="22" height="22">
+      <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+      <line x1="1" y1="10" x2="23" y2="10"/>
+    </svg>
+    <h2>Método de Pago</h2>
+  </div>
+
+  <!-- Card option (only one) -->
+  <div class="payment-option selected">
+    <div class="payment-radio">
+      <div class="radio-circle active">
+        <div class="radio-dot"></div>
+      </div>
+    </div>
+    <div class="payment-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20">
+        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+        <line x1="1" y1="10" x2="23" y2="10"/>
+      </svg>
+    </div>
+    <div class="payment-info">
+      <span class="payment-title">Tarjeta de crédito/débito</span>
+      <span class="payment-desc">Visa, Mastercard, American Express</span>
+    </div>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onConfirmar()" novalidate class="card-form">
+    <div class="form-group">
+      <label class="form-label">Número de tarjeta</label>
+      <input
+        class="form-input"
+        [class.invalid]="isFieldInvalid('cardNumber')"
+        [class.valid]="isFieldValid('cardNumber')"
+        formControlName="cardNumber"
+        type="text"
+        placeholder="1234 5678 9012 3456"
+        maxlength="19"
+        (input)="formatCardNumber($event)"
+      />
+      @if (isFieldInvalid('cardNumber')) {
+        <span class="error-msg">{{ getErrorMessage('cardNumber') }}</span>
+      }
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Fecha de expiración</label>
+        <input
+          class="form-input"
+          [class.invalid]="isFieldInvalid('cardExpiry')"
+          [class.valid]="isFieldValid('cardExpiry')"
+          formControlName="cardExpiry"
+          type="text"
+          placeholder="MM/AA"
+          maxlength="5"
+          (input)="formatExpiry($event)"
+        />
+        @if (isFieldInvalid('cardExpiry')) {
+          <span class="error-msg">{{ getErrorMessage('cardExpiry') }}</span>
+        }
+      </div>
+      <div class="form-group">
+        <label class="form-label">CVV</label>
+        <input
+          class="form-input"
+          [class.invalid]="isFieldInvalid('cardCvv')"
+          [class.valid]="isFieldValid('cardCvv')"
+          formControlName="cardCvv"
+          type="text"
+          placeholder="123"
+          maxlength="3"
+          (input)="filterCvv($event)"
+        />
+        @if (isFieldInvalid('cardCvv')) {
+          <span class="error-msg">{{ getErrorMessage('cardCvv') }}</span>
+        }
+      </div>
+    </div>
+
+    <div class="step-actions step-actions--between">
+      <button class="btn-secondary" type="button" (click)="back.emit()" [disabled]="submitting">Atrás</button>
+      <button class="btn-primary" type="submit" [disabled]="submitting">
+        @if (submitting) { Procesando… } @else { Confirmar Pedido ({{ total.toFixed(2) }}€) }
+      </button>
+    </div>
+
+    @if (submitError) {
+      <p class="submit-error">{{ submitError }}</p>
+    }
+  </form>
+</div>

@@ -3,16 +3,21 @@ import { BehaviorSubject } from 'rxjs';
 
 export interface CartItem {
   id: string;
+  productId: number;
+  businessId: number;
   name: string;
   price: number;
   priceUnit: string;
   img: string;
   quantity: number;
   business: string;
+  openingHours?: string;
 }
 
 export interface CartGroup {
   business: string;
+  businessId: number;
+  openingHours?: string;
   items: CartItem[];
 }
 
@@ -38,7 +43,12 @@ export class CartService {
       if (!map.has(item.business)) map.set(item.business, []);
       map.get(item.business)!.push(item);
     }
-    return Array.from(map.entries()).map(([business, items]) => ({ business, items }));
+    return Array.from(map.entries()).map(([business, items]) => ({
+      business,
+      businessId: items[0]?.businessId ?? 0,
+      openingHours: items[0]?.openingHours,
+      items,
+    }));
   }
 
   open(): void { this._isOpen.next(true); }
@@ -46,7 +56,7 @@ export class CartService {
   toggle(): void { this._isOpen.next(!this._isOpen.value); }
 
   addItem(
-    product: { name: string; price: number; priceUnit: string; img: string; business: string },
+    product: { productId: number; businessId: number; name: string; price: number; priceUnit: string; img: string; business: string; openingHours?: string },
     quantity = 1
   ): void {
     const current = [...this._items.value];
@@ -57,12 +67,15 @@ export class CartService {
     } else {
       current.push({
         id: key,
+        productId: product.productId,
+        businessId: product.businessId,
         name: product.name,
         price: product.price,
         priceUnit: product.priceUnit,
         img: product.img,
         quantity,
         business: product.business,
+        openingHours: product.openingHours,
       });
     }
     this._items.next(current);
