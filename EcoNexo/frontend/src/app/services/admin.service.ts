@@ -90,9 +90,42 @@ export interface AdminRecentActivityItem {
   occurred_at: string;
 }
 
+export interface AdminGeneralSettings {
+  platform_name: string;
+  contact_email: string;
+  sales_commission_percentage: number;
+}
+
+export interface AdminNotificationSettings {
+  security_alerts: boolean;
+  new_registrations: boolean;
+  product_reports: boolean;
+  backups: boolean;
+}
+
+export interface AdminMaintenanceSettings {
+  enabled: boolean;
+  app_version: string;
+  last_platform_update_at: string;
+  last_checked_at: string;
+  update_status_message: string;
+}
+
+export interface AdminSettings {
+  general: AdminGeneralSettings;
+  notifications: AdminNotificationSettings;
+  maintenance: AdminMaintenanceSettings;
+}
+
 export interface StatisticsResponse {
   success: boolean;
   data: AdminStatistics;
+}
+
+export interface SettingsResponse {
+  success: boolean;
+  message?: string;
+  data: AdminSettings;
 }
 
 @Injectable({
@@ -172,5 +205,25 @@ export class AdminService {
    */
   getStatistics(): Observable<StatisticsResponse> {
     return this.http.get<StatisticsResponse>(`${this.baseUrl}/statistics`);
+  }
+
+  getSettings(): Observable<SettingsResponse> {
+    return this.http.get<SettingsResponse>(`${this.baseUrl}/settings`);
+  }
+
+  updateGeneralSettings(payload: AdminGeneralSettings): Observable<SettingsResponse> {
+    return this.http.put<SettingsResponse>(`${this.baseUrl}/settings/general`, payload);
+  }
+
+  updateNotificationSettings(payload: AdminNotificationSettings): Observable<SettingsResponse> {
+    return this.http.put<SettingsResponse>(`${this.baseUrl}/settings/notifications`, payload);
+  }
+
+  updateMaintenanceSettings(payload: Pick<AdminMaintenanceSettings, 'enabled'>): Observable<SettingsResponse> {
+    return this.http.put<SettingsResponse>(`${this.baseUrl}/settings/maintenance`, payload);
+  }
+
+  checkForUpdates(): Observable<SettingsResponse> {
+    return this.http.post<SettingsResponse>(`${this.baseUrl}/settings/check-updates`, {});
   }
 }

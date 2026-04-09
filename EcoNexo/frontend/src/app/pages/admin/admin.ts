@@ -6,9 +6,13 @@ import { BehaviorSubject, Subscription, interval } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { AuthService, AuthUser } from '../../core/services/auth.service';
 import {
+  AdminGeneralSettings,
+  AdminMaintenanceSettings,
   AdminOverviewCard,
+  AdminNotificationSettings,
   AdminRecentActivityItem,
   AdminService,
+  AdminSettings,
   AdminStatistics,
   AdminSystemStatusItem,
   User
@@ -54,6 +58,15 @@ export class Admin implements OnInit {
   error: string | null = null;
   successMessage: string | null = null;
   lastUpdatedAt: string | null = null;
+  settings: AdminSettings | null = null;
+  generalSettings: AdminGeneralSettings = this.initGeneralSettings();
+  notificationSettings: AdminNotificationSettings = this.initNotificationSettings();
+  maintenanceSettings: AdminMaintenanceSettings = this.initMaintenanceSettings();
+  isSettingsLoading = false;
+  isSavingGeneralSettings = false;
+  isSavingNotifications = false;
+  isSavingMaintenance = false;
+  isCheckingUpdates = false;
 
   // Filters
   selectedRole = 'todos';
@@ -105,12 +118,31 @@ export class Admin implements OnInit {
   }
 
   setSection(section: string): void {
+    if (this.activeSection === section) {
+      return;
+    }
+
     this.activeSection = section;
-    this.loadStatistics();
+    this.error = null;
+    this.successMessage = null;
+
+    if (section === 'dashboard') {
+      this.loadStatistics();
+      return;
+    }
 
     if (section === 'usuarios') {
-      this.loadUsers(this.currentPage);
+      this.loadUsers(1);
+      return;
     }
+
+    if (section === 'configuracion') {
+      this.loadSettings();
+      return;
+    }
+
+    this.activeSection = 'dashboard';
+    this.loadStatistics();
   }
 
   loadUsers(page = 1): void {
@@ -171,6 +203,33 @@ export class Admin implements OnInit {
         });
       }
     });
+  }
+
+  loadSettings(): void {
+    this.isSettingsLoading = true;
+
+    this.adminService.getSettings()
+      .pipe(finalize(() => {
+        this.ngZone.run(() => {
+          this.isSettingsLoading = false;
+          this.cdr.detectChanges();
+        });
+      }))
+      .subscribe({
+        next: (response) => {
+          this.ngZone.run(() => {
+            this.applySettings(response.data);
+            this.cdr.detectChanges();
+          });
+        },
+        error: (err) => {
+          console.error('Error loading admin settings:', err);
+          this.ngZone.run(() => {
+            this.error = 'No se pudo cargar la configuración del sistema.';
+            this.cdr.detectChanges();
+          });
+        }
+      });
   }
 
   applyFilters(): void {
@@ -343,6 +402,127 @@ export class Admin implements OnInit {
     return `${value > 0 ? '+' : ''}${value.toFixed(1)}%`;
   }
 
+  saveGeneralSettings(): void {
+    this.isSavingGeneralSettings = true;
+    this.error = null;
+
+    this.adminService.updateGeneralSettings(this.generalSettings)
+      .pipe(finalize(() => {
+        this.ngZone.run(() => {
+          this.isSavingGeneralSettings = false;
+          this.cdr.detectChanges();
+        });
+      }))
+      .subscribe({
+        next: (response) => {
+          this.ngZone.run(() => {
+            this.applySettings(response.data);
+            this.showSuccess(response.message || 'Configuración general guardada.');
+            this.cdr.detectChanges();
+          });
+        },
+        error: (err) => {
+          this.ngZone.run(() => {
+            this.error = err.error?.message || 'No se pudo guardar la configuración general.';
+            this.cdr.detectChanges();
+          });
+        }
+      });
+  }
+
+  saveNotificationSettings(): void {
+    this.isSavingNotifications = true;
+
+    this.adminService.updateNotificationSettings(this.notificationSettings)
+      .pipe(finalize(() => {
+        this.ngZone.run(() => {
+          this.isSavingNotifications = false;
+          this.cdr.detectChanges();
+        });
+      }))
+      .subscribe({
+        next: (response) => {
+          this.ngZone.run(() => {
+            this.applySettings(response.data);
+            this.showSuccess(response.message || 'Notificaciones actualizadas.');
+            this.cdr.detectChanges();
+          });
+        },
+        error: (err) => {
+          this.ngZone.run(() => {
+            this.error = err.error?.message || 'No se pudieron actualizar las notificaciones.';
+            this.loadSettings();
+          });
+        }
+      });
+  }
+
+  saveMaintenanceSettings(): void {
+    this.isSavingMaintenance = true;
+
+    this.adminService.updateMaintenanceSettings({ enabled: this.maintenanceSettings.enabled })
+      .pipe(finalize(() => {
+        this.ngZone.run(() => {
+          this.isSavingMaintenance = false;
+          this.cdr.detectChanges();
+        });
+      }))
+      .subscribe({
+        next: (response) => {
+          this.ngZone.run(() => {
+            this.applySettings(response.data);
+            this.showSuccess(response.message || 'Modo mantenimiento actualizado.');
+            this.cdr.detectChanges();
+          });
+        },
+        error: (err) => {
+          this.ngZone.run(() => {
+            this.error = err.error?.message || 'No se pudo actualizar el modo mantenimiento.';
+            this.loadSettings();
+          });
+        }
+      });
+  }
+
+  checkForUpdates(): void {
+    this.isCheckingUpdates = true;
+
+    this.adminService.checkForUpdates()
+      .pipe(finalize(() => {
+        this.ngZone.run(() => {
+          this.isCheckingUpdates = false;
+          this.cdr.detectChanges();
+        });
+      }))
+      .subscribe({
+        next: (response) => {
+          this.ngZone.run(() => {
+            this.applySettings(response.data);
+            this.showSuccess(response.message || 'Comprobación completada.');
+            this.cdr.detectChanges();
+          });
+        },
+        error: (err) => {
+          this.ngZone.run(() => {
+            this.error = err.error?.message || 'No se pudo comprobar si hay actualizaciones.';
+            this.cdr.detectChanges();
+          });
+        }
+      });
+  }
+
+  formatSettingsTimestamp(date: string): string {
+    if (!date) {
+      return '-';
+    }
+
+    return new Intl.DateTimeFormat('es-ES', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }).format(new Date(date));
+  }
+
   getChangeClass(value: number): string {
     if (value > 0) {
       return 'trend-positive';
@@ -405,6 +585,40 @@ export class Admin implements OnInit {
     return this.lastUpdatedAt ? this.formatDateTime(this.lastUpdatedAt) : 'Sin sincronizar';
   }
 
+  private applySettings(settings: AdminSettings): void {
+    this.settings = settings;
+    this.generalSettings = { ...settings.general };
+    this.notificationSettings = { ...settings.notifications };
+    this.maintenanceSettings = { ...settings.maintenance };
+  }
+
+  private initGeneralSettings(): AdminGeneralSettings {
+    return {
+      platform_name: 'EcoNexo',
+      contact_email: 'admin@econexo.com',
+      sales_commission_percentage: 5,
+    };
+  }
+
+  private initNotificationSettings(): AdminNotificationSettings {
+    return {
+      security_alerts: true,
+      new_registrations: true,
+      product_reports: true,
+      backups: false,
+    };
+  }
+
+  private initMaintenanceSettings(): AdminMaintenanceSettings {
+    return {
+      enabled: false,
+      app_version: 'v1.0.0',
+      last_platform_update_at: '',
+      last_checked_at: '',
+      update_status_message: '',
+    };
+  }
+
   private initForm(): UserForm {
     return { name: '', last_name: '', email: '', password: '', role: 'consumer', status: 'pendiente', phone: '', address: '', city: '', postal_code: '' };
   }
@@ -430,6 +644,8 @@ export class Admin implements OnInit {
 
       if (this.activeSection === 'usuarios') {
         this.loadUsers();
+      } else if (this.activeSection === 'configuracion') {
+        this.loadSettings();
       }
 
       this.startAutoRefresh();

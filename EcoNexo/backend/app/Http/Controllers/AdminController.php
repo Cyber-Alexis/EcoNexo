@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Business;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\SystemSetting;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -327,6 +329,100 @@ class AdminController extends Controller
         ], 200);
     }
 
+    public function getSettings()
+    {
+        return response()->json([
+            'success' => true,
+            'data' => $this->buildSettingsPayload(),
+        ], 200);
+    }
+
+    public function updateGeneralSettings(Request $request)
+    {
+        $validated = $request->validate([
+            'platform_name' => 'required|string|max:120',
+            'contact_email' => 'required|email|max:255',
+            'sales_commission_percentage' => 'required|numeric|min:0|max:100',
+        ]);
+
+        $this->upsertSetting('general', [
+            'platform_name' => $validated['platform_name'],
+            'contact_email' => $validated['contact_email'],
+            'sales_commission_percentage' => round((float) $validated['sales_commission_percentage'], 2),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Configuración general actualizada correctamente.',
+            'data' => $this->buildSettingsPayload(),
+        ], 200);
+    }
+
+    public function updateNotificationSettings(Request $request)
+    {
+        $validated = $request->validate([
+            'security_alerts' => 'required|boolean',
+            'new_registrations' => 'required|boolean',
+            'product_reports' => 'required|boolean',
+            'backups' => 'required|boolean',
+        ]);
+
+        $this->upsertSetting('notifications', $validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Preferencias de notificación actualizadas.',
+            'data' => $this->buildSettingsPayload(),
+        ], 200);
+    }
+
+    public function updateMaintenanceSettings(Request $request)
+    {
+        $validated = $request->validate([
+            'enabled' => 'required|boolean',
+        ]);
+
+        $current = $this->getStoredSettings()['maintenance'] ?? [];
+
+        $this->upsertSetting('maintenance', array_merge($current, [
+            'enabled' => $validated['enabled'],
+            'last_platform_update_at' => $current['last_platform_update_at'] ?? now()->toIso8601String(),
+            'last_checked_at' => $current['last_checked_at'] ?? now()->toIso8601String(),
+            'app_version' => $current['app_version'] ?? $this->getApplicationVersion(),
+            'update_status_message' => $validated['enabled']
+                ? 'Modo mantenimiento activado para usuarios no administradores.'
+                : 'Modo mantenimiento desactivado.',
+        ]));
+
+        return response()->json([
+            'success' => true,
+            'message' => $validated['enabled']
+                ? 'Modo mantenimiento activado.'
+                : 'Modo mantenimiento desactivado.',
+            'data' => $this->buildSettingsPayload(),
+        ], 200);
+    }
+
+    public function checkForUpdates()
+    {
+        $stored = $this->getStoredSettings()['maintenance'] ?? [];
+        $checkedAt = now()->toIso8601String();
+
+        $this->upsertSetting('maintenance', array_merge($stored, [
+            'enabled' => (bool) ($stored['enabled'] ?? false),
+            'app_version' => $stored['app_version'] ?? $this->getApplicationVersion(),
+            'last_platform_update_at' => $stored['last_platform_update_at'] ?? now()->toIso8601String(),
+            'last_checked_at' => $checkedAt,
+            'update_status_message' => 'No hay nuevas actualizaciones automáticas disponibles en este entorno.',
+        ]));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Comprobación de actualizaciones completada.',
+            'data' => $this->buildSettingsPayload(),
+        ], 200);
+    }
+
     private function calculateChangePercentage(float|int $current, float|int $previous): float
     {
         if ((float) $previous === 0.0) {
@@ -394,5 +490,85 @@ class AdminController extends Controller
             ->sortByDesc('occurred_at')
             ->take(8)
             ->values();
+    }
+
+    private function buildSettingsPayload(): array
+    {
+        $defaults = $this->defaultSettings();
+        $stored = $this->getStoredSettings();
+
+        $general = array_merge($defaults['general'], $stored['general'] ?? []);
+        $notifications = array_merge($defaults['notifications'], $stored['notifications'] ?? []);
+        $maintenance = array_merge($defaults['maintenance'], $stored['maintenance'] ?? []);
+
+        return [
+            'general' => $general,
+            'notifications' => $notifications,
+            'maintenance' => [
+                'enabled' => (bool) ($maintenance['enabled'] ?? false),
+                'app_version' => $maintenance['app_version'] ?? $this->getApplicationVersion(),
+                'last_platform_update_at' => $maintenance['last_platform_update_at'] ?? now()->toIso8601String(),
+                'last_checked_at' => $maintenance['last_checked_at'] ?? now()->toIso8601String(),
+                'update_status_message' => $maintenance['update_status_message'] ?? '',
+            ],
+        ];
+    }
+
+    private function getStoredSettings(): array
+    {
+        return SystemSetting::query()
+            ->get()
+            ->mapWithKeys(fn (SystemSetting $setting) => [$setting->key => $setting->value ?? []])
+            ->all();
+    }
+
+    private function upsertSetting(string $key, array $value): void
+    {
+        SystemSetting::query()->updateOrCreate(
+            ['key' => $key],
+            ['value' => $value],
+        );
+    }
+
+    private function defaultSettings(): array
+    {
+        $now = now()->toIso8601String();
+
+        return [
+            'general' => [
+                'platform_name' => 'EcoNexo',
+                'contact_email' => 'admin@econexo.com',
+                'sales_commission_percentage' => 5,
+            ],
+            'notifications' => [
+                'security_alerts' => true,
+                'new_registrations' => true,
+                'product_reports' => true,
+                'backups' => false,
+            ],
+            'maintenance' => [
+                'enabled' => false,
+                'app_version' => $this->getApplicationVersion(),
+                'last_platform_update_at' => $now,
+                'last_checked_at' => $now,
+                'update_status_message' => '',
+            ],
+        ];
+    }
+
+    private function getApplicationVersion(): string
+    {
+        $frontendPackagePath = base_path('../frontend/package.json');
+
+        if (is_file($frontendPackagePath)) {
+            $package = json_decode((string) file_get_contents($frontendPackagePath), true);
+            $version = data_get($package, 'version');
+
+            if (is_string($version) && $version !== '') {
+                return 'v' . $version;
+            }
+        }
+
+        return 'v1.0.0';
     }
 }

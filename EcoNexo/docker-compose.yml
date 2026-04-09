@@ -20,6 +20,23 @@ services:
     environment:
       - CHOKIDAR_USEPOLLING=true
 
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: econexo-ngrok
+    depends_on:
+      - frontend
+    env_file:
+      - ../.env
+    entrypoint:
+      - /bin/sh
+      - -c
+    command:
+      - ngrok http --authtoken=$$NGROK_TOKEN --log=stdout frontend:4200
+    ports:
+      - "4040:4040"
+    networks:
+      - app-network
+
   # Servicio Backend - Laravel
   backend:
     build:

@@ -1,0 +1,6 @@
+version: "2"
+tunnels:
+  Frontend:
+    proto: http
+    addr: 4200
+    domain: sandlike-umbrose-su.ngrok-free.dev

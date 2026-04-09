@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Business;
+use App\Models\SystemSetting;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -20,6 +21,18 @@ class AuthController extends Controller
         ]);
 
         $user = User::where('email', $credentials['email'])->first();
+
+        $maintenanceEnabled = (bool) data_get(
+            SystemSetting::query()->where('key', 'maintenance')->first()?->value,
+            'enabled',
+            false
+        );
+
+        if ($maintenanceEnabled && $user && $user->role !== 'admin') {
+            return response()->json([
+                'message' => 'La plataforma está temporalmente en modo mantenimiento. Vuelve a intentarlo más tarde.',
+            ], 503);
+        }
 
         if ($user && $user->status === 'bloqueado') {
             return response()->json([
