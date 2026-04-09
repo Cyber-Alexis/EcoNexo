@@ -41,6 +41,7 @@ interface UserForm {
 export class Admin implements OnInit {
   activeSection = 'dashboard';
   currentUser: AuthUser | null = null;
+  isMobileMenuOpen = false;
 
   // Users data
   users: User[] = [];
@@ -119,10 +120,12 @@ export class Admin implements OnInit {
 
   setSection(section: string): void {
     if (this.activeSection === section) {
+      this.closeMobileMenu();
       return;
     }
 
     this.activeSection = section;
+    this.closeMobileMenu();
     this.error = null;
     this.successMessage = null;
 
@@ -344,6 +347,14 @@ export class Admin implements OnInit {
         this.router.navigate(['/login']);
       }
     });
+  }
+
+  toggleMobileMenu(): void {
+    this.isMobileMenuOpen = !this.isMobileMenuOpen;
+  }
+
+  closeMobileMenu(): void {
+    this.isMobileMenuOpen = false;
   }
 
   goToPage(page: number): void {

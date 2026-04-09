@@ -28,6 +28,7 @@ export interface AuthResponse {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly base = environment.apiUrl;
+  private readonly sessionNoticeKey = 'auth_session_notice';
   private readonly _user$ = new BehaviorSubject<AuthUser | null>(this.restoreUser());
   private readonly cartService = inject(CartService);
 
@@ -138,6 +139,16 @@ export class AuthService {
       this.cartService.clear();
     }
     this._user$.next(null);
+  }
+
+  setSessionNotice(message: string): void {
+    sessionStorage.setItem(this.sessionNoticeKey, message);
+  }
+
+  consumeSessionNotice(): string {
+    const message = sessionStorage.getItem(this.sessionNoticeKey) ?? '';
+    sessionStorage.removeItem(this.sessionNoticeKey);
+    return message;
   }
 
   getToken(): string | null {

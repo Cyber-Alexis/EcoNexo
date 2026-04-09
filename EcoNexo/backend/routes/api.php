@@ -33,7 +33,7 @@ Route::middleware(['system.maintenance'])->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth:api', 'system.maintenance'])->group(function () {
+Route::middleware(['auth:api', \App\Http\Middleware\EnsureActiveApiUser::class, 'system.maintenance'])->group(function () {
     // Auth
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/me',      [AuthController::class, 'me']);
@@ -55,7 +55,7 @@ Route::middleware(['auth:api', 'system.maintenance'])->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth:api', \App\Http\Middleware\CheckAdmin::class])->group(function () {
+Route::middleware(['auth:api', \App\Http\Middleware\EnsureActiveApiUser::class, \App\Http\Middleware\CheckAdmin::class])->group(function () {
     Route::get('/admin/users',                  [AdminController::class, 'getAllUsers']);
     Route::get('/admin/users/{id}',             [AdminController::class, 'getUserById']);
     Route::post('/admin/users',                 [AdminController::class, 'createUser']);

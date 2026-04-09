@@ -16,10 +16,22 @@ export const authErrorInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError(err => {
-      if (!isAuthEndpoint && !isOrderCreation && err?.status === HttpStatusCode.Unauthorized) {
+      const message = String(err?.error?.message ?? '').toLowerCase();
+      const isBlockedResponse = err?.status === HttpStatusCode.Forbidden && message.includes('bloqueado');
+      const isMaintenanceResponse = err?.status === HttpStatusCode.ServiceUnavailable && message.includes('modo mantenimiento');
+      const shouldLogout = !isAuthEndpoint
+        && !isOrderCreation
+        && authService.isLoggedIn()
+        && (err?.status === HttpStatusCode.Unauthorized || isBlockedResponse || isMaintenanceResponse);
+
+      if (shouldLogout) {
+        if (err?.error?.message) {
+          authService.setSessionNotice(err.error.message);
+        }
         authService.clearAuth();
         router.navigate(['/login']);
       }
+
       return throwError(() => err);
     }),
   );

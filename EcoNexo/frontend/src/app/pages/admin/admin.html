@@ -1,7 +1,42 @@
 <div class="admin-layout">
+  <div class="mobile-admin-bar">
+    <button
+      type="button"
+      class="mobile-admin-toggle"
+      (click)="toggleMobileMenu()"
+      [attr.aria-expanded]="isMobileMenuOpen"
+      aria-label="Abrir navegación de administración"
+    >
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    <div class="mobile-admin-brand">
+      <span class="logo-icon" aria-hidden="true">
+        <svg viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="8" fill="#0f6b53"/>
+          <path d="M16 7C10.8 9.6 8.9 14.3 9.8 18.7C10.6 22.7 13.2 25 16 26C18.8 25 21.4 22.7 22.2 18.7C23.1 14.3 21.2 9.6 16 7Z" fill="white"/>
+          <path d="M16 13V25" stroke="#0f6b53" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <div>
+        <strong>EcoNexo</strong>
+        <span>Administración</span>
+      </div>
+    </div>
+  </div>
+
+  <button
+    *ngIf="isMobileMenuOpen"
+    type="button"
+    class="sidebar-backdrop"
+    (click)="closeMobileMenu()"
+    aria-label="Cerrar menú lateral"
+  ></button>
 
   <!-- SIDEBAR -->
-  <aside class="sidebar">
+  <aside class="sidebar" [class.sidebar-open]="isMobileMenuOpen">
     <div class="sidebar-logo">
       <span class="logo-icon" aria-hidden="true">
         <svg viewBox="0 0 32 32" fill="none">
@@ -112,7 +147,7 @@
         <div class="panel-header">
           <h2>Usuarios</h2>
           <button class="btn btn-primary" (click)="openCreateModal()">
-            ✨ Crear Usuario
+            Crear Usuario
           </button>
         </div>
 
@@ -338,7 +373,7 @@
           </div>
         </section>
 
-        <section class="panel settings-panel">
+        <section class="panel settings-panel settings-panel-full">
           <div class="settings-panel-header">
             <div>
               <h2>Mantenimiento</h2>

@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, NgZone, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, NgZone, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
@@ -12,7 +12,7 @@ import { AuthService } from '../../core/services/auth.service';
   templateUrl: './login.html',
   styleUrl: './login.css',
 })
-export class Login {
+export class Login implements OnInit {
   private router = inject(Router);
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
@@ -29,6 +29,15 @@ export class Login {
 
   get email() { return this.form.get('email')!; }
   get password() { return this.form.get('password')!; }
+
+  ngOnInit(): void {
+    const sessionNotice = this.authService.consumeSessionNotice();
+
+    if (sessionNotice) {
+      this.message = sessionNotice;
+      this.cdr.detectChanges();
+    }
+  }
 
   onSubmit(): void {
     if (this.isLoading) {
