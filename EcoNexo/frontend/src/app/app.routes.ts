@@ -11,6 +11,8 @@ import { Perfil } from './pages/pages_consumer/perfil/perfil';
 import { Configuracion } from './pages/pages_consumer/configuracion/configuracion';
 import { Admin } from './pages/admin/admin';
 import { adminGuard } from './core/guards/admin.guard';
+import { Checkout } from './pages/proceso_pago/checkout/checkout';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -26,4 +28,6 @@ export const routes: Routes = [
   { path: 'perfil', component: Perfil },
   { path: 'configuracion', component: Configuracion },
   { path: 'admin', component: Admin, canActivate: [adminGuard] },
+  { path: 'admin', component: Admin },
+  { path: 'checkout', component: Checkout, canActivate: [authGuard] },
 ];

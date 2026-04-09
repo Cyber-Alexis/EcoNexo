@@ -152,11 +152,14 @@ export class NegocioDetalle implements OnInit, OnDestroy {
   addToCart(product: ApiProduct): void {
     const qty = this.getQty(product.id);
     this.cartService.addItem({
+      productId: product.id,
+      businessId: this.business?.id ?? 0,
       name: product.name,
       price: Number(product.price),
       priceUnit: product.category?.name ?? 'unidad',
       img: this.productImage(product.images),
       business: this.business?.name ?? 'Negocio',
+      openingHours: this.business?.opening_hours ?? undefined,
     }, qty);
     this.quantities.set(product.id, 1);
     this.cartService.open();

@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\OrderController;
 use Illuminate\Support\Facades\Route;
 
 // Handle OPTIONS preflight for all API routes (needed for PUT/DELETE CORS)
@@ -42,6 +43,10 @@ Route::middleware(['auth:api', 'system.maintenance'])->group(function () {
     Route::put('/perfil/password',    [ProfileController::class, 'changePassword']);
     Route::delete('/perfil',          [ProfileController::class, 'deleteAccount']);
     Route::post('/perfil/avatar',     [ProfileController::class, 'uploadAvatar']);
+
+    // Orders
+    Route::post('/orders',  [OrderController::class, 'store']);
+    Route::get('/orders',   [OrderController::class, 'index']);
 });
 
 /*

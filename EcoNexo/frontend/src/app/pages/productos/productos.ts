@@ -203,11 +203,13 @@ export class Productos implements OnInit, OnDestroy {
   addToCart(product: ApiProductWithBusiness): void {
     const qty = this.getQty(product.id);
     this.cartService.addItem({
+      productId: product.id,
+      businessId: product.business.id,
       name: product.name,
       price: Number(product.price),
       priceUnit: product.category?.name ?? 'unidad',
       img: this.getProductImage(product),
-      business: product.business?.name ?? 'Negocio',
+      business: product.business.name,
     }, qty);
     this.productQty.set(product.id, 1);
     this.cartService.open();

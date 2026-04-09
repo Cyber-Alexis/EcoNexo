@@ -31,6 +31,10 @@ export class Login {
   get password() { return this.form.get('password')!; }
 
   onSubmit(): void {
+    if (this.isLoading) {
+      return;
+    }
+
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -39,7 +43,7 @@ export class Login {
     this.isLoading = true;
     this.message = '';
 
-    const { email, password } = this.form.value;
+    const { email, password } = this.form.getRawValue();
 
     this.authService.login(email!, password!)
       .pipe(finalize(() => {

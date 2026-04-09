@@ -1,0 +1,25 @@
+<div class="confirmation-wrapper">
+  <div class="confirmation-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="44" height="44">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+  </div>
+
+  <h2 class="confirmation-title">¡Pedido Confirmado!</h2>
+  <p class="confirmation-subtitle">Tu pedido ha sido recibido y está siendo procesado.</p>
+
+  <div class="orders-list">
+    @for (order of orders; track order.code) {
+      <div class="order-row">
+        <span class="order-business">{{ order.business }}</span>
+        <span class="order-code">{{ order.code }}</span>
+        <span class="order-total">{{ order.total.toFixed(2) }}€</span>
+      </div>
+    }
+  </div>
+
+  <div class="confirmation-actions">
+    <a routerLink="/perfil" class="btn-primary">Ver mis pedidos</a>
+    <a routerLink="/home" class="btn-secondary">Volver al inicio</a>
+  </div>
+</div>
