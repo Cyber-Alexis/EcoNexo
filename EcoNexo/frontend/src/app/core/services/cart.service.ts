@@ -1,5 +1,7 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, Subject, catchError, concatMap, of, tap } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface CartItem {
   id: string;
@@ -21,13 +23,32 @@ export interface CartGroup {
   items: CartItem[];
 }
 
+interface CartSyncPayload {
+  items: Array<{
+    product_id: number;
+    quantity: number;
+  }>;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CartService {
+  private readonly STORAGE_KEY = 'econexo_cart_items';
   private readonly _items = new BehaviorSubject<CartItem[]>([]);
   private readonly _isOpen = new BehaviorSubject<boolean>(false);
+  private readonly http = inject(HttpClient);
+  private readonly base = environment.apiUrl;
+  private readonly syncQueue = new Subject<Observable<unknown>>();
 
   readonly items$ = this._items.asObservable();
   readonly isOpen$ = this._isOpen.asObservable();
+
+  constructor() {
+    this.syncQueue.pipe(concatMap((request$) => request$)).subscribe();
+
+    const restoredItems = this.restoreItemsFromStorage();
+    this._items.next(restoredItems);
+    this.hydrateCart();
+  }
 
   get totalCount(): number {
     return this._items.value.reduce((sum, i) => sum + i.quantity, 0);
@@ -46,9 +67,36 @@ export class CartService {
     return Array.from(map.entries()).map(([business, items]) => ({
       business,
       businessId: items[0]?.businessId ?? 0,
-      openingHours: items[0]?.openingHours,
+      openingHours: items.find((item) => item.openingHours?.trim())?.openingHours,
       items,
     }));
+  }
+
+  hydrateCart(): void {
+    const restoredItems = this.restoreItemsFromStorage();
+    if (restoredItems.length > 0) {
+      this._items.next(this.normalizeItems(restoredItems));
+    }
+
+    if (!this.hasToken()) {
+      return;
+    }
+
+    if (restoredItems.length > 0) {
+      this.syncRemoteCart(restoredItems).subscribe();
+      return;
+    }
+
+    this.fetchRemoteCart().subscribe();
+  }
+
+  refreshFromServer(): void {
+    if (this.hasToken()) {
+      this.fetchRemoteCart().subscribe();
+      return;
+    }
+
+    this.setItems(this.restoreItemsFromStorage(), false);
   }
 
   open(): void { this._isOpen.next(true); }
@@ -59,11 +107,21 @@ export class CartService {
     product: { productId: number; businessId: number; name: string; price: number; priceUnit: string; img: string; business: string; openingHours?: string },
     quantity = 1
   ): void {
+    if (quantity <= 0) return;
+
     const current = [...this._items.value];
-    const key = `${product.business}::${product.name}`;
-    const idx = current.findIndex(i => i.id === key);
+    const key = this.buildItemId(product.businessId, product.productId);
+    const idx = current.findIndex(
+      (item) => item.id === key || (item.productId === product.productId && item.businessId === product.businessId),
+    );
+
     if (idx >= 0) {
-      current[idx] = { ...current[idx], quantity: current[idx].quantity + quantity };
+      current[idx] = {
+        ...current[idx],
+        id: key,
+        quantity: current[idx].quantity + quantity,
+        openingHours: current[idx].openingHours ?? product.openingHours,
+      };
     } else {
       current.push({
         id: key,
@@ -78,7 +136,8 @@ export class CartService {
         openingHours: product.openingHours,
       });
     }
-    this._items.next(current);
+
+    this.setItems(current);
   }
 
   updateQuantity(id: string, quantity: number): void {
@@ -86,14 +145,114 @@ export class CartService {
       this.removeItem(id);
       return;
     }
-    this._items.next(this._items.value.map(i => i.id === id ? { ...i, quantity } : i));
+
+    this.setItems(this._items.value.map((item) => item.id === id ? { ...item, quantity } : item));
   }
 
   removeItem(id: string): void {
-    this._items.next(this._items.value.filter(i => i.id !== id));
+    this.setItems(this._items.value.filter((item) => item.id !== id));
   }
 
   clear(): void {
-    this._items.next([]);
+    this.setItems([]);
+  }
+
+  private setItems(items: CartItem[], persistRemote = true): void {
+    const normalized = this.normalizeItems(items);
+    this._items.next(normalized);
+    this.storeItemsInStorage(normalized);
+
+    if (!persistRemote || !this.hasToken()) {
+      return;
+    }
+
+    const request$: Observable<unknown> = normalized.length > 0
+      ? this.syncRemoteCart(normalized)
+      : this.clearRemoteCart();
+
+    this.enqueueRemoteRequest(request$);
+  }
+
+  private fetchRemoteCart() {
+    return this.http.get<CartItem[]>(`${this.base}/cart`).pipe(
+      tap((items) => this.setItems(items, false)),
+      catchError((error) => {
+        console.error('No se pudo recuperar el carrito desde el servidor', error);
+        return of(this._items.value);
+      }),
+    );
+  }
+
+  private enqueueRemoteRequest(request$: Observable<unknown>): void {
+    this.syncQueue.next(request$);
+  }
+
+  private syncRemoteCart(items: CartItem[]) {
+    const payload: CartSyncPayload = {
+      items: items.map((item) => ({
+        product_id: item.productId,
+        quantity: item.quantity,
+      })),
+    };
+
+    return this.http.put<CartItem[]>(`${this.base}/cart`, payload).pipe(
+      tap((serverItems) => this.setItems(serverItems, false)),
+      catchError((error) => {
+        console.error('No se pudo sincronizar el carrito con el servidor', error);
+        return of(this._items.value);
+      }),
+    );
+  }
+
+  private clearRemoteCart() {
+    return this.http.delete<{ message: string }>(`${this.base}/cart`).pipe(
+      catchError((error) => {
+        console.error('No se pudo vaciar el carrito en el servidor', error);
+        return of({ message: 'No se pudo vaciar el carrito en el servidor.' });
+      }),
+    );
+  }
+
+  private restoreItemsFromStorage(): CartItem[] {
+    try {
+      const raw = localStorage.getItem(this.STORAGE_KEY);
+      if (!raw) {
+        return [];
+      }
+
+      const parsed = JSON.parse(raw) as CartItem[];
+      return this.normalizeItems(parsed);
+    } catch {
+      return [];
+    }
+  }
+
+  private storeItemsInStorage(items: CartItem[]): void {
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(items));
+  }
+
+  private normalizeItems(items: CartItem[]): CartItem[] {
+    return items
+      .filter((item) => !!item?.productId && !!item?.businessId && (item.quantity ?? 0) > 0)
+      .map((item) => ({
+        id: this.buildItemId(item.businessId, item.productId),
+        productId: Number(item.productId),
+        businessId: Number(item.businessId),
+        name: item.name,
+        price: Number(item.price),
+        priceUnit: item.priceUnit ?? 'unidad',
+        img: item.img,
+        quantity: Number(item.quantity),
+        business: item.business,
+        openingHours: item.openingHours,
+      }));
+  }
+
+  private buildItemId(businessId: number, productId: number): string {
+    return `${businessId}::${productId}`;
+  }
+
+  private hasToken(): boolean {
+    return !!localStorage.getItem('access_token');
   }
 }

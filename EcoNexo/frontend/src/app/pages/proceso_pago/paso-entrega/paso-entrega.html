@@ -148,16 +148,39 @@
         @if (selectedMethod === 'delivery') {
           <p class="schedules-helper">Consulta también el horario del negocio aunque elijas entrega a domicilio.</p>
         }
-        @for (group of groups; track group.business) {
-          <div class="schedule-row">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16" class="clock-icon">
-              <circle cx="12" cy="12" r="10" />
-              <polyline points="12 6 12 12 16 14" />
-            </svg>
-            <span class="schedule-business">{{ group.business }}:</span>
-            <span class="schedule-hours">{{ group.openingHours ?? 'Lun-Sáb 8:00-20:00' }}</span>
-          </div>
-        }
+
+        <div class="schedule-list">
+          @for (group of groups; track group.business) {
+            <div class="schedule-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16" class="clock-icon">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              <span class="schedule-business">{{ group.business }}:</span>
+              <span class="schedule-hours">{{ getGroupOpeningHours(group) }}</span>
+            </div>
+          }
+        </div>
+
+        <div class="common-schedule">
+          <h4 class="common-schedule-title">Resumen común de la compra</h4>
+          <p class="schedules-helper">{{ commonOpeningHoursMessage }}</p>
+
+          @if (commonOpeningHoursSummary.length > 0) {
+            @for (slot of commonOpeningHoursSummary; track slot.label + slot.hours) {
+              <div class="schedule-row schedule-row--summary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16" class="clock-icon">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+                <span class="schedule-business">{{ slot.label }}:</span>
+                <span class="schedule-hours">{{ slot.hours }}</span>
+              </div>
+            }
+          } @else {
+            <p class="common-schedule-empty">Revisa los horarios individuales para coordinar mejor la recogida.</p>
+          }
+        </div>
       </div>
     }
 

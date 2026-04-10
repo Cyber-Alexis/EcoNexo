@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use Illuminate\Support\Facades\Route;
 
@@ -41,6 +42,11 @@ Route::middleware(['auth:api'])->group(function () {
     Route::put('/perfil/password',    [ProfileController::class, 'changePassword']);
     Route::delete('/perfil',          [ProfileController::class, 'deleteAccount']);
     Route::post('/perfil/avatar',     [ProfileController::class, 'uploadAvatar']);
+
+    // Cart
+    Route::get('/cart',     [CartController::class, 'index']);
+    Route::put('/cart',     [CartController::class, 'sync']);
+    Route::delete('/cart',  [CartController::class, 'clear']);
 
     // Orders
     Route::post('/orders',  [OrderController::class, 'store']);

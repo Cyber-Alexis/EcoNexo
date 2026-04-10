@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CartService, CartGroup } from '../../../core/services/cart.service';
@@ -8,7 +8,7 @@ import { PasoDatos, ContactData } from '../paso-datos/paso-datos';
 import { PasoEntrega, DeliveryData } from '../paso-entrega/paso-entrega';
 import { PasoPago, PaymentData } from '../paso-pago/paso-pago';
 import { Confirmacion, ConfirmedOrder } from '../confirmacion/confirmacion';
-import { concatMap, from, toArray } from 'rxjs';
+import { Subscription, concatMap, from, toArray } from 'rxjs';
 
 interface CheckoutState {
   contact: ContactData | null;
@@ -24,11 +24,12 @@ interface CheckoutState {
   templateUrl: './checkout.html',
   styleUrl: './checkout.css',
 })
-export class Checkout implements OnInit {
+export class Checkout implements OnInit, OnDestroy {
   private cartService = inject(CartService);
   private orderService = inject(OrderService);
   private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
+  private cartSubscription?: Subscription;
 
   readonly homeDeliveryFee = 3.5;
 
@@ -45,8 +46,15 @@ export class Checkout implements OnInit {
   };
 
   ngOnInit(): void {
-    this.cartGroups = this.cartService.groupedItems;
-    this.triggerUiUpdate();
+    this.cartService.refreshFromServer();
+    this.cartSubscription = this.cartService.items$.subscribe(() => {
+      this.cartGroups = this.cartService.groupedItems;
+      this.triggerUiUpdate();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.cartSubscription?.unsubscribe();
   }
 
   get subtotal(): number {

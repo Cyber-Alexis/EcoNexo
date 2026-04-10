@@ -22,6 +22,7 @@ export class CartComponent implements OnInit {
   subtotal = 0;
 
   ngOnInit(): void {
+    this.cartService.refreshFromServer();
     this.cartService.isOpen$.subscribe(open => (this.isOpen = open));
     this.cartService.items$.subscribe(() => {
       this.groupedItems = this.cartService.groupedItems;

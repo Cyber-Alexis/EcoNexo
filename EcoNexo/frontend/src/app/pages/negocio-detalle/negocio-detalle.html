@@ -136,7 +136,7 @@
               <div class="product-info">
                 <h4 class="product-name">{{ p.name }}</h4>
                 <p class="product-price">
-                  {{ p.price | number:'1.2-2' }}€<span class="price-unit">/{{ p.category?.name ?? 'unidad' }}</span>
+                  {{ p.price | number:'1.2-2' }}€<span class="price-unit">/{{ getDisplayPriceUnit(p) }}</span>
                 </p>
                 <div class="product-stock-row">
                   <p class="product-stock">Stock: {{ p.stock }}</p>

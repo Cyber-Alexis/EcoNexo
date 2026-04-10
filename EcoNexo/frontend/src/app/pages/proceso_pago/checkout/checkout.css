@@ -152,12 +152,24 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 0.75rem;
   margin-bottom: 0.35rem;
+}
+
+.summary-item-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
 .summary-item-name {
   font-size: 0.85rem;
   color: #6b7280;
+}
+
+.summary-item-unit {
+  font-size: 0.76rem;
+  color: #9ca3af;
 }
 
 .summary-item-price {

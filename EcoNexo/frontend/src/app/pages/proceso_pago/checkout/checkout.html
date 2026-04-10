@@ -80,7 +80,10 @@
               <p class="summary-business">{{ group.business }}</p>
               @for (item of group.items; track item.id) {
                 <div class="summary-item">
-                  <span class="summary-item-name">{{ item.quantity }}x {{ item.name }}</span>
+                  <div class="summary-item-info">
+                    <span class="summary-item-name">{{ item.quantity }}x {{ item.name }}</span>
+                    <span class="summary-item-unit">{{ item.price.toFixed(2) }}€/{{ item.priceUnit }}</span>
+                  </div>
                   <span class="summary-item-price">{{ (item.price * item.quantity).toFixed(2) }}€</span>
                 </div>
               }
