@@ -20,7 +20,8 @@ export class App {
   }
 
   isAdminRoute(): boolean {
-    return this.router.url.startsWith('/admin');
+    const url = this.router.url || '';
+    return url.startsWith('/admin') || url.startsWith('/mi-negocio');
   }
 
   isProfileRoute(): boolean {

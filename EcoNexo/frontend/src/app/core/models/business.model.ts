@@ -25,6 +25,7 @@ export interface ApiUser {
   id: number;
   name: string;
   last_name: string;
+  email?: string | null;
 }
 
 export interface ApiReview {
@@ -41,7 +42,9 @@ export interface ApiBusiness {
   description: string | null;
   address: string;
   city: string;
+  postal_code: string | null;
   phone: string | null;
+  website: string | null;
   opening_hours: string | null;
   status: string;
   reviews_avg_rating: number | null;
@@ -50,6 +53,7 @@ export interface ApiBusiness {
   categories: ApiCategory[];
   products: ApiProduct[];
   reviews: ApiReview[];
+  user?: ApiUser | null;
 }
 
 export interface ApiBusinessListItem {
@@ -58,11 +62,14 @@ export interface ApiBusinessListItem {
   description: string | null;
   address: string;
   city: string;
+  postal_code: string | null;
   phone: string | null;
+  website: string | null;
   opening_hours: string | null;
   status: string;
   reviews_avg_rating: number | null;
   reviews_count: number;
   images: ApiImage[];
   categories: ApiCategory[];
+  user?: ApiUser | null;
 }

@@ -209,6 +209,16 @@
   color: #4B5563;
 }
 
+.meta-item a {
+  color: #2D6A4F;
+  text-decoration: none;
+  word-break: break-word;
+}
+
+.meta-item a:hover {
+  text-decoration: underline;
+}
+
 /* ── Tabs ────────────────────────────────────── */
 .tabs-bar {
   display: flex;

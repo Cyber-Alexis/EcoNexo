@@ -70,6 +70,12 @@ export class Login implements OnInit {
             return;
           }
 
+          if (response.user?.role === 'business') {
+            this.router.navigate(['/mi-negocio']);
+            this.cdr.detectChanges();
+            return;
+          }
+
           this.router.navigate(['/home']);
           this.cdr.detectChanges();
         });

@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { Login } from './pages/login/login';
 import { RegisterCliente } from './pages/register-cliente/register-cliente';
 import { RegisterNegocio } from './pages/register-negocio/register-negocio';
+import { BusinessDashboard } from './pages/business-dashboard/business-dashboard';
 import { Home } from './pages/home/home';
 import { Negocios } from './pages/negocios/negocios';
 import { Productos } from './pages/productos/productos';
@@ -11,6 +12,7 @@ import { Perfil } from './pages/pages_consumer/perfil/perfil';
 import { Configuracion } from './pages/pages_consumer/configuracion/configuracion';
 import { Admin } from './pages/admin/admin';
 import { adminGuard } from './core/guards/admin.guard';
+import { businessGuard } from './core/guards/business.guard';
 import { Checkout } from './pages/proceso_pago/checkout/checkout';
 import { authGuard } from './core/guards/auth.guard';
 
@@ -20,6 +22,7 @@ export const routes: Routes = [
   { path: 'register', redirectTo: 'register/cliente', pathMatch: 'full' },
   { path: 'register/cliente', component: RegisterCliente },
   { path: 'register/negocio', component: RegisterNegocio },
+  { path: 'mi-negocio', component: BusinessDashboard, canActivate: [businessGuard] },
   { path: 'home', component: Home },
   { path: 'negocios', component: Negocios },
   { path: 'negocios/:id', component: NegocioDetalle },

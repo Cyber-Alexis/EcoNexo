@@ -4,13 +4,16 @@ import { BehaviorSubject, Observable, tap, timeout } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { CartService } from './cart.service';
 
-const REQUEST_TIMEOUT_MS = 10_000; // 10 s
+const REQUEST_TIMEOUT_MS = 30_000; // 30 s
 
 export interface AuthUser {
   id: number;
   name: string;
+  last_name?: string;
   email: string;
   role: string;
+  business_id?: number | null;
+  business_name?: string | null;
   avatar_url?: string;
   phone?: string;
   address?: string;

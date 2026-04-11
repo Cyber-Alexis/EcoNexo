@@ -120,16 +120,40 @@ class AuthController extends Controller
      */
     public function me()
     {
-        return response()->json(auth('api')->user());
+        return response()->json($this->serializeUser(auth('api')->user()));
     }
 
     private function respondWithToken(string $token, int $status = 200)
     {
+        $user = auth('api')->user();
+
         return response()->json([
             'access_token' => $token,
             'token_type'   => 'bearer',
             'expires_in'   => auth('api')->factory()->getTTL() * 60,
-            'user'         => auth('api')->user(),
+            'user'         => $this->serializeUser($user),
         ], $status);
+    }
+
+    private function serializeUser(User $user): array
+    {
+        $business = $user->businesses()->latest('id')->first();
+        $avatar = $user->avatar;
+
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'last_name' => $user->last_name,
+            'email' => $user->email,
+            'role' => $user->role,
+            'status' => $user->status,
+            'phone' => $user->phone,
+            'address' => $user->address,
+            'city' => $user->city,
+            'postal_code' => $user->postal_code,
+            'business_id' => $business?->id,
+            'business_name' => $business?->name,
+            'avatar_url' => $avatar?->path,
+        ];
     }
 }

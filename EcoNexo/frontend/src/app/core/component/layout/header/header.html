@@ -66,12 +66,12 @@
         @if (dropdownOpen) {
           <div class="dropdown" role="menu">
             <p class="dropdown-title">Mi Cuenta</p>
-            <a routerLink="/perfil" class="dropdown-item" (click)="dropdownOpen = false">
+            <a [routerLink]="currentUser?.role === 'business' ? '/mi-negocio' : '/perfil'" class="dropdown-item" (click)="dropdownOpen = false">
               <svg viewBox="0 0 24 24" fill="none">
                 <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.5"/>
                 <path d="M4 20C4 16.686 7.582 14 12 14C16.418 14 20 16.686 20 20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
               </svg>
-              Mi Perfil
+              {{ currentUser?.role === 'business' ? 'Mi Negocio' : 'Mi Perfil' }}
             </a>
             <a routerLink="/negocios" class="dropdown-item" (click)="dropdownOpen = false">
               <svg viewBox="0 0 24 24" fill="none">

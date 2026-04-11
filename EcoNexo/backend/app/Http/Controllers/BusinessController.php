@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Business;
+use App\Models\Image;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class BusinessController extends Controller
 {
@@ -17,8 +19,9 @@ class BusinessController extends Controller
             ->withAvg('reviews', 'rating')
             ->withCount('reviews')
             ->with([
-                'images'     => fn ($q) => $q->where('type', 'main')->limit(1),
+                'images' => fn ($q) => $q->where('type', 'main')->limit(1),
                 'categories' => fn ($q) => $q->select(['id', 'business_id', 'name']),
+                'user:id,name,last_name,email',
             ])
             ->get();
 
@@ -32,16 +35,209 @@ class BusinessController extends Controller
     public function show(Business $business)
     {
         $business->load([
+            'user:id,name,last_name,email',
             'images',
             'categories' => fn ($q) => $q->select(['id', 'business_id', 'name']),
             'products' => fn ($q) => $q->where('active', true)->with('images'),
-            'reviews'  => fn ($q) => $q->with('user')->latest()->limit(20),
+            'reviews' => fn ($q) => $q->with('user')->latest()->limit(20),
         ]);
 
         $business->loadAvg('reviews', 'rating');
         $business->loadCount('reviews');
 
         return response()->json($business);
+    }
+
+    /**
+     * GET /api/mi-negocio
+     * Returns the business owned by the authenticated business user.
+     */
+    public function mine()
+    {
+        $user = auth('api')->user();
+
+        if (!$user || $user->role !== 'business') {
+            return response()->json([
+                'message' => 'Solo los usuarios negocio pueden gestionar esta sección.',
+            ], 403);
+        }
+
+        $business = $this->resolveOwnedBusiness($user);
+        $this->loadBusinessRelations($business);
+
+        return response()->json($business);
+    }
+
+    /**
+     * PUT /api/mi-negocio
+     * Updates the public profile for the authenticated business user.
+     */
+    public function updateMine(Request $request)
+    {
+        $user = auth('api')->user();
+
+        if (!$user || $user->role !== 'business') {
+            return response()->json([
+                'message' => 'Solo los usuarios negocio pueden gestionar esta sección.',
+            ], 403);
+        }
+
+        $data = $request->validate([
+            'name' => 'sometimes|nullable|string|max:255',
+            'category_name' => 'nullable|string|max:120',
+            'description' => 'nullable|string|max:2000',
+            'address' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:100',
+            'postal_code' => 'nullable|string|max:20',
+            'phone' => 'nullable|string|max:30',
+            'email' => 'nullable|email|max:255|unique:users,email,' . $user->id,
+            'website' => 'nullable|string|max:255',
+            'opening_hours' => 'nullable|string|max:255',
+            'main_image' => 'nullable|url|max:2048',
+        ]);
+
+        if (!empty($data['website']) && !preg_match('/^https?:\/\//i', $data['website'])) {
+            $data['website'] = 'https://' . ltrim($data['website'], '/');
+        }
+
+        $business = $this->resolveOwnedBusiness($user, $data['name'] ?? null);
+
+        $user->update([
+            'email' => $data['email'] ?? $user->email,
+            'phone' => $data['phone'] ?? $user->phone,
+            'address' => $data['address'] ?? $user->address,
+            'city' => $data['city'] ?? $user->city,
+            'postal_code' => $data['postal_code'] ?? $user->postal_code,
+        ]);
+
+        $business->update([
+            'name' => !empty($data['name']) ? $data['name'] : $business->name,
+            'description' => $data['description'] ?? $business->description,
+            'address' => $data['address'] ?? $business->address,
+            'city' => $data['city'] ?? $business->city,
+            'postal_code' => $data['postal_code'] ?? $business->postal_code,
+            'phone' => $data['phone'] ?? $business->phone,
+            'website' => $data['website'] ?? $business->website,
+            'opening_hours' => $data['opening_hours'] ?? $business->opening_hours,
+            'status' => $business->status ?: 'active',
+        ]);
+
+        if (array_key_exists('category_name', $data) && !empty($data['category_name'])) {
+            $business->categories()->delete();
+            $business->categories()->create([
+                'name' => $data['category_name'],
+            ]);
+        }
+
+        if (array_key_exists('main_image', $data) && !empty($data['main_image'])) {
+            $business->images()->updateOrCreate(
+                ['type' => 'main'],
+                ['path' => $data['main_image']],
+            );
+        }
+
+        $this->loadBusinessRelations($business);
+
+        return response()->json([
+            'message' => 'Información del negocio actualizada correctamente.',
+            'business' => $business,
+            'user' => $user->fresh(),
+        ]);
+    }
+
+    /**
+     * POST /api/mi-negocio/imagenes
+     * Uploads one main image or multiple gallery images from the user's device.
+     */
+    public function uploadImages(Request $request)
+    {
+        $user = auth('api')->user();
+
+        if (!$user || $user->role !== 'business') {
+            return response()->json([
+                'message' => 'Solo los usuarios negocio pueden gestionar esta sección.',
+            ], 403);
+        }
+
+        $data = $request->validate([
+            'type' => 'required|in:main,gallery',
+            'images' => 'required|array|min:1|max:6',
+            'images.*' => 'required|image|mimes:jpg,jpeg,png,webp|max:4096',
+        ]);
+
+        $business = $this->resolveOwnedBusiness($user);
+        $files = $request->file('images', []);
+
+        if ($data['type'] === 'main') {
+            foreach ($business->images()->where('type', 'main')->get() as $image) {
+                $this->deleteStoredImage($image);
+                $image->delete();
+            }
+
+            $path = $files[0]->store('businesses/' . $business->id, 'public');
+            $business->images()->create([
+                'path' => $path,
+                'type' => 'main',
+            ]);
+        } else {
+            $currentGalleryCount = $business->images()->where('type', 'gallery')->count();
+            if (($currentGalleryCount + count($files)) > 6) {
+                return response()->json([
+                    'message' => 'Solo puedes tener hasta 6 imágenes en la galería.',
+                ], 422);
+            }
+
+            foreach ($files as $file) {
+                $path = $file->store('businesses/' . $business->id, 'public');
+                $business->images()->create([
+                    'path' => $path,
+                    'type' => 'gallery',
+                ]);
+            }
+        }
+
+        $this->loadBusinessRelations($business);
+
+        return response()->json([
+            'message' => 'Imágenes actualizadas correctamente.',
+            'business' => $business,
+        ]);
+    }
+
+    private function resolveOwnedBusiness($user, ?string $preferredName = null): Business
+    {
+        $fallbackName = trim((string) ($preferredName ?: $user->businesses()->value('name') ?: $user->name ?: 'Mi negocio'));
+
+        return Business::firstOrCreate(
+            ['user_id' => $user->id],
+            [
+                'name' => $fallbackName,
+                'status' => 'active',
+            ],
+        );
+    }
+
+    private function loadBusinessRelations(Business $business): void
+    {
+        $business->load([
+            'user:id,name,last_name,email',
+            'images',
+            'categories' => fn ($q) => $q->select(['id', 'business_id', 'name']),
+            'products' => fn ($q) => $q->with('images'),
+            'reviews' => fn ($q) => $q->with('user')->latest()->limit(20),
+        ]);
+
+        $business->loadAvg('reviews', 'rating');
+        $business->loadCount('reviews');
+    }
+
+    private function deleteStoredImage(Image $image): void
+    {
+        $rawPath = $image->getRawOriginal('path');
+
+        if ($rawPath && !preg_match('/^https?:\/\//i', $rawPath)) {
+            Storage::disk('public')->delete($rawPath);
+        }
     }
 
     /**

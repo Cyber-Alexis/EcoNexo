@@ -53,7 +53,7 @@ export class RegisterNegocio {
     this.authService.registerNegocio(nombre!, apellidos!, email!, password!, nombreNegocio!).subscribe({
       next: () => {
         this.isLoading = false;
-        this.router.navigate(['/login']);
+        this.router.navigate(['/mi-negocio']);
       },
       error: (err) => {
         this.isLoading = false;

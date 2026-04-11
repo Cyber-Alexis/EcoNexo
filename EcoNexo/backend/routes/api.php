@@ -44,6 +44,12 @@ Route::middleware(['auth:api', \App\Http\Middleware\EnsureActiveApiUser::class, 
     Route::delete('/perfil',          [ProfileController::class, 'deleteAccount']);
     Route::post('/perfil/avatar',     [ProfileController::class, 'uploadAvatar']);
 
+    // Business owner
+    Route::get('/mi-negocio',         [BusinessController::class, 'mine']);
+    Route::put('/mi-negocio',         [BusinessController::class, 'updateMine']);
+    Route::post('/mi-negocio',        [BusinessController::class, 'updateMine']);
+    Route::post('/mi-negocio/imagenes', [BusinessController::class, 'uploadImages']);
+
     // Orders
     Route::post('/orders',  [OrderController::class, 'store']);
     Route::get('/orders',   [OrderController::class, 'index']);
