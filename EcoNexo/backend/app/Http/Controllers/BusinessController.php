@@ -63,7 +63,7 @@ class BusinessController extends Controller
         }
 
         $business = $this->resolveOwnedBusiness($user);
-        $this->loadBusinessRelations($business);
+        $this->loadOwnerBusinessRelations($business);
 
         return response()->json($business);
     }
@@ -136,7 +136,7 @@ class BusinessController extends Controller
             );
         }
 
-        $this->loadBusinessRelations($business);
+        $this->loadOwnerBusinessRelations($business);
 
         return response()->json([
             'message' => 'Información del negocio actualizada correctamente.',
@@ -196,10 +196,44 @@ class BusinessController extends Controller
             }
         }
 
-        $this->loadBusinessRelations($business);
+        $this->loadOwnerBusinessRelations($business);
 
         return response()->json([
             'message' => 'Imágenes actualizadas correctamente.',
+            'business' => $business,
+        ]);
+    }
+
+    /**
+     * DELETE /api/mi-negocio/imagenes/{imageId}
+     * Deletes one image (main or gallery) owned by the authenticated business user.
+     */
+    public function deleteImage(int $imageId)
+    {
+        $user = auth('api')->user();
+
+        if (!$user || $user->role !== 'business') {
+            return response()->json([
+                'message' => 'Solo los usuarios negocio pueden gestionar esta sección.',
+            ], 403);
+        }
+
+        $business = $this->resolveOwnedBusiness($user);
+        $image = $business->images()->whereKey($imageId)->first();
+
+        if (!$image) {
+            return response()->json([
+                'message' => 'La imagen no existe o no pertenece a tu negocio.',
+            ], 404);
+        }
+
+        $this->deleteStoredImage($image);
+        $image->delete();
+
+        $this->loadOwnerBusinessRelations($business);
+
+        return response()->json([
+            'message' => 'Imagen eliminada correctamente.',
             'business' => $business,
         ]);
     }
@@ -229,6 +263,15 @@ class BusinessController extends Controller
 
         $business->loadAvg('reviews', 'rating');
         $business->loadCount('reviews');
+    }
+
+    private function loadOwnerBusinessRelations(Business $business): void
+    {
+        $business->load([
+            'user:id,name,last_name,email',
+            'images',
+            'categories' => fn ($q) => $q->select(['id', 'business_id', 'name']),
+        ]);
     }
 
     private function deleteStoredImage(Image $image): void

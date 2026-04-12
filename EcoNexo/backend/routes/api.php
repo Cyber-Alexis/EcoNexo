@@ -49,6 +49,7 @@ Route::middleware(['auth:api', \App\Http\Middleware\EnsureActiveApiUser::class, 
     Route::put('/mi-negocio',         [BusinessController::class, 'updateMine']);
     Route::post('/mi-negocio',        [BusinessController::class, 'updateMine']);
     Route::post('/mi-negocio/imagenes', [BusinessController::class, 'uploadImages']);
+    Route::delete('/mi-negocio/imagenes/{imageId}', [BusinessController::class, 'deleteImage']);
 
     // Orders
     Route::post('/orders',  [OrderController::class, 'store']);

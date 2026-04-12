@@ -50,4 +50,8 @@ export class BusinessService {
 
     return this.http.post<{ message: string; business: ApiBusiness }>(`${this.base}/mi-negocio/imagenes`, formData);
   }
+
+  deleteImage(imageId: number): Observable<{ message: string; business: ApiBusiness }> {
+    return this.http.delete<{ message: string; business: ApiBusiness }>(`${this.base}/mi-negocio/imagenes/${imageId}`);
+  }
 }

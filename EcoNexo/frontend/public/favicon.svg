@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- Background -->
+  <rect width="100" height="100" rx="16" fill="#d8edcc"/>
+  <!-- Outer dark leaf -->
+  <path d="M50 10 C50 10, 82 28, 80 58 C78 74, 65 85, 50 88 C35 85, 22 74, 20 58 C18 28, 50 10, 50 10 Z" fill="#3a7d1e"/>
+  <!-- Inner medium leaf -->
+  <path d="M50 22 C50 22, 70 36, 68 58 C66 70, 58 78, 50 80 C42 78, 34 70, 32 58 C30 36, 50 22, 50 22 Z" fill="#4e9c24"/>
+  <!-- Inner highlight teardrop -->
+  <path d="M50 34 C50 34, 60 44, 58 58 C57 65, 54 70, 50 72 C46 70, 43 65, 42 58 C40 44, 50 34, 50 34 Z" fill="#c8e6a0" opacity="0.85"/>
+  <!-- Small curl at bottom of inner teardrop -->
+  <path d="M47 70 Q50 76, 53 70" stroke="#4e9c24" stroke-width="2" fill="none" stroke-linecap="round"/>
+</svg>

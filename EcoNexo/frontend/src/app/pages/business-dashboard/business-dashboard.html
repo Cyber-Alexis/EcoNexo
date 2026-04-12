@@ -196,8 +196,8 @@
             <div>
               <p class="image-section-label">Imagen Principal</p>
               <button type="button" class="upload-tile upload-tile--main" (click)="mainImageInput.click()">
-                @if (imagePreview) {
-                  <img [src]="imagePreview" alt="Imagen principal del negocio" class="upload-image" />
+                @if (mainImage$ | async; as mainImage) {
+                  <img [src]="mainImage.path" alt="Imagen principal del negocio" class="upload-image" />
                 } @else {
                   <div class="upload-placeholder">
                     <span class="upload-icon">📷</span>
@@ -205,9 +205,16 @@
                   </div>
                 }
               </button>
+              @if (mainImage$ | async; as mainImage) {
+                <div class="image-action-row">
+                  <button type="button" class="btn-delete-image" [disabled]="uploadingMain$ | async" (click)="onRemoveMainImage($event)">
+                    Eliminar imagen
+                  </button>
+                </div>
+              }
               <input #mainImageInput type="file" accept="image/*" class="hidden-file-input" (change)="onMainImageSelected($event)" />
 
-              @if (uploadingMain) {
+              @if (uploadingMain$ | async) {
                 <p class="upload-status">Subiendo imagen principal...</p>
               }
             </div>
@@ -215,27 +222,36 @@
             <div>
               <div class="gallery-title-row">
                 <p class="image-section-label">Galería de Imágenes</p>
-                <button type="button" class="btn btn-secondary btn-sm" (click)="galleryInput.click()">Añadir imágenes</button>
+                <button type="button" class="btn btn-secondary btn-sm" [disabled]="uploadingGallery$ | async" (click)="galleryInput.click()">Añadir imágenes</button>
               </div>
 
               <div class="gallery-grid">
-                @for (imageUrl of galleryPreviewSlots; track $index) {
-                  <button type="button" class="upload-tile upload-tile--gallery" (click)="galleryInput.click()">
-                    @if (imageUrl) {
-                      <img [src]="imageUrl" [alt]="'Imagen de galería ' + ($index + 1)" class="upload-image" />
-                    } @else {
-                      <div class="upload-placeholder upload-placeholder--small">
-                        <span class="upload-icon">📷</span>
+                @for (slotImage of galleryPreviewSlots$ | async; track $index) {
+                  <div class="gallery-slot">
+                    <button type="button" class="upload-tile upload-tile--gallery" [disabled]="uploadingGallery$ | async" (click)="galleryInput.click()">
+                      @if (slotImage) {
+                        <img [src]="slotImage.path" [alt]="'Imagen de galería ' + ($index + 1)" class="upload-image" />
+                      } @else {
+                        <div class="upload-placeholder upload-placeholder--small">
+                          <span class="upload-icon">📷</span>
+                        </div>
+                      }
+                    </button>
+                    @if (slotImage) {
+                      <div class="image-action-row">
+                        <button type="button" class="btn-delete-image" [disabled]="uploadingGallery$ | async" (click)="onRemoveGalleryImage(slotImage.id, $event)">
+                          Eliminar imagen
+                        </button>
                       </div>
                     }
-                  </button>
+                  </div>
                 }
               </div>
 
               <input #galleryInput type="file" accept="image/*" class="hidden-file-input" multiple (change)="onGalleryImagesSelected($event)" />
               <p class="field-help">Puedes subir hasta 6 imágenes de la galería para mostrar tu negocio y tus productos.</p>
 
-              @if (uploadingGallery) {
+              @if (uploadingGallery$ | async) {
                 <p class="upload-status">Subiendo imágenes de la galería...</p>
               }
             </div>

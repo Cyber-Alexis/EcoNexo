@@ -386,8 +386,35 @@
   gap: 0.8rem;
 }
 
+.gallery-slot {
+  display: grid;
+  gap: 0.35rem;
+}
+
 .hidden-file-input {
   display: none;
+}
+
+.image-action-row {
+  margin-top: 0.4rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-delete-image {
+  border: 1px solid #fecaca;
+  background: #fff7f7;
+  color: #b91c1c;
+  border-radius: 8px;
+  padding: 0.3rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-delete-image:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .upload-status {

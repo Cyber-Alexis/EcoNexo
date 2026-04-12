@@ -2,10 +2,13 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { timeout } from 'rxjs/operators';
-import { ApiBusiness } from '../../core/models/business.model';
+import { BehaviorSubject } from 'rxjs';
+import { finalize, timeout } from 'rxjs/operators';
+import { ApiBusiness, ApiImage } from '../../core/models/business.model';
 import { AuthService } from '../../core/services/auth.service';
 import { BusinessService } from '../../core/services/business.service';
+
+const BUSINESS_REQUEST_TIMEOUT_MS = 30_000;
 
 @Component({
   selector: 'app-business-dashboard',
@@ -23,14 +26,20 @@ export class BusinessDashboard implements OnInit {
   activeTab: 'informacion' | 'horarios' | 'imagenes' = 'informacion';
   syncing = false;
   saving = false;
-  uploadingMain = false;
-  uploadingGallery = false;
   successMessage = '';
   errorMessage = '';
   syncMessage = '';
   businessId: number | null = null;
-  mainImageUrl: string | null = null;
-  galleryImageUrls: string[] = [];
+
+  private readonly uploadingMainSubject = new BehaviorSubject<boolean>(false);
+  private readonly uploadingGallerySubject = new BehaviorSubject<boolean>(false);
+  private readonly mainImageSubject = new BehaviorSubject<ApiImage | null>(null);
+  private readonly galleryPreviewSlotsSubject = new BehaviorSubject<Array<ApiImage | null>>([]);
+
+  readonly uploadingMain$ = this.uploadingMainSubject.asObservable();
+  readonly uploadingGallery$ = this.uploadingGallerySubject.asObservable();
+  readonly mainImage$ = this.mainImageSubject.asObservable();
+  readonly galleryPreviewSlots$ = this.galleryPreviewSlotsSubject.asObservable();
 
   readonly gallerySlots = Array.from({ length: 6 }, (_, index) => index);
 
@@ -76,14 +85,6 @@ export class BusinessDashboard implements OnInit {
     return this.form.value.description?.length ?? 0;
   }
 
-  get imagePreview(): string | null {
-    return this.mainImageUrl;
-  }
-
-  get galleryPreviewSlots(): Array<string | null> {
-    return this.gallerySlots.map((index) => this.galleryImageUrls[index] ?? null);
-  }
-
   private prefillFromSession(): void {
     const currentUser = this.authService.getUser();
 
@@ -99,11 +100,11 @@ export class BusinessDashboard implements OnInit {
 
   private applyBusinessData(business: ApiBusiness): void {
     this.businessId = business.id;
-    this.mainImageUrl = business.images.find((image) => image.type === 'main')?.path ?? null;
-    this.galleryImageUrls = business.images
-      .filter((image) => image.type !== 'main')
-      .map((image) => image.path)
-      .slice(0, 6);
+    const mainImage = business.images.find((image) => image.type === 'main') ?? null;
+    const galleryImages = business.images.filter((image) => image.type !== 'main').slice(0, 6);
+
+    this.mainImageSubject.next(mainImage);
+    this.galleryPreviewSlotsSubject.next(this.gallerySlots.map((index) => galleryImages[index] ?? null));
 
     this.form.patchValue({
       name: business.name ?? this.form.value.name ?? '',
@@ -123,7 +124,7 @@ export class BusinessDashboard implements OnInit {
     this.syncing = true;
     this.syncMessage = 'Sincronizando la información guardada de tu negocio...';
 
-    this.businessService.getMine().pipe(timeout(8000)).subscribe({
+    this.businessService.getMine().pipe(timeout(BUSINESS_REQUEST_TIMEOUT_MS)).subscribe({
       next: (business) => {
         this.applyBusinessData(business);
         this.syncing = false;
@@ -132,7 +133,7 @@ export class BusinessDashboard implements OnInit {
       error: (err) => {
         this.syncing = false;
         this.syncMessage = 'No se pudo sincronizar ahora mismo, pero puedes editar y guardar tus datos.';
-        this.errorMessage = err?.error?.message || '';
+        this.errorMessage = err?.error?.message || 'No se pudo cargar la informacion actual del negocio.';
       },
     });
   }
@@ -210,23 +211,75 @@ export class BusinessDashboard implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
-    if (type === 'main') {
-      this.uploadingMain = true;
+    const isMain = type === 'main';
+
+    if (isMain) {
+      this.uploadingMainSubject.next(true);
     } else {
-      this.uploadingGallery = true;
+      this.uploadingGallerySubject.next(true);
     }
 
-    this.businessService.uploadImages(files, type).subscribe({
+    this.businessService.uploadImages(files, type).pipe(
+      finalize(() => {
+        if (isMain) {
+          this.uploadingMainSubject.next(false);
+        } else {
+          this.uploadingGallerySubject.next(false);
+        }
+      }),
+    ).subscribe({
       next: (response) => {
         this.applyBusinessData(response.business);
-        this.uploadingMain = false;
-        this.uploadingGallery = false;
         this.successMessage = response.message || 'Imágenes actualizadas correctamente.';
       },
       error: (err) => {
-        this.uploadingMain = false;
-        this.uploadingGallery = false;
         this.errorMessage = err?.error?.message || 'No se pudieron subir las imágenes.';
+      },
+    });
+  }
+
+  onRemoveMainImage(event: Event): void {
+    event.stopPropagation();
+
+    const mainImage = this.mainImageSubject.value;
+
+    if (!mainImage?.id) {
+      return;
+    }
+
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.uploadingMainSubject.next(true);
+
+    this.businessService.deleteImage(mainImage.id).pipe(
+      finalize(() => this.uploadingMainSubject.next(false)),
+    ).subscribe({
+      next: (response) => {
+        this.applyBusinessData(response.business);
+        this.successMessage = response.message || 'Imagen eliminada correctamente.';
+      },
+      error: (err) => {
+        this.errorMessage = err?.error?.message || 'No se pudo eliminar la imagen.';
+      },
+    });
+  }
+
+  onRemoveGalleryImage(imageId: number, event: Event): void {
+    event.stopPropagation();
+
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.uploadingGallerySubject.next(true);
+
+    this.businessService.deleteImage(imageId).pipe(
+      finalize(() => this.uploadingGallerySubject.next(false)),
+    ).subscribe({
+      next: (response) => {
+        this.applyBusinessData(response.business);
+        this.successMessage = response.message || 'Imagen eliminada correctamente.';
+      },
+      error: (err) => {
+        this.errorMessage = err?.error?.message || 'No se pudo eliminar la imagen.';
       },
     });
   }
