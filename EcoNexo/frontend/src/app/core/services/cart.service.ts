@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, Subject, catchError, concatMap, of, tap } from 'rxjs';
+import { BehaviorSubject, Subject, catchError, debounceTime, of, switchMap, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export interface CartItem {
@@ -33,17 +33,23 @@ interface CartSyncPayload {
 @Injectable({ providedIn: 'root' })
 export class CartService {
   private readonly STORAGE_KEY = 'econexo_cart_items';
+  private readonly REMOTE_SYNC_DEBOUNCE_MS = 150;
   private readonly _items = new BehaviorSubject<CartItem[]>([]);
   private readonly _isOpen = new BehaviorSubject<boolean>(false);
   private readonly http = inject(HttpClient);
   private readonly base = environment.apiUrl;
-  private readonly syncQueue = new Subject<Observable<unknown>>();
+  private readonly syncRequests = new Subject<CartItem[]>();
 
   readonly items$ = this._items.asObservable();
   readonly isOpen$ = this._isOpen.asObservable();
 
   constructor() {
-    this.syncQueue.pipe(concatMap((request$) => request$)).subscribe();
+    this.syncRequests
+      .pipe(
+        debounceTime(this.REMOTE_SYNC_DEBOUNCE_MS),
+        switchMap((items) => items.length > 0 ? this.syncRemoteCart(items) : this.clearRemoteCart()),
+      )
+      .subscribe();
 
     const restoredItems = this.restoreItemsFromStorage();
     this._items.next(restoredItems);
@@ -166,11 +172,7 @@ export class CartService {
       return;
     }
 
-    const request$: Observable<unknown> = normalized.length > 0
-      ? this.syncRemoteCart(normalized)
-      : this.clearRemoteCart();
-
-    this.enqueueRemoteRequest(request$);
+    this.enqueueRemoteRequest(normalized);
   }
 
   private fetchRemoteCart() {
@@ -183,8 +185,8 @@ export class CartService {
     );
   }
 
-  private enqueueRemoteRequest(request$: Observable<unknown>): void {
-    this.syncQueue.next(request$);
+  private enqueueRemoteRequest(items: CartItem[]): void {
+    this.syncRequests.next(items);
   }
 
   private syncRemoteCart(items: CartItem[]) {

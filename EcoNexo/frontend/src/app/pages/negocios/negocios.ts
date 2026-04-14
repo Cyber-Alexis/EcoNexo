@@ -110,6 +110,25 @@ export class Negocios implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
+  get emptyStateMessage(): string {
+    const query = this.searchQuery.trim();
+    const hasCategoryFilter = this.selectedFilter !== 'Todas';
+
+    if (query && hasCategoryFilter) {
+      return `No se encontraron negocios en la categoria "${this.selectedFilter}" que coincidan con "${query}".`;
+    }
+
+    if (query) {
+      return `No se encontraron negocios que coincidan con "${query}".`;
+    }
+
+    if (hasCategoryFilter) {
+      return `No hay negocios disponibles en la categoria "${this.selectedFilter}".`;
+    }
+
+    return 'No hay negocios disponibles en este momento.';
+  }
+
   businessImage(b: ApiBusinessListItem): string {
     return b.images?.[0]?.path ?? 'https://placehold.co/500x300?text=Sin+imagen';
   }

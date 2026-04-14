@@ -13,6 +13,7 @@ import { Admin } from './pages/admin/admin';
 import { adminGuard } from './core/guards/admin.guard';
 import { Checkout } from './pages/proceso_pago/checkout/checkout';
 import { authGuard } from './core/guards/auth.guard';
+import { checkoutGuard } from './core/guards/checkout.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -29,5 +30,5 @@ export const routes: Routes = [
   { path: 'configuracion', component: Configuracion },
   { path: 'admin', component: Admin, canActivate: [adminGuard] },
   { path: 'admin', component: Admin },
-  { path: 'checkout', component: Checkout, canActivate: [authGuard] },
+  { path: 'checkout', component: Checkout, canActivate: [authGuard, checkoutGuard] },
 ];

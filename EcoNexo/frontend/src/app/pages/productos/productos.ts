@@ -171,6 +171,25 @@ export class Productos implements OnInit, OnDestroy {
     this.applyFiltersAndPagination();
   }
 
+  get emptyStateMessage(): string {
+    const query = this.searchQuery.trim();
+    const hasCategoryFilter = this.selectedFilter !== 'Todas';
+
+    if (query && hasCategoryFilter) {
+      return `No se encontraron productos en la categoria "${this.selectedFilter}" que coincidan con "${query}".`;
+    }
+
+    if (query) {
+      return `No se encontraron productos que coincidan con "${query}".`;
+    }
+
+    if (hasCategoryFilter) {
+      return `No hay productos disponibles en la categoria "${this.selectedFilter}".`;
+    }
+
+    return 'No hay productos disponibles en este momento.';
+  }
+
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
       this.currentPage = page;
