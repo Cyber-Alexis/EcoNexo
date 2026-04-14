@@ -28,6 +28,7 @@ export interface ApiProductWithBusiness extends ApiProduct {
     id: number;
     name: string;
     city: string;
+    opening_hours: string | null;
   };
 }
 

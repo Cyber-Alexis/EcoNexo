@@ -81,7 +81,7 @@
 
                 <h3 class="product-name">{{ p.name }}</h3>
                 <p class="product-desc">{{ p.description ?? 'Sin descripción' }}</p>
-                <p class="product-price">{{ p.price | number:'1.2-2' }}€ <span class="price-unit">/ {{ p.category?.name ?? 'unidad' }}</span></p>
+                <p class="product-price">{{ p.price | number:'1.2-2' }}€ <span class="price-unit">/ {{ getDisplayPriceUnit(p) }}</span></p>
 
                 <div class="product-footer">
                   <div class="quantity-control">
@@ -104,13 +104,9 @@
           }
         </div>
 
-        @if (loading) {
+        @if (filteredProducts.length === 0) {
           <div class="no-results">
-            <p>Cargando productos...</p>
-          </div>
-        } @else if (filteredProducts.length === 0) {
-          <div class="no-results">
-            <p>No se encontraron productos con los criterios de búsqueda.</p>
+            <p>{{ emptyStateMessage }}</p>
           </div>
         }
 

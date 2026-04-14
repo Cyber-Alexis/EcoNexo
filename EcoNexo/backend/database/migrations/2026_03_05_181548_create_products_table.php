@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('name');
             $table->text('description')->nullable();
             $table->decimal('price', 8, 2);
+            $table->string('price_unit')->default('unidad');
             $table->integer('stock')->default(0);
             $table->boolean('active')->default(true);
             $table->timestamps();

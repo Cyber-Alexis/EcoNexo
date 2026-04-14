@@ -15,6 +15,7 @@ export interface ApiProduct {
   name: string;
   description: string | null;
   price: number;
+  price_unit: string | null;
   stock: number;
   active: boolean;
   category: ApiCategory | null;

@@ -22,6 +22,7 @@ export class CartComponent implements OnInit {
   subtotal = 0;
 
   ngOnInit(): void {
+    this.cartService.refreshFromServer();
     this.cartService.isOpen$.subscribe(open => (this.isOpen = open));
     this.cartService.items$.subscribe(() => {
       this.groupedItems = this.cartService.groupedItems;
@@ -38,10 +39,17 @@ export class CartComponent implements OnInit {
 
   checkout(): void {
     this.close();
+
+    if (this.totalCount === 0) {
+      this.router.navigate(['/home']);
+      return;
+    }
+
     if (!this.authService.isLoggedIn()) {
       this.router.navigate(['/login']);
       return;
     }
+
     this.router.navigate(['/checkout']);
   }
 }

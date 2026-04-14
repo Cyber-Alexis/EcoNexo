@@ -10,7 +10,7 @@ class Product extends Model
     use HasFactory;
 
     protected $fillable = [
-        'business_id', 'category_id', 'name', 'description', 'price', 'stock', 'active',
+        'business_id', 'category_id', 'name', 'description', 'price', 'price_unit', 'stock', 'active',
     ];
 
     protected $casts = [
@@ -32,6 +32,11 @@ class Product extends Model
     public function images()
     {
         return $this->morphMany(Image::class, 'imageable');
+    }
+
+    public function cartItems()
+    {
+        return $this->hasMany(CartItem::class);
     }
 
     public function reviews()

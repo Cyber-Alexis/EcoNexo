@@ -156,13 +156,36 @@ export class NegocioDetalle implements OnInit, OnDestroy {
       businessId: this.business?.id ?? 0,
       name: product.name,
       price: Number(product.price),
-      priceUnit: product.category?.name ?? 'unidad',
+      priceUnit: this.getDisplayPriceUnit(product),
       img: this.productImage(product.images),
       business: this.business?.name ?? 'Negocio',
       openingHours: this.business?.opening_hours ?? undefined,
     }, qty);
     this.quantities.set(product.id, 1);
     this.cartService.open();
+  }
+
+  getDisplayPriceUnit(product: { price_unit?: string | null; category?: { name: string } | null }): string {
+    const directUnit = product.price_unit?.trim();
+    if (directUnit) {
+      return directUnit;
+    }
+
+    const categoryName = product.category?.name?.trim().toLowerCase() ?? '';
+
+    if (['frutas', 'verdures', 'fruits secs', 'vedella', 'porc', 'aus'].includes(categoryName)) {
+      return 'kg';
+    }
+
+    if (['vins negres', 'vins blancs', 'caves i escumosos'].includes(categoryName)) {
+      return 'botella';
+    }
+
+    if (categoryName === 'rams i bouquets') {
+      return 'ramo';
+    }
+
+    return 'unidad';
   }
 
   formatUserName(user: { name: string; last_name: string }): string {

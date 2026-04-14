@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use Illuminate\Support\Facades\Route;
 
@@ -50,6 +51,10 @@ Route::middleware(['auth:api', \App\Http\Middleware\EnsureActiveApiUser::class, 
     Route::post('/mi-negocio',        [BusinessController::class, 'updateMine']);
     Route::post('/mi-negocio/imagenes', [BusinessController::class, 'uploadImages']);
     Route::delete('/mi-negocio/imagenes/{imageId}', [BusinessController::class, 'deleteImage']);
+    // Cart
+    Route::get('/cart',     [CartController::class, 'index']);
+    Route::put('/cart',     [CartController::class, 'sync']);
+    Route::delete('/cart',  [CartController::class, 'clear']);
 
     // Orders
     Route::post('/orders',  [OrderController::class, 'store']);

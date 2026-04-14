@@ -171,6 +171,25 @@ export class Productos implements OnInit, OnDestroy {
     this.applyFiltersAndPagination();
   }
 
+  get emptyStateMessage(): string {
+    const query = this.searchQuery.trim();
+    const hasCategoryFilter = this.selectedFilter !== 'Todas';
+
+    if (query && hasCategoryFilter) {
+      return `No se encontraron productos en la categoria "${this.selectedFilter}" que coincidan con "${query}".`;
+    }
+
+    if (query) {
+      return `No se encontraron productos que coincidan con "${query}".`;
+    }
+
+    if (hasCategoryFilter) {
+      return `No hay productos disponibles en la categoria "${this.selectedFilter}".`;
+    }
+
+    return 'No hay productos disponibles en este momento.';
+  }
+
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
       this.currentPage = page;
@@ -207,9 +226,10 @@ export class Productos implements OnInit, OnDestroy {
       businessId: product.business.id,
       name: product.name,
       price: Number(product.price),
-      priceUnit: product.category?.name ?? 'unidad',
+      priceUnit: this.getDisplayPriceUnit(product),
       img: this.getProductImage(product),
       business: product.business.name,
+      openingHours: product.business.opening_hours ?? undefined,
     }, qty);
     this.productQty.set(product.id, 1);
     this.cartService.open();
@@ -217,6 +237,29 @@ export class Productos implements OnInit, OnDestroy {
 
   getProductImage(product: ApiProductWithBusiness): string {
     return product.images?.[0]?.path ?? 'https://placehold.co/300x300?text=Sin+imagen';
+  }
+
+  getDisplayPriceUnit(product: { price_unit?: string | null; category?: { name: string } | null }): string {
+    const directUnit = product.price_unit?.trim();
+    if (directUnit) {
+      return directUnit;
+    }
+
+    const categoryName = product.category?.name?.trim().toLowerCase() ?? '';
+
+    if (['frutas', 'verdures', 'fruits secs', 'vedella', 'porc', 'aus'].includes(categoryName)) {
+      return 'kg';
+    }
+
+    if (['vins negres', 'vins blancs', 'caves i escumosos'].includes(categoryName)) {
+      return 'botella';
+    }
+
+    if (categoryName === 'rams i bouquets') {
+      return 'ramo';
+    }
+
+    return 'unidad';
   }
 
   getQty(id: number): number {

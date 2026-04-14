@@ -174,6 +174,7 @@ export class AuthService {
   private storeAuth(res: AuthResponse): void {
     localStorage.setItem('access_token', res.access_token);
     this.storeUser(res.user);
+    this.cartService.hydrateCart();
   }
 
   private storeUser(user: AuthUser): void {

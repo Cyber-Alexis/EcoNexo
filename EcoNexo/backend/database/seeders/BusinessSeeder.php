@@ -38,7 +38,7 @@ class BusinessSeeder extends Seeder
                 'address'     => 'Plaça Paeria, 3',
                 'city'        => 'Lleida',
                 'phone'       => '+34 973 234 567',
-                'opening_hours' => 'Lun-Vie: 7:00-14:00, 17:00-20:30, Sáb: 7:00-14:00',
+                'opening_hours' => 'Lun-Vie: 7:00-14:00, 17:00-20:30, Sáb: 7:00-14:00', 
                 'status'      => 'active',
                 'img_main'    => 'https://panet.cat/es/botigues/panet-lleida/',
                 'img_gallery' => [
@@ -58,7 +58,7 @@ class BusinessSeeder extends Seeder
                 'address'     => 'Carrer del Vi, 8',
                 'city'        => 'Lleida',
                 'phone'       => '+34 973 345 678',
-                'opening_hours' => 'Lun-Vie: 10:00-14:00, 16:00-20:00, Sáb: 10:00-14:00',
+                'opening_hours' => 'Lun-Vie: 7:00-14:00, 17:00-20:30, Sáb: 7:00-14:00', // 'Lun-Vie: 10:00-14:00, 16:00-20:00, Sáb: 10:00-14:00'
                 'status'      => 'active',
                 'img_main'    => 'https://images.unsplash.com/photo-1510812431401-41d2cab2707d?w=800&q=80',
                 'img_gallery' => [
