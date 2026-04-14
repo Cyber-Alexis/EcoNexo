@@ -421,6 +421,54 @@ form {
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 
+.form-group input::-ms-reveal,
+.form-group input::-ms-clear {
+  display: none;
+}
+
+.password-field {
+  position: relative;
+}
+
+.password-field input {
+  padding-right: 3rem;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.7rem;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: #111827;
+  cursor: pointer;
+}
+
+.password-toggle:hover {
+  background: rgba(17, 24, 39, 0.06);
+}
+
+.password-toggle.is-active {
+  color: #2D6A4F;
+}
+
+.password-toggle:focus-visible {
+  outline: 2px solid rgba(45, 106, 79, 0.35);
+  outline-offset: 2px;
+}
+
+.password-toggle i {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
 .form-group input:focus {
   outline: none;
   border-color: #2D6A4F;

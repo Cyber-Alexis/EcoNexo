@@ -21,6 +21,7 @@ export class Login implements OnInit {
 
   isLoading = false;
   message = '';
+  showPassword = false;
 
   form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -29,6 +30,10 @@ export class Login implements OnInit {
 
   get email() { return this.form.get('email')!; }
   get password() { return this.form.get('password')!; }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
 
   ngOnInit(): void {
     const sessionNotice = this.authService.consumeSessionNotice();

@@ -39,13 +39,16 @@ export class Negocios implements OnInit, OnDestroy {
     this.businessService.getAll().subscribe({
       next: (data) => {
         this.businesses = data;
-        this.applyFilters();
         this.loading = false;
+        this.applyFilters();
       },
       error: (err) => {
         console.error('Error loading businesses:', err);
         this.error = true;
+        this.businesses = [];
+        this.filteredBusinesses = [];
         this.loading = false;
+        this.syncView();
       },
     });
   }
@@ -101,29 +104,40 @@ export class Negocios implements OnInit, OnDestroy {
     }
 
     this.filteredBusinesses = filtered;
-    
-    // Force Angular to detect changes and update the view
-    this.cdr.detectChanges();
+    this.syncView();
   }
 
   onSearchChange() {
     this.applyFilters();
   }
 
+  get hasActiveCriteria(): boolean {
+    return this.searchQuery.trim().length > 0 || this.selectedFilter !== 'Todas';
+  }
+
+  get hasNoBusinessesAvailable(): boolean {
+    return !this.loading && this.businesses.length === 0;
+  }
+
+  get showLoadingState(): boolean {
+    return this.loading;
+  }
+
+  get showResultsCount(): boolean {
+    return !this.loading && this.filteredBusinesses.length > 0;
+  }
+
+  get showEmptyState(): boolean {
+    return !this.loading && this.filteredBusinesses.length === 0;
+  }
+
   get emptyStateMessage(): string {
-    const query = this.searchQuery.trim();
-    const hasCategoryFilter = this.selectedFilter !== 'Todas';
-
-    if (query && hasCategoryFilter) {
-      return `No se encontraron negocios en la categoria "${this.selectedFilter}" que coincidan con "${query}".`;
+    if (this.hasNoBusinessesAvailable) {
+      return 'No hay negocios disponibles en este momento.';
     }
 
-    if (query) {
-      return `No se encontraron negocios que coincidan con "${query}".`;
-    }
-
-    if (hasCategoryFilter) {
-      return `No hay negocios disponibles en la categoria "${this.selectedFilter}".`;
+    if (this.hasActiveCriteria) {
+      return 'No se encontraron negocios con los criterios de búsqueda.';
     }
 
     return 'No hay negocios disponibles en este momento.';
@@ -131,6 +145,10 @@ export class Negocios implements OnInit, OnDestroy {
 
   businessImage(b: ApiBusinessListItem): string {
     return b.images?.[0]?.path ?? 'https://placehold.co/500x300?text=Sin+imagen';
+  }
+
+  private syncView(): void {
+    this.cdr.detectChanges();
   }
 }
 

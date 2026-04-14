@@ -59,12 +59,14 @@
         </div>
       </div>
 
-      @if (loading) {
+      @if (showLoadingState) {
         <div class="loading-container">
           <p>Cargando productos...</p>
         </div>
       } @else {
-        <p class="results-count">{{ totalProducts }} producto{{ totalProducts !== 1 ? 's' : '' }} encontrado{{ totalProducts !== 1 ? 's' : '' }}</p>
+        @if (showResultsCount) {
+          <p class="results-count">{{ totalProducts }} producto{{ totalProducts !== 1 ? 's' : '' }} encontrado{{ totalProducts !== 1 ? 's' : '' }}</p>
+        }
 
         <div class="products-grid">
           @for (p of filteredProducts; track p.id) {
@@ -104,7 +106,7 @@
           }
         </div>
 
-        @if (filteredProducts.length === 0) {
+        @if (showEmptyState) {
           <div class="no-results">
             <p>{{ emptyStateMessage }}</p>
           </div>

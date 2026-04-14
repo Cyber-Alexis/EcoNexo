@@ -22,6 +22,8 @@ export class RegisterNegocio {
 
   isLoading = false;
   message = '';
+  showPassword = false;
+  showConfirmPassword = false;
 
   form = this.fb.group({
     nombre: ['', Validators.required],
@@ -39,6 +41,14 @@ export class RegisterNegocio {
   get password() { return this.form.get('password')!; }
   get confirmPassword() { return this.form.get('confirmPassword')!; }
   get mismatch() { return this.form.hasError('passwordsMismatch') && this.confirmPassword.touched; }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  toggleConfirmPasswordVisibility(): void {
+    this.showConfirmPassword = !this.showConfirmPassword;
+  }
 
   onSubmit(): void {
     if (this.form.invalid) {

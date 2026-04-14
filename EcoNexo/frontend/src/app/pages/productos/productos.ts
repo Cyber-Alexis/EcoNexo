@@ -67,6 +67,7 @@ export class Productos implements OnInit, OnDestroy {
 
   loadAllProducts(): void {
     this.loading = true;
+    this.syncView();
     
     // Load ALL products in a single request (no pagination on backend)
     this.productService.getAll({ per_page: 1000 }).subscribe({
@@ -79,14 +80,18 @@ export class Productos implements OnInit, OnDestroy {
             this.productQty.set(p.id, 1);
           }
         });
-        
-        // Apply filters and show first page
-        this.applyFiltersAndPagination();
         this.loading = false;
+        this.applyFiltersAndPagination();
       },
       error: (err) => {
         console.error('Error loading products:', err);
+        this.allProducts = [];
+        this.products = [];
+        this.filteredProducts = [];
+        this.totalProducts = 0;
+        this.totalPages = 1;
         this.loading = false;
+        this.syncView();
       }
     });
   }
@@ -139,9 +144,8 @@ export class Productos implements OnInit, OnDestroy {
     const endIndex = startIndex + this.perPage;
     this.products = filtered.slice(startIndex, endIndex);
     this.filteredProducts = this.products;
-    
-    // Force Angular to detect changes and update the view
-    this.cdr.detectChanges();
+
+    this.syncView();
   }
 
   loadProducts(): void {
@@ -171,20 +175,33 @@ export class Productos implements OnInit, OnDestroy {
     this.applyFiltersAndPagination();
   }
 
+  get hasActiveCriteria(): boolean {
+    return this.searchQuery.trim().length > 0 || this.selectedFilter !== 'Todas';
+  }
+
+  get hasNoProductsAvailable(): boolean {
+    return !this.loading && this.allProducts.length === 0;
+  }
+
+  get showLoadingState(): boolean {
+    return this.loading;
+  }
+
+  get showResultsCount(): boolean {
+    return !this.loading && this.totalProducts > 0;
+  }
+
+  get showEmptyState(): boolean {
+    return !this.loading && this.filteredProducts.length === 0;
+  }
+
   get emptyStateMessage(): string {
-    const query = this.searchQuery.trim();
-    const hasCategoryFilter = this.selectedFilter !== 'Todas';
-
-    if (query && hasCategoryFilter) {
-      return `No se encontraron productos en la categoria "${this.selectedFilter}" que coincidan con "${query}".`;
+    if (this.hasNoProductsAvailable) {
+      return 'No hay productos disponibles en este momento.';
     }
 
-    if (query) {
-      return `No se encontraron productos que coincidan con "${query}".`;
-    }
-
-    if (hasCategoryFilter) {
-      return `No hay productos disponibles en la categoria "${this.selectedFilter}".`;
+    if (this.hasActiveCriteria) {
+      return 'No se encontraron productos con los criterios de búsqueda.';
     }
 
     return 'No hay productos disponibles en este momento.';
@@ -277,5 +294,9 @@ export class Productos implements OnInit, OnDestroy {
 
   get categories(): string[] {
     return this.availableCategories;
+  }
+
+  private syncView(): void {
+    this.cdr.detectChanges();
   }
 }

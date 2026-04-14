@@ -287,6 +287,16 @@
   font-size: 1rem;
 }
 
+/* ─── Loading State ─── */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  color: #6b7280;
+  font-size: 1rem;
+}
+
 /* Tablet */
 @media (min-width: 601px) and (max-width: 1024px) {
   .category-filter {
