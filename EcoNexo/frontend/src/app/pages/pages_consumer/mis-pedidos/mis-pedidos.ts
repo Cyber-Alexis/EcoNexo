@@ -1,7 +1,9 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   HostListener,
+  NgZone,
   computed,
   inject,
   signal,
@@ -64,6 +66,8 @@ export class MisPedidos implements OnInit {
   private router      = inject(Router);
   private authService = inject(AuthService);
   private cartService = inject(CartService);
+  private ngZone      = inject(NgZone);
+  private cdr         = inject(ChangeDetectorRef);
   private base = environment.apiUrl;
 
   // ── Signals ──────────────────────────────────────────────
@@ -218,23 +222,34 @@ export class MisPedidos implements OnInit {
   ngOnInit(): void {
     this.http.get<Order[]>(`${this.base}/orders`).subscribe({
       next: (orders) => {
-        this.orders.set(orders);
-        this.loading.set(false);
-        this.loadReviewedBizIds();
+        this.ngZone.run(() => {
+          this.orders.set(orders);
+          this.loading.set(false);
+          this.loadReviewedBizIds();
+          this.cdr.markForCheck();
+        });
       },
-      error: () => { this.loading.set(false); },
+      error: () => {
+        this.ngZone.run(() => {
+          this.loading.set(false);
+          this.cdr.markForCheck();
+        });
+      },
     });
   }
 
   private loadReviewedBizIds(): void {
     this.http.get<{ reviews: any[] }>(`${this.base}/resenas`).subscribe({
       next: (res) => {
-        const ids = new Set<number>(
-          res.reviews
-            .filter((r: any) => r.type === 'business' && r.business_id)
-            .map((r: any) => r.business_id as number)
-        );
-        this.reviewedBizIds.set(ids);
+        this.ngZone.run(() => {
+          const ids = new Set<number>(
+            res.reviews
+              .filter((r: any) => r.type === 'business' && r.business_id)
+              .map((r: any) => r.business_id as number)
+          );
+          this.reviewedBizIds.set(ids);
+          this.cdr.markForCheck();
+        });
       },
     });
   }

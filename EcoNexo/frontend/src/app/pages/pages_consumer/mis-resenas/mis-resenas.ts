@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, NgZone, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
@@ -40,6 +40,8 @@ export class MisResenas implements OnInit {
   private fb         = inject(FormBuilder);
   private router     = inject(Router);
   private authService = inject(AuthService);
+  private ngZone     = inject(NgZone);
+  private cdr        = inject(ChangeDetectorRef);
   private base = environment.apiUrl;
 
   activeTab    = signal<'written' | 'pending'>('written');
@@ -79,15 +81,28 @@ export class MisResenas implements OnInit {
     this.loading.set(true);
     this.http.get<{ reviews: Review[]; avg_rating: number }>(`${this.base}/resenas`).subscribe({
       next: (res) => {
-        this.reviews.set(res.reviews);
-        this.avgRating.set(res.avg_rating);
-        this.loading.set(false);
+        this.ngZone.run(() => {
+          this.reviews.set(res.reviews);
+          this.avgRating.set(res.avg_rating);
+          this.loading.set(false);
+          this.cdr.markForCheck();
+        });
       },
-      error: () => { this.loading.set(false); },
+      error: () => {
+        this.ngZone.run(() => {
+          this.loading.set(false);
+          this.cdr.markForCheck();
+        });
+      },
     });
 
     this.http.get<{ pending: PendingReview[] }>(`${this.base}/resenas/pendientes`).subscribe({
-      next: (res) => { this.pending.set(res.pending); },
+      next: (res) => {
+        this.ngZone.run(() => {
+          this.pending.set(res.pending);
+          this.cdr.markForCheck();
+        });
+      },
     });
   }
 
