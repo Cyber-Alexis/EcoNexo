@@ -1,0 +1,259 @@
+<div class="producer-layout">
+  <aside class="producer-sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-badge">E</div>
+      <div>
+        <strong>EcoNexo</strong>
+        <small>Panel de Negocio</small>
+      </div>
+    </div>
+
+    <p class="sidebar-title">Mi Negocio</p>
+
+    <nav class="sidebar-nav">
+      <button type="button" class="sidebar-link" [class.active]="activeTab === 'informacion'" (click)="activeTab = 'informacion'">
+        <span>🏪</span>
+        <span>Información</span>
+      </button>
+      <button type="button" class="sidebar-link" [class.active]="activeTab === 'horarios'" (click)="activeTab = 'horarios'">
+        <span>📅</span>
+        <span>Horarios</span>
+      </button>
+      <button type="button" class="sidebar-link" [class.active]="activeTab === 'imagenes'" (click)="activeTab = 'imagenes'">
+        <span>📷</span>
+        <span>Imágenes</span>
+      </button>
+      <button type="button" class="sidebar-link sidebar-link--muted">
+        <span>🛒</span>
+        <span>Pedidos</span>
+      </button>
+      <button type="button" class="sidebar-link sidebar-link--muted">
+        <span>📊</span>
+        <span>Estadísticas</span>
+      </button>
+      <button type="button" class="sidebar-link" (click)="viewPublicProfile()">
+        <span>👁</span>
+        <span>Ver Perfil Público</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="store-card">
+        <strong>{{ businessHeaderName }}</strong>
+        <small>Productor</small>
+      </div>
+
+      <button type="button" class="logout-btn" (click)="onLogout()">Cerrar Sesión</button>
+    </div>
+  </aside>
+
+  <main class="producer-main">
+    <div class="page-header">
+      <div>
+        <p class="page-eyebrow">Mi Negocio</p>
+        <h1>{{ businessHeaderName }}</h1>
+        <p class="page-subtitle">Gestiona la información pública de tu negocio en EcoNexo.</p>
+      </div>
+
+      <div class="header-actions">
+        <button type="button" class="btn btn-secondary" (click)="viewPublicProfile()">Ver Perfil Público</button>
+        <button type="button" class="btn btn-primary" (click)="onSave()" [disabled]="saving || form.invalid">
+          @if (saving) {
+            Guardando...
+          } @else {
+            Guardar Cambios
+          }
+        </button>
+      </div>
+    </div>
+
+    @if (successMessage) {
+      <div class="alert alert-success">{{ successMessage }}</div>
+    }
+
+    @if (errorMessage) {
+      <div class="alert alert-error">{{ errorMessage }}</div>
+    }
+
+    @if (syncMessage) {
+      <div class="alert alert-sync">{{ syncMessage }}</div>
+    }
+
+    <div class="tabs-bar">
+      <button type="button" class="tab-btn" [class.active]="activeTab === 'informacion'" (click)="activeTab = 'informacion'">
+        Información
+      </button>
+      <button type="button" class="tab-btn" [class.active]="activeTab === 'horarios'" (click)="activeTab = 'horarios'">
+        Horarios
+      </button>
+      <button type="button" class="tab-btn" [class.active]="activeTab === 'imagenes'" (click)="activeTab = 'imagenes'">
+        Imágenes
+      </button>
+    </div>
+
+    <form [formGroup]="form" class="dashboard-form">
+      @if (activeTab === 'informacion') {
+        <div class="cards-grid">
+          <section class="dashboard-card">
+            <div class="card-heading">
+              <div>
+                <h2>Información del Negocio</h2>
+                <p>Datos guardados desde el registro y editables para tu perfil público</p>
+              </div>
+            </div>
+
+            <label class="field-label" for="name">Nombre del negocio</label>
+            <input id="name" type="text" class="field-input" formControlName="name" placeholder="Nombre de tu negocio" />
+
+            <label class="field-label" for="category_name">Categoría</label>
+            <select id="category_name" class="field-input" formControlName="category_name">
+              <option value="">Selecciona una categoría</option>
+              @for (option of categoryOptions; track option) {
+                <option [value]="option">{{ option }}</option>
+              }
+            </select>
+
+            <label class="field-label" for="description">Descripción</label>
+            <textarea
+              id="description"
+              class="field-input field-textarea"
+              formControlName="description"
+              rows="6"
+              placeholder="Describe tu negocio y qué verán los clientes en EcoNexo."></textarea>
+            <small class="field-help">{{ descriptionLength }}/500 caracteres</small>
+          </section>
+
+          <section class="dashboard-card">
+            <div class="card-heading">
+              <div>
+                <h2>Contacto y Ubicación</h2>
+                <p>Información visible para usuarios registrados y visitantes</p>
+              </div>
+            </div>
+
+            <label class="field-label">Persona de contacto</label>
+            <input type="text" class="field-input field-input--readonly" [value]="contactPersonName" readonly />
+
+            <label class="field-label" for="address">Dirección</label>
+            <input id="address" type="text" class="field-input" formControlName="address" placeholder="Calle, número, barrio..." />
+
+            <div class="field-row">
+              <div>
+                <label class="field-label" for="city">Ciudad</label>
+                <input id="city" type="text" class="field-input" formControlName="city" placeholder="Tu ciudad" />
+              </div>
+              <div>
+                <label class="field-label" for="postal_code">Código Postal</label>
+                <input id="postal_code" type="text" class="field-input" formControlName="postal_code" placeholder="CP" />
+              </div>
+            </div>
+
+            <label class="field-label" for="phone">Teléfono</label>
+            <input id="phone" type="text" class="field-input" formControlName="phone" placeholder="Teléfono de contacto" />
+
+            <label class="field-label" for="email">Email</label>
+            <input id="email" type="email" class="field-input" formControlName="email" placeholder="Correo público del negocio" />
+
+            <label class="field-label" for="website">Sitio Web</label>
+            <input id="website" type="text" class="field-input" formControlName="website" placeholder="www.tunegocio.com" />
+          </section>
+        </div>
+      }
+
+      @if (activeTab === 'horarios') {
+        <section class="dashboard-card dashboard-card--single">
+          <div class="card-heading">
+            <div>
+              <h2>Horarios de atención</h2>
+              <p>Estos horarios se mostrarán en el perfil público del negocio</p>
+            </div>
+          </div>
+
+          <label class="field-label" for="opening_hours">Horario comercial</label>
+          <textarea
+            id="opening_hours"
+            class="field-input field-textarea"
+            formControlName="opening_hours"
+            rows="6"
+            placeholder="Lun-Vie: 09:00 - 18:00 · Sáb: 09:00 - 14:00"></textarea>
+        </section>
+      }
+
+      @if (activeTab === 'imagenes') {
+        <section class="dashboard-card dashboard-card--single">
+          <div class="card-heading">
+            <div>
+              <h2>Imágenes del Negocio</h2>
+              <p>Sube fotos desde tu ordenador y se guardarán en la base de datos</p>
+            </div>
+          </div>
+
+          <div class="image-management-grid">
+            <div>
+              <p class="image-section-label">Imagen Principal</p>
+              <button type="button" class="upload-tile upload-tile--main" (click)="mainImageInput.click()">
+                @if (mainImage$ | async; as mainImage) {
+                  <img [src]="mainImage.path" alt="Imagen principal del negocio" class="upload-image" />
+                } @else {
+                  <div class="upload-placeholder">
+                    <span class="upload-icon">📷</span>
+                    <span>Haz clic para subir</span>
+                  </div>
+                }
+              </button>
+              @if (mainImage$ | async; as mainImage) {
+                <div class="image-action-row">
+                  <button type="button" class="btn-delete-image" [disabled]="uploadingMain$ | async" (click)="onRemoveMainImage($event)">
+                    Eliminar imagen
+                  </button>
+                </div>
+              }
+              <input #mainImageInput type="file" accept="image/*" class="hidden-file-input" (change)="onMainImageSelected($event)" />
+
+              @if (uploadingMain$ | async) {
+                <p class="upload-status">Subiendo imagen principal...</p>
+              }
+            </div>
+
+            <div>
+              <div class="gallery-title-row">
+                <p class="image-section-label">Galería de Imágenes</p>
+                <button type="button" class="btn btn-secondary btn-sm" [disabled]="uploadingGallery$ | async" (click)="galleryInput.click()">Añadir imágenes</button>
+              </div>
+
+              <div class="gallery-grid">
+                @for (slotImage of galleryPreviewSlots$ | async; track $index) {
+                  <div class="gallery-slot">
+                    <button type="button" class="upload-tile upload-tile--gallery" [disabled]="uploadingGallery$ | async" (click)="galleryInput.click()">
+                      @if (slotImage) {
+                        <img [src]="slotImage.path" [alt]="'Imagen de galería ' + ($index + 1)" class="upload-image" />
+                      } @else {
+                        <div class="upload-placeholder upload-placeholder--small">
+                          <span class="upload-icon">📷</span>
+                        </div>
+                      }
+                    </button>
+                    @if (slotImage) {
+                      <div class="image-action-row">
+                        <button type="button" class="btn-delete-image" [disabled]="uploadingGallery$ | async" (click)="onRemoveGalleryImage(slotImage.id, $event)">
+                          Eliminar imagen
+                        </button>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+
+              <input #galleryInput type="file" accept="image/*" class="hidden-file-input" multiple (change)="onGalleryImagesSelected($event)" />
+              <p class="field-help">Puedes subir hasta 6 imágenes de la galería para mostrar tu negocio y tus productos.</p>
+
+              @if (uploadingGallery$ | async) {
+                <p class="upload-status">Subiendo imágenes de la galería...</p>
+              }
+            </div>
+          </div>
+        </section>
+      }
+    </form>
+  </main>
+</div>

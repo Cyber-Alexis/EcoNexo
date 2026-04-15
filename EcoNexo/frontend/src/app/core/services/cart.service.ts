@@ -47,7 +47,10 @@ export class CartService {
     this.syncRequests
       .pipe(
         debounceTime(this.REMOTE_SYNC_DEBOUNCE_MS),
-        switchMap((items) => items.length > 0 ? this.syncRemoteCart(items) : this.clearRemoteCart()),
+        switchMap((items) => {
+          if (!this.hasToken()) return of(null);
+          return items.length > 0 ? this.syncRemoteCart(items) : this.clearRemoteCart();
+        }),
       )
       .subscribe();
 
@@ -161,6 +164,11 @@ export class CartService {
 
   clear(): void {
     this.setItems([]);
+  }
+
+  /** Clears the cart locally only — no remote DELETE is sent. Use during logout. */
+  clearLocally(): void {
+    this.setItems([], false);
   }
 
   private setItems(items: CartItem[], persistRemote = true): void {

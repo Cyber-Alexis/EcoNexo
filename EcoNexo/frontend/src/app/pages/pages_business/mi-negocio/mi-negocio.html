@@ -4,21 +4,21 @@
       <div class="brand-badge">E</div>
       <div>
         <strong>EcoNexo</strong>
-        <small>Lleida Local</small>
+        <small>Panel de Negocio</small>
       </div>
     </div>
 
     <p class="sidebar-title">Panel de Productor</p>
 
     <nav class="sidebar-nav">
-      <a routerLink="/home" class="sidebar-link">
-        <span>⌂</span>
+      <button type="button" class="sidebar-link sidebar-link--muted">
+        <span>⊞</span>
         <span>Dashboard</span>
-      </a>
-      <a routerLink="/productos" class="sidebar-link">
+      </button>
+      <button type="button" class="sidebar-link sidebar-link--muted">
         <span>□</span>
         <span>Productos</span>
-      </a>
+      </button>
       <button type="button" class="sidebar-link sidebar-link--muted">
         <span>🛒</span>
         <span>Pedidos</span>
@@ -35,15 +35,15 @@
         <span>🏪</span>
         <span>Mi Negocio</span>
       </button>
-      <a routerLink="/configuracion" class="sidebar-link">
+      <button type="button" class="sidebar-link sidebar-link--muted">
         <span>⚙</span>
         <span>Configuración</span>
-      </a>
+      </button>
     </nav>
 
     <div class="sidebar-footer">
       <div class="store-card">
-        <strong>Mi Tienda</strong>
+        <strong>{{ businessHeaderName }}</strong>
         <small>Productor</small>
       </div>
 

@@ -1,23 +1,23 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { finalize, timeout } from 'rxjs/operators';
-import { ApiBusiness, ApiImage } from '../../core/models/business.model';
-import { AuthService } from '../../core/services/auth.service';
-import { BusinessService } from '../../core/services/business.service';
+import { ApiBusiness, ApiImage } from '../../../core/models/business.model';
+import { AuthService } from '../../../core/services/auth.service';
+import { BusinessService } from '../../../core/services/business.service';
 
 const BUSINESS_REQUEST_TIMEOUT_MS = 30_000;
 
 @Component({
-  selector: 'app-business-dashboard',
+  selector: 'app-mi-negocio',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
-  templateUrl: './business-dashboard.html',
-  styleUrl: './business-dashboard.css',
+  imports: [CommonModule, ReactiveFormsModule],
+  templateUrl: './mi-negocio.html',
+  styleUrl: './mi-negocio.css',
 })
-export class BusinessDashboard implements OnInit {
+export class MiNegocio implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);

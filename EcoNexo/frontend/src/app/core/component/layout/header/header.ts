@@ -173,7 +173,7 @@ export class Header implements OnInit, OnDestroy {
 
   logout(): void {
     this.dropdownOpen = false;
-    this.cartService.clear();
+    this.cartService.clearLocally();
     this.authService.logout().subscribe({
       complete: () => this.router.navigate(['/login']),
     });

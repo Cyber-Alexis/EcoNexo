@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { EMPTY, Subscription, interval } from 'rxjs';
-import { catchError, exhaustMap, startWith } from 'rxjs/operators';
+import { catchError, exhaustMap, startWith, switchMap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 
 const SESSION_CHECK_INTERVAL_MS = 5000;
@@ -20,24 +20,30 @@ export class SessionMonitorService {
       return;
     }
 
-    this.subscription = interval(SESSION_CHECK_INTERVAL_MS)
+    this.subscription = this.authService.user$
       .pipe(
-        startWith(0),
-        exhaustMap(() => {
-          if (!this.authService.isLoggedIn()) {
-            return EMPTY;
-          }
+        switchMap(user => {
+          if (!user) return EMPTY;
 
-          return this.authService.fetchMe().pipe(
-            catchError((err) => {
-              if (this.shouldTerminateSession(err)) {
-                const message = err?.error?.message ?? 'Tu sesión ya no es válida.';
-                this.authService.setSessionNotice(message);
-                this.authService.clearAuth();
-                this.router.navigate(['/login']);
+          return interval(SESSION_CHECK_INTERVAL_MS).pipe(
+            startWith(0),
+            exhaustMap(() => {
+              if (!this.authService.isLoggedIn()) {
+                return EMPTY;
               }
 
-              return EMPTY;
+              return this.authService.fetchMe().pipe(
+                catchError((err) => {
+                  if (this.shouldTerminateSession(err)) {
+                    const message = err?.error?.message ?? 'Tu sesión ya no es válida.';
+                    this.authService.setSessionNotice(message);
+                    this.authService.clearAuth();
+                    this.router.navigate(['/login']);
+                  }
+
+                  return EMPTY;
+                }),
+              );
             }),
           );
         }),
