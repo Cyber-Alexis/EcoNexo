@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
 
 // Handle OPTIONS preflight for all API routes (needed for PUT/DELETE CORS)
@@ -40,10 +41,11 @@ Route::middleware(['auth:api', \App\Http\Middleware\EnsureActiveApiUser::class, 
     Route::get('/auth/me',      [AuthController::class, 'me']);
 
     // Profile
-    Route::put('/perfil',             [ProfileController::class, 'update']);
-    Route::put('/perfil/password',    [ProfileController::class, 'changePassword']);
-    Route::delete('/perfil',          [ProfileController::class, 'deleteAccount']);
-    Route::post('/perfil/avatar',     [ProfileController::class, 'uploadAvatar']);
+    Route::put('/perfil',                  [ProfileController::class, 'update']);
+    Route::put('/perfil/password',         [ProfileController::class, 'changePassword']);
+    Route::put('/perfil/notificaciones',   [ProfileController::class, 'updateNotifications']);
+    Route::delete('/perfil',               [ProfileController::class, 'deleteAccount']);
+    Route::post('/perfil/avatar',          [ProfileController::class, 'uploadAvatar']);
 
     // Business owner
     Route::get('/mi-negocio',         [BusinessController::class, 'mine']);
@@ -59,6 +61,16 @@ Route::middleware(['auth:api', \App\Http\Middleware\EnsureActiveApiUser::class, 
     // Orders
     Route::post('/orders',  [OrderController::class, 'store']);
     Route::get('/orders',   [OrderController::class, 'index']);
+
+    // Reviews
+    Route::get('/resenas',                        [ReviewController::class, 'index']);
+    Route::get('/resenas/pendientes',             [ReviewController::class, 'pending']);
+    Route::post('/resenas/producto',              [ReviewController::class, 'storeProduct']);
+    Route::post('/resenas/negocio',               [ReviewController::class, 'storeBusiness']);
+    Route::put('/resenas/producto/{id}',          [ReviewController::class, 'updateProduct']);
+    Route::put('/resenas/negocio/{id}',           [ReviewController::class, 'updateBusiness']);
+    Route::delete('/resenas/producto/{id}',       [ReviewController::class, 'destroyProduct']);
+    Route::delete('/resenas/negocio/{id}',        [ReviewController::class, 'destroyBusiness']);
 });
 
 /*

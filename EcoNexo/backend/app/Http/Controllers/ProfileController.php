@@ -99,4 +99,22 @@ class ProfileController extends Controller
             'user'       => array_merge($user->toArray(), ['avatar_url' => $avatarUrl]),
         ]);
     }
+
+    /**
+     * PUT /api/perfil/notificaciones
+     */
+    public function updateNotifications(Request $request)
+    {
+        $data = $request->validate([
+            'notif_order_updates'    => 'required|boolean',
+            'notif_promotions'       => 'required|boolean',
+            'notif_new_products'     => 'required|boolean',
+            'notif_review_responses' => 'required|boolean',
+        ]);
+
+        $user = auth('api')->user();
+        $user->update($data);
+
+        return response()->json(['user' => $user->fresh()]);
+    }
 }

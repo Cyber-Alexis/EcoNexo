@@ -67,9 +67,36 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         $orders = Order::where('user_id', $request->user()->id)
-            ->with(['business:id,name', 'items.product:id,name'])
+            ->with([
+                'business:id,name,address,city',
+                'items.product:id,name,price,price_unit,business_id',
+            ])
             ->latest()
-            ->get();
+            ->get()
+            ->map(function ($order) {
+                return [
+                    'id'             => $order->id,
+                    'code'           => 'ORD-' . str_pad($order->id, 3, '0', STR_PAD_LEFT),
+                    'status'         => $order->status,
+                    'total_price'    => $order->total_price,
+                    'payment_method' => $order->payment_method,
+                    'pickup_date'    => $order->pickup_date,
+                    'created_at'     => $order->created_at,
+                    'business_id'    => $order->business_id,
+                    'business_name'  => $order->business?->name,
+                    'business_address' => trim(($order->business?->address ?? '') . ', ' . ($order->business?->city ?? ''), ', '),
+                    'items_count'    => $order->items->count(),
+                    'items'          => $order->items->map(fn($item) => [
+                        'product_id'   => $item->product_id,
+                        'product_name' => $item->product?->name,
+                        'price'        => $item->product?->price,
+                        'price_unit'   => $item->product?->price_unit,
+                        'unit_price'   => $item->unit_price,
+                        'quantity'     => $item->quantity,
+                        'subtotal'     => round($item->unit_price * $item->quantity, 2),
+                    ]),
+                ];
+            });
 
         return response()->json($orders);
     }

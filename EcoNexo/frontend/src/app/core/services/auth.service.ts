@@ -19,6 +19,10 @@ export interface AuthUser {
   address?: string;
   city?: string;
   postal_code?: string;
+  notif_order_updates?: boolean;
+  notif_promotions?: boolean;
+  notif_new_products?: boolean;
+  notif_review_responses?: boolean;
 }
 
 export interface AuthResponse {
@@ -116,6 +120,20 @@ export class AuthService {
         new_password_confirmation: new_password,
       })
       .pipe(timeout(REQUEST_TIMEOUT_MS));
+  }
+
+  updateNotifications(prefs: {
+    notif_order_updates: boolean;
+    notif_promotions: boolean;
+    notif_new_products: boolean;
+    notif_review_responses: boolean;
+  }): Observable<{ user: AuthUser }> {
+    return this.http
+      .put<{ user: AuthUser }>(`${this.base}/perfil/notificaciones`, prefs)
+      .pipe(
+        timeout(REQUEST_TIMEOUT_MS),
+        tap(res => this.patchUser(res.user)),
+      );
   }
 
   deleteAccount(): Observable<{ message: string }> {

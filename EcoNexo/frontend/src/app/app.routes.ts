@@ -10,6 +10,8 @@ import { About } from './pages/about/about';
 import { NegocioDetalle } from './pages/negocio-detalle/negocio-detalle';
 import { Perfil } from './pages/pages_consumer/perfil/perfil';
 import { Configuracion } from './pages/pages_consumer/configuracion/configuracion';
+import { MisResenas } from './pages/pages_consumer/mis-resenas/mis-resenas';
+import { MisPedidos } from './pages/pages_consumer/mis-pedidos/mis-pedidos';
 import { Admin } from './pages/admin/admin';
 import { adminGuard } from './core/guards/admin.guard';
 import { businessGuard } from './core/guards/business.guard';
@@ -30,6 +32,8 @@ export const routes: Routes = [
   { path: 'productos', component: Productos },
   { path: 'about', component: About },
   { path: 'perfil', component: Perfil },
+  { path: 'mis-resenas', component: MisResenas, canActivate: [authGuard] },
+  { path: 'mis-pedidos', component: MisPedidos, canActivate: [authGuard] },
   { path: 'configuracion', component: Configuracion },
   { path: 'admin', component: Admin, canActivate: [adminGuard] },
   { path: 'admin', component: Admin },

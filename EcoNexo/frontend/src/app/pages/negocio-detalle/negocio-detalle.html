@@ -73,7 +73,7 @@
                   [attr.fill]="star ? '#F59E0B' : '#E5E7EB'" stroke="none"/>
               </svg>
             }
-            <span class="rating-num">{{ avgRating | number:'1.1-1' }}</span>
+            <span class="rating-num">{{ business.reviews_count ? (avgRating | number:'1.1-1') : '—' }}</span>
             <span class="rating-count">({{ business.reviews_count }} reseñas)</span>
           </div>
         </div>
@@ -204,14 +204,71 @@
       <section class="detail-section" [class.hidden]="activeTab !== 'comentarios'">
         <h2 class="section-title">Comentarios</h2>
         <div class="rating-summary">
-          <span class="rating-big">{{ avgRating | number:'1.1-1' }}</span>
+          <span class="rating-big">{{ business.reviews_count ? (avgRating | number:'1.1-1') : '—' }}</span>
           <div class="rating-summary-right">
-            <p class="rating-label">{{ ratingLabel }}</p>
+            <p class="rating-label" [style.color]="ratingLabelColor">{{ ratingLabel }}</p>
             <p class="rating-verified">{{ business.reviews_count }} Reseñas verificadas</p>
           </div>
         </div>
 
-        <p class="reviews-readonly-note">Solo los usuarios con pedidos completados pueden dejar una reseña.</p>
+        <!-- Write a review -->
+        @if (isLoggedIn) {
+          @if (reviewSuccess) {
+            <div class="review-success-banner">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              ¡Gracias! Tu reseña ha sido publicada. Se verá en "Mis Reseñas".
+            </div>
+          } @else if (!reviewOpen) {
+            <button class="btn-write-review" (click)="openReviewForm()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16">
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+              Escribir una reseña
+            </button>
+            <p class="reviews-hint">Solo usuarios con pedidos completados en este negocio pueden dejar una reseña.</p>
+          } @else {
+            <div class="review-form-card">
+              <h4 class="review-form-title">Tu valoración</h4>
+
+              @if (reviewError) {
+                <div class="review-form-error">{{ reviewError }}</div>
+              }
+
+              <div class="review-form-stars-row">
+                <div class="review-form-stars">
+                  @for (s of [1,2,3,4,5]; track s) {
+                    <button type="button" class="review-star-btn" (click)="setReviewRating(s)">
+                      <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="1.5"
+                           [attr.fill]="s <= reviewRating ? '#F59E0B' : 'none'"
+                           [style.stroke]="s <= reviewRating ? '#F59E0B' : '#9CA3AF'">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                      </svg>
+                    </button>
+                  }
+                </div>
+                <span class="star-label" [attr.data-val]="reviewRating">{{ ratingToLabel(reviewRating) }}</span>
+              </div>
+
+              <textarea
+                class="review-form-textarea"
+                [(ngModel)]="reviewComment"
+                placeholder="Comparte tu experiencia (opcional)"
+                rows="3"
+                maxlength="1000">
+              </textarea>
+
+              <div class="review-form-actions">
+                <button type="button" class="btn-cancel-review" (click)="closeReviewForm()" [disabled]="reviewSaving">Cancelar</button>
+                <button type="button" class="btn-submit-review" (click)="submitReview()" [disabled]="reviewSaving">
+                  @if (reviewSaving) { Publicando... } @else { Publicar reseña }
+                </button>
+              </div>
+            </div>
+          }
+        }
 
         <div class="reviews-list">
           @for (r of business.reviews; track r.id) {
