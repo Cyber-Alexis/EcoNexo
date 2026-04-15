@@ -16,10 +16,12 @@ import { businessGuard } from './core/guards/business.guard';
 import { Checkout } from './pages/proceso_pago/checkout/checkout';
 import { authGuard } from './core/guards/auth.guard';
 import { checkoutGuard } from './core/guards/checkout.guard';
+import { ForgotPassword } from './pages/forgot-password/forgot-password';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: 'login', component: Login },
+  { path: 'forgot-password', component: ForgotPassword },
   { path: 'register', redirectTo: 'register/cliente', pathMatch: 'full' },
   { path: 'register/cliente', component: RegisterCliente },
   { path: 'register/negocio', component: RegisterNegocio },
