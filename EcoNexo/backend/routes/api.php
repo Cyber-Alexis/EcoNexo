@@ -5,6 +5,7 @@ use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\MailController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
@@ -20,6 +21,8 @@ Route::options('{any}', fn () => response('', 204))->where('any', '.*');
 
 // Public routes (no auth required)
 Route::post('/auth/login',              [AuthController::class, 'login']);
+Route::post('/auth/forgot-password',    [AuthController::class, 'forgotPassword']);
+Route::post('/auth/reset-password',     [AuthController::class, 'resetPassword']);
 Route::middleware(['system.maintenance'])->group(function () {
     Route::post('/auth/register',           [AuthController::class, 'register']);
     Route::post('/auth/register-negocio',   [AuthController::class, 'registerBusiness']);
@@ -90,6 +93,7 @@ Route::middleware(['auth:api', \App\Http\Middleware\EnsureActiveApiUser::class, 
     Route::get('/admin/settings',               [AdminController::class, 'getSettings']);
     Route::put('/admin/settings/general',       [AdminController::class, 'updateGeneralSettings']);
     Route::put('/admin/settings/notifications', [AdminController::class, 'updateNotificationSettings']);
+    Route::post('/admin/send-email',            [MailController::class, 'send']);
     Route::put('/admin/settings/maintenance',   [AdminController::class, 'updateMaintenanceSettings']);
     Route::post('/admin/settings/check-updates',[AdminController::class, 'checkForUpdates']);
 });
