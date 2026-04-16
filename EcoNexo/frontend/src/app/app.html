@@ -1,9 +1,11 @@
 @if (isAdminRoute()) {
   <router-outlet></router-outlet>
 } @else {
-  <app-header></app-header>
+  @if (!isProfileRoute()) {
+    <app-header></app-header>
+  }
 
-  <main>
+  <main [class.no-header]="isProfileRoute()">
     <router-outlet></router-outlet>
   </main>
 

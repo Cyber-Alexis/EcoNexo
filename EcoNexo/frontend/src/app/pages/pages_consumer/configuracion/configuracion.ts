@@ -82,23 +82,30 @@ export class Configuracion implements OnInit {
 
   onSaveNotifications(): void {
     if (this.notifSaving) return;
-    this.notifSaving = true;
-    this.notifSuccess = '';
     this.notifError = '';
 
+    // Optimistic: persist locally and show success immediately
+    this.authService.patchUser({
+      notif_order_updates:    this.notifOrderUpdates,
+      notif_promotions:       this.notifPromotions,
+      notif_new_products:     this.notifNewProducts,
+      notif_review_responses: this.notifReviewResponses,
+    });
+    this.notifSuccess = 'Preferencias guardadas correctamente.';
+    setTimeout(() => (this.notifSuccess = ''), 4000);
+
+    // Sync to backend in background
+    this.notifSaving = true;
     this.authService.updateNotifications({
       notif_order_updates:    this.notifOrderUpdates,
       notif_promotions:       this.notifPromotions,
       notif_new_products:     this.notifNewProducts,
       notif_review_responses: this.notifReviewResponses,
     }).subscribe({
-      next: () => {
-        this.notifSaving = false;
-        this.notifSuccess = 'Preferencias guardadas correctamente.';
-        setTimeout(() => (this.notifSuccess = ''), 4000);
-      },
+      next: () => { this.notifSaving = false; },
       error: () => {
         this.notifSaving = false;
+        this.notifSuccess = '';
         this.notifError = 'Error al guardar las preferencias. Inténtalo de nuevo.';
       },
     });

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, NgZone, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, NgZone, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
@@ -49,7 +49,11 @@ export class MisResenas implements OnInit {
   reviews   = signal<Review[]>([]);
   pending   = signal<PendingReview[]>([]);
   loading   = signal(true);
-  avgRating = signal(0);
+  readonly avgRating = computed(() => {
+    const r = this.reviews();
+    if (!r.length) return 0;
+    return Math.round(r.reduce((s, rev) => s + rev.rating, 0) / r.length * 10) / 10;
+  });
 
   // Edit modal
   editingReview = signal<Review | null>(null);
@@ -79,30 +83,24 @@ export class MisResenas implements OnInit {
 
   load(): void {
     this.loading.set(true);
+
     this.http.get<{ reviews: Review[]; avg_rating: number }>(`${this.base}/resenas`).subscribe({
-      next: (res) => {
-        this.ngZone.run(() => {
-          this.reviews.set(res.reviews);
-          this.avgRating.set(res.avg_rating);
-          this.loading.set(false);
-          this.cdr.markForCheck();
-        });
-      },
-      error: () => {
-        this.ngZone.run(() => {
-          this.loading.set(false);
-          this.cdr.markForCheck();
-        });
-      },
+      next: (res) => this.ngZone.run(() => {
+        this.reviews.set(res.reviews);
+        this.loading.set(false);
+        this.cdr.markForCheck();
+      }),
+      error: () => this.ngZone.run(() => {
+        this.loading.set(false);
+        this.cdr.markForCheck();
+      }),
     });
 
     this.http.get<{ pending: PendingReview[] }>(`${this.base}/resenas/pendientes`).subscribe({
-      next: (res) => {
-        this.ngZone.run(() => {
-          this.pending.set(res.pending);
-          this.cdr.markForCheck();
-        });
-      },
+      next: (res) => this.ngZone.run(() => {
+        this.pending.set(res.pending);
+        this.cdr.markForCheck();
+      }),
     });
   }
 
@@ -135,24 +133,32 @@ export class MisResenas implements OnInit {
 
   onSaveEdit(): void {
     if (!this.editingReview() || this.editSaving()) return;
-    this.editSaving.set(true);
-    this.editError.set('');
 
     const { rating, comment } = this.editForm.value;
     const r = this.editingReview()!;
+
+    // Optimistic: update locally right away
+    const updated: Review = { ...r, rating: rating!, comment: comment ?? null };
+    this.reviews.update(list => list.map(rev =>
+      rev.id === r.id && rev.type === r.type ? updated : rev
+    ));
+    this.editingReview.set(null);
+    this.editError.set('');
+    this.cdr.markForCheck();
+
     const url = r.type === 'product'
       ? `${this.base}/resenas/producto/${r.id}`
       : `${this.base}/resenas/negocio/${r.id}`;
 
     this.http.put<{ review: any }>(url, { rating, comment }).subscribe({
-      next: () => {
-        this.editSaving.set(false);
-        this.editingReview.set(null);
-        this.load();
-      },
       error: (err) => {
-        this.editSaving.set(false);
-        this.editError.set(err?.error?.message ?? 'Error al guardar.');
+        // Rollback on failure
+        this.reviews.update(list => list.map(rev =>
+          rev.id === r.id && rev.type === r.type ? r : rev
+        ));
+        this.editingReview.set(r);
+        this.editError.set(err?.error?.message ?? 'Error al guardar. Los cambios se han revertido.');
+        this.cdr.markForCheck();
       },
     });
   }
@@ -168,20 +174,30 @@ export class MisResenas implements OnInit {
 
   onConfirmDelete(): void {
     if (!this.deletingReview() || this.deleteLoading()) return;
-    this.deleteLoading.set(true);
 
     const r = this.deletingReview()!;
+
+    // Optimistic: remove immediately
+    this.reviews.update(list => list.filter(rev =>
+      !(rev.id === r.id && rev.type === r.type)
+    ));
+    this.deletingReview.set(null);
+    this.cdr.markForCheck();
+
     const url = r.type === 'product'
       ? `${this.base}/resenas/producto/${r.id}`
       : `${this.base}/resenas/negocio/${r.id}`;
 
     this.http.delete(url).subscribe({
-      next: () => {
-        this.deleteLoading.set(false);
-        this.deletingReview.set(null);
-        this.load();
+      error: () => {
+        // Rollback on failure
+        this.reviews.update(list =>
+          [...list, r].sort((a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          )
+        );
+        this.cdr.markForCheck();
       },
-      error: () => { this.deleteLoading.set(false); },
     });
   }
 
@@ -202,11 +218,31 @@ export class MisResenas implements OnInit {
 
   onSubmitCreate(): void {
     if (!this.creatingReview() || this.createSaving()) return;
-    this.createSaving.set(true);
-    this.createError.set('');
 
     const { rating, comment } = this.createForm.value;
     const item = this.creatingReview()!;
+
+    // Optimistic: add new review and remove from pending immediately
+    const tempId = -Date.now();
+    const optimistic: Review = {
+      id: tempId,
+      type: item.type,
+      rating: rating!,
+      comment: comment ?? null,
+      created_at: new Date().toISOString(),
+      ...(item.type === 'product'
+        ? { product_id: item.product_id, product_name: item.product_name }
+        : { business_id: item.business_id, business_name: item.business_name }),
+    };
+    this.reviews.update(list => [optimistic, ...list]);
+    this.pending.update(list => list.filter(p =>
+      !(p.type === item.type && p.order_id === item.order_id &&
+        (item.type === 'product' ? p.product_id === item.product_id : p.business_id === item.business_id))
+    ));
+    this.creatingReview.set(null);
+    this.createError.set('');
+    this.activeTab.set('written');
+    this.cdr.markForCheck();
 
     const url  = item.type === 'product'
       ? `${this.base}/resenas/producto`
@@ -215,16 +251,24 @@ export class MisResenas implements OnInit {
       ? { product_id: item.product_id, rating, comment }
       : { business_id: item.business_id, rating, comment };
 
-    this.http.post(url, body).subscribe({
-      next: () => {
-        this.createSaving.set(false);
-        this.creatingReview.set(null);
-        this.load();
-        this.activeTab.set('written');
+    this.http.post<{ review: any }>(url, body).subscribe({
+      next: (res) => {
+        // Replace temp id with real id from backend
+        if (res?.review?.id) {
+          this.reviews.update(list => list.map(rev =>
+            rev.id === tempId ? { ...rev, id: res.review.id } : rev
+          ));
+          this.cdr.markForCheck();
+        }
       },
       error: (err) => {
-        this.createSaving.set(false);
+        // Rollback
+        this.reviews.update(list => list.filter(rev => rev.id !== tempId));
+        this.pending.update(list => [...list, item]);
+        this.creatingReview.set(item);
         this.createError.set(err?.error?.message ?? 'Error al enviar la reseña.');
+        this.activeTab.set('pending');
+        this.cdr.markForCheck();
       },
     });
   }

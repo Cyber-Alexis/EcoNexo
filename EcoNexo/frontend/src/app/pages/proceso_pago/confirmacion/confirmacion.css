@@ -144,3 +144,23 @@
   background: #f3f4f6;
   border-color: #9ca3af;
 }
+
+/* ─── Responsive ─── */
+@media (max-width: 480px) {
+  .confirmation-wrapper {
+    padding: 2.5rem 1rem 2rem;
+  }
+
+  .order-row {
+    grid-template-columns: 1fr auto;
+    gap: 0.4rem;
+  }
+
+  .order-code {
+    display: none;
+  }
+
+  .confirmation-title {
+    font-size: 1.3rem;
+  }
+}
