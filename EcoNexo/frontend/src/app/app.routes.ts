@@ -38,6 +38,5 @@ export const routes: Routes = [
   { path: 'mis-pedidos', component: MisPedidos, canActivate: [authGuard] },
   { path: 'configuracion', component: Configuracion },
   { path: 'admin', component: Admin, canActivate: [adminGuard] },
-  { path: 'admin', component: Admin },
   { path: 'checkout', component: Checkout, canActivate: [authGuard, checkoutGuard] },
 ];
