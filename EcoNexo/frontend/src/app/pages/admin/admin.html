@@ -119,24 +119,26 @@
       </div>
 
       <!-- Stats -->
-      <div class="stats-grid" *ngIf="statistics">
-        <div class="stat-card">
-          <div class="stat-number">{{ statistics.total_users }}</div>
-          <div class="stat-label">Total Usuarios</div>
+      <ng-container *ngIf="statistics$ | async as stats">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-number">{{ stats.total_users }}</div>
+            <div class="stat-label">Total Usuarios</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">{{ stats.consumer_users }}</div>
+            <div class="stat-label">Clientes</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">{{ stats.business_users }}</div>
+            <div class="stat-label">Productores</div>
+          </div>
+          <div class="stat-card stat-blocked">
+            <div class="stat-number">{{ stats.blocked_users }}</div>
+            <div class="stat-label">Bloqueados</div>
+          </div>
         </div>
-        <div class="stat-card">
-          <div class="stat-number">{{ statistics.consumer_users }}</div>
-          <div class="stat-label">Clientes</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number">{{ statistics.business_users }}</div>
-          <div class="stat-label">Productores</div>
-        </div>
-        <div class="stat-card stat-blocked">
-          <div class="stat-number">{{ statistics.blocked_users }}</div>
-          <div class="stat-label">Bloqueados</div>
-        </div>
-      </div>
+      </ng-container>
 
       <!-- Alerts -->
       <div *ngIf="successMessage" class="alert alert-success">✅ {{ successMessage }}</div>
@@ -154,7 +156,7 @@
         <!-- Filters -->
         <div class="filters-row">
           <div class="search-box">
-            <span class="search-icon">🔍</span>
+            <span class="search-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg></span>
             <input
               type="text"
               placeholder="Buscar por nombre o email..."
@@ -216,10 +218,10 @@
                 <td>{{ user.orders_count ?? 0 }}</td>
                 <td class="actions-cell">
                   <div class="action-menu">
-                    <button class="action-btn" title="Editar" (click)="openEditModal(user)">✏️</button>
+                    <button class="action-btn" title="Editar" (click)="openEditModal(user)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm17.71-10.21a1 1 0 0 0 0-1.42l-2.34-2.34a1 1 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z" fill="currentColor"/></svg></button>
                     <button class="action-btn" title="Activar" *ngIf="user.status !== 'activo'" (click)="changeStatus(user, 'activo')">✅</button>
-                    <button class="action-btn" title="Bloquear" *ngIf="user.status !== 'bloqueado'" (click)="changeStatus(user, 'bloqueado')">🚫</button>
-                    <button class="action-btn action-delete" title="Eliminar" (click)="deleteUser(user)">🗑️</button>
+                    <button class="action-btn" title="Bloquear" *ngIf="user.status !== 'bloqueado'" (click)="changeStatus(user, 'bloqueado')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 2c2.13 0 4.08.74 5.62 1.96L4.96 17.62A7.96 7.96 0 0 1 4 12c0-4.41 3.59-8 8-8zm0 16c-2.13 0-4.08-.74-5.62-1.96L19.04 6.38A7.96 7.96 0 0 1 20 12c0 4.41-3.59 8-8 8z" fill="currentColor"/></svg></button>
+                    <button class="action-btn action-delete" title="Eliminar" (click)="deleteUser(user)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM8 9h8v10H8V9zm7.5-5-1-1h-5l-1 1H5v2h14V4h-3.5z" fill="currentColor"/></svg></button>
                   </div>
                 </td>
               </tr>
@@ -241,18 +243,19 @@
 
     <!-- ========== DASHBOARD SECTION ========== -->
     <div *ngIf="activeSection === 'dashboard'">
+      <ng-container *ngIf="statistics$ | async as stats">
       <div class="page-header dashboard-header">
         <div>
           <h1>Panel de Administración</h1>
           <p class="page-subtitle">Datos conectados en tiempo real con la base de datos de EcoNexo.</p>
         </div>
-        <div class="dashboard-sync" *ngIf="statistics">
+        <div class="dashboard-sync">
           <span class="sync-label">Actualizado</span>
           <strong>{{ getLastUpdatedLabel() }}</strong>
         </div>
       </div>
 
-      <div class="dashboard-overview" *ngIf="statistics">
+      <div class="dashboard-overview">
         <article class="overview-card" *ngFor="let card of getOverviewCards()">
           <div class="overview-card-label">{{ card.label }}</div>
           <div class="overview-card-value">{{ formatCardValue(card) }}</div>
@@ -263,7 +266,7 @@
         </article>
       </div>
 
-      <div class="dashboard-grid" *ngIf="statistics">
+      <div class="dashboard-grid" *ngIf="statistics$ | async">
         <section class="panel dashboard-panel">
           <div class="panel-header panel-header-stack">
             <div>
@@ -307,23 +310,24 @@
         </section>
       </div>
 
-      <div class="dashboard-mini-grid" *ngIf="statistics">
+      <div class="dashboard-mini-grid" *ngIf="statistics$ | async as stats">
         <article class="mini-stat-card">
           <span class="mini-stat-label">Pedidos totales</span>
-          <strong>{{ statistics.total_orders }}</strong>
-          <small>{{ statistics.completed_orders }} completados · {{ statistics.pending_orders }} pendientes</small>
+          <strong>{{ stats.total_orders }}</strong>
+          <small>{{ stats.completed_orders }} completados · {{ stats.pending_orders }} pendientes</small>
         </article>
         <article class="mini-stat-card">
           <span class="mini-stat-label">Catalogo activo</span>
-          <strong>{{ statistics.active_products }}</strong>
-          <small>{{ statistics.products_with_stock }} productos con stock</small>
+          <strong>{{ stats.active_products }}</strong>
+          <small>{{ stats.products_with_stock }} productos con stock</small>
         </article>
         <article class="mini-stat-card">
           <span class="mini-stat-label">Base de clientes</span>
-          <strong>{{ statistics.consumer_users }}</strong>
-          <small>{{ statistics.active_users }} usuarios activos</small>
+          <strong>{{ stats.consumer_users }}</strong>
+          <small>{{ stats.active_users }} usuarios activos</small>
         </article>
       </div>
+      </ng-container>
     </div>
 
     <!-- ========== CONFIGURACION SECTION ========== -->
