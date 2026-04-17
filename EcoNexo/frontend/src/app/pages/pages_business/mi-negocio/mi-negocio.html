@@ -1,75 +1,36 @@
-<div class="producer-layout">
-  <aside class="producer-sidebar">
-    <div class="sidebar-brand">
-      <div class="brand-badge">E</div>
-      <div>
-        <strong>EcoNexo</strong>
-        <small>Panel de Negocio</small>
-      </div>
-    </div>
+<div class="dashboard-layout">
 
-    <p class="sidebar-title">Panel de Productor</p>
+  <!-- ─── Sidebar ─── -->
+  <app-business-sidebar
+    #sidebar
+    [businessName]="businessHeaderName"
+    (logout)="onLogout()"
+  />
 
-    <nav class="sidebar-nav">
-      <button type="button" class="sidebar-link sidebar-link--muted">
-        <span>⊞</span>
-        <span>Dashboard</span>
-      </button>
-      <button type="button" class="sidebar-link sidebar-link--muted">
-        <span>□</span>
-        <span>Productos</span>
-      </button>
-      <button type="button" class="sidebar-link sidebar-link--muted">
-        <span>🛒</span>
-        <span>Pedidos</span>
-      </button>
-      <button type="button" class="sidebar-link sidebar-link--muted">
-        <span>📅</span>
-        <span>Calendario</span>
-      </button>
-      <button type="button" class="sidebar-link sidebar-link--muted">
-        <span>📊</span>
-        <span>Estadísticas</span>
-      </button>
-      <button type="button" class="sidebar-link active">
-        <span>🏪</span>
-        <span>Mi Negocio</span>
-      </button>
-      <button type="button" class="sidebar-link sidebar-link--muted">
-        <span>⚙</span>
-        <span>Configuración</span>
-      </button>
-    </nav>
+  <!-- ─── Main wrapper ─── -->
+  <div class="main-wrapper">
 
-    <div class="sidebar-footer">
-      <div class="store-card">
-        <strong>{{ businessHeaderName }}</strong>
-        <small>Productor</small>
-      </div>
-
-      <button type="button" class="logout-btn" (click)="onLogout()">Cerrar Sesión</button>
-    </div>
-  </aside>
-
-  <main class="producer-main">
-    <div class="page-header">
-      <div>
-        <p class="page-eyebrow">Mi Negocio</p>
-        <h1>{{ businessHeaderName }}</h1>
-        <p class="page-subtitle">Gestiona la información pública de tu negocio en EcoNexo.</p>
-      </div>
-
-      <div class="header-actions">
-        <button type="button" class="btn btn-secondary" (click)="viewPublicProfile()">Ver Perfil Público</button>
-        <button type="button" class="btn btn-primary" (click)="onSave()" [disabled]="saving || form.invalid">
-          @if (saving) {
-            Guardando...
-          } @else {
-            Guardar Cambios
-          }
+    <!-- ─── Topbar (always visible) ─── -->
+    <header class="topbar">
+      <span class="topbar-section-title">Mi Negocio</span>
+      <div class="topbar-actions">
+        <button class="topbar-icon-btn" aria-label="Notificaciones">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 01-3.46 0"/>
+          </svg>
+        </button>
+        <button class="topbar-icon-btn topbar-hamburger" (click)="sidebar.toggle()" aria-label="Abrir menú">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
         </button>
       </div>
-    </div>
+    </header>
+
+    <main class="producer-main">
 
     @if (successMessage) {
       <div class="alert alert-success">{{ successMessage }}</div>
@@ -83,16 +44,24 @@
       <div class="alert alert-sync">{{ syncMessage }}</div>
     }
 
-    <div class="tabs-bar">
-      <button type="button" class="tab-btn" [class.active]="activeTab === 'informacion'" (click)="activeTab = 'informacion'">
-        Información
-      </button>
-      <button type="button" class="tab-btn" [class.active]="activeTab === 'horarios'" (click)="activeTab = 'horarios'">
-        Horarios
-      </button>
-      <button type="button" class="tab-btn" [class.active]="activeTab === 'imagenes'" (click)="activeTab = 'imagenes'">
-        Imágenes
-      </button>
+    <div class="tabs-row">
+      <div class="tabs-bar">
+        <button type="button" class="tab-btn" [class.active]="activeTab === 'informacion'" (click)="activeTab = 'informacion'">
+          Información
+        </button>
+        <button type="button" class="tab-btn" [class.active]="activeTab === 'horarios'" (click)="activeTab = 'horarios'">
+          Horarios
+        </button>
+        <button type="button" class="tab-btn" [class.active]="activeTab === 'imagenes'" (click)="activeTab = 'imagenes'">
+          Imágenes
+        </button>
+      </div>
+      <div class="tabs-actions">
+        <button type="button" class="btn btn-secondary" (click)="viewPublicProfile()">Ver Perfil Público</button>
+        <button type="button" class="btn btn-primary" (click)="onSave()" [disabled]="saving || form.invalid">
+          @if (saving) { Guardando... } @else { Guardar Cambios }
+        </button>
+      </div>
     </div>
 
     <form [formGroup]="form" class="dashboard-form">
@@ -184,23 +153,44 @@
       }
 
       @if (activeTab === 'imagenes') {
-        <section class="dashboard-card dashboard-card--single">
-          <div class="card-heading">
+        <div class="images-layout">
+
+          <!-- Header -->
+          <div class="images-header">
+            <div class="images-header-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+            </div>
             <div>
-              <h2>Imágenes del Negocio</h2>
-              <p>Sube fotos desde tu ordenador y se guardarán en la base de datos</p>
+              <h2 class="images-title">Imágenes del Negocio</h2>
+              <p class="images-subtitle">Sube fotos de tu negocio y productos</p>
             </div>
           </div>
 
-          <div class="image-management-grid">
-            <div>
-              <p class="image-section-label">Imagen Principal</p>
+          <!-- Main grid -->
+          <div class="images-grid">
+
+            <!-- Imagen principal -->
+            <div class="images-main-col">
+              <div class="images-col-label">
+                Imagen Principal
+                @if (mainImage$ | async) {
+                  <span class="images-badge images-badge--green">Subida</span>
+                } @else {
+                  <span class="images-badge images-badge--red">Sin imagen</span>
+                }
+              </div>
               <button type="button" class="upload-tile upload-tile--main" (click)="mainImageInput.click()">
                 @if (mainImage$ | async; as mainImage) {
                   <img [src]="mainImage.path" alt="Imagen principal del negocio" class="upload-image" />
                 } @else {
                   <div class="upload-placeholder">
-                    <span class="upload-icon">📷</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                      <circle cx="12" cy="13" r="4"/>
+                    </svg>
                     <span>Haz clic para subir</span>
                   </div>
                 }
@@ -213,16 +203,18 @@
                 </div>
               }
               <input #mainImageInput type="file" accept="image/*" class="hidden-file-input" (change)="onMainImageSelected($event)" />
-
               @if (uploadingMain$ | async) {
                 <p class="upload-status">Subiendo imagen principal...</p>
               }
             </div>
 
-            <div>
-              <div class="gallery-title-row">
-                <p class="image-section-label">Galería de Imágenes</p>
-                <button type="button" class="btn btn-secondary btn-sm" [disabled]="uploadingGallery$ | async" (click)="galleryInput.click()">Añadir imágenes</button>
+            <!-- Galería -->
+            <div class="images-gallery-col">
+              <div class="images-col-label">
+                Galería de Imágenes
+                <button type="button" class="btn btn-secondary btn-sm" [disabled]="uploadingGallery$ | async" (click)="galleryInput.click()">
+                  + Añadir
+                </button>
               </div>
 
               <div class="gallery-grid">
@@ -233,14 +225,17 @@
                         <img [src]="slotImage.path" [alt]="'Imagen de galería ' + ($index + 1)" class="upload-image" />
                       } @else {
                         <div class="upload-placeholder upload-placeholder--small">
-                          <span class="upload-icon">📷</span>
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                            <circle cx="12" cy="13" r="4"/>
+                          </svg>
                         </div>
                       }
                     </button>
                     @if (slotImage) {
                       <div class="image-action-row">
                         <button type="button" class="btn-delete-image" [disabled]="uploadingGallery$ | async" (click)="onRemoveGalleryImage(slotImage.id, $event)">
-                          Eliminar imagen
+                          Eliminar
                         </button>
                       </div>
                     }
@@ -249,15 +244,26 @@
               </div>
 
               <input #galleryInput type="file" accept="image/*" class="hidden-file-input" multiple (change)="onGalleryImagesSelected($event)" />
-              <p class="field-help">Puedes subir hasta 6 imágenes de la galería para mostrar tu negocio y tus productos.</p>
-
               @if (uploadingGallery$ | async) {
-                <p class="upload-status">Subiendo imágenes de la galería...</p>
+                <p class="upload-status">Subiendo imágenes...</p>
               }
             </div>
           </div>
-        </section>
+
+          <!-- Recomendaciones -->
+          <div class="images-tips">
+            <p class="images-tips-title">Recomendaciones</p>
+            <ul class="images-tips-list">
+              <li>Usa imágenes de alta calidad (mínimo 800x600 píxeles)</li>
+              <li>La imagen principal será la portada de tu perfil</li>
+              <li>Muestra tus productos y tu espacio de trabajo</li>
+              <li>Formatos aceptados: JPG, PNG, WebP</li>
+            </ul>
+          </div>
+
+        </div>
       }
     </form>
-  </main>
+    </main>
+  </div>
 </div>

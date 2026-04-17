@@ -19,15 +19,16 @@ import { noBusinessGuard } from './core/guards/no-business.guard';
 import { Checkout } from './pages/proceso_pago/checkout/checkout';
 import { authGuard } from './core/guards/auth.guard';
 import { checkoutGuard } from './core/guards/checkout.guard';
+import { guestGuard } from './core/guards/guest.guard';
 import { ForgotPassword } from './pages/forgot-password/forgot-password';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
-  { path: 'login', component: Login },
-  { path: 'forgot-password', component: ForgotPassword },
+  { path: 'login', component: Login, canActivate: [guestGuard] },
+  { path: 'forgot-password', component: ForgotPassword, canActivate: [guestGuard] },
   { path: 'register', redirectTo: 'register/cliente', pathMatch: 'full' },
-  { path: 'register/cliente', component: RegisterCliente },
-  { path: 'register/negocio', component: RegisterNegocio },
+  { path: 'register/cliente', component: RegisterCliente, canActivate: [guestGuard] },
+  { path: 'register/negocio', component: RegisterNegocio, canActivate: [guestGuard] },
   { path: 'mi-negocio', component: MiNegocio, canActivate: [businessGuard] },
   { path: 'home', component: Home, canActivate: [noBusinessGuard] },
   { path: 'negocios', component: Negocios, canActivate: [noBusinessGuard] },

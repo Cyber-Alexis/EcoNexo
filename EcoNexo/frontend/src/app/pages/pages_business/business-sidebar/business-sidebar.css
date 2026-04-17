@@ -1,0 +1,227 @@
+/* ─── Backdrop (mobile only) ─── */
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 40;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+/* ─── Sidebar ─── */
+.sidebar {
+  width: 240px;
+  min-width: 240px;
+  background: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+/* ─── Brand ─── */
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0 1.25rem 1.25rem;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 0.5rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.sidebar-brand:hover { opacity: 0.8; }
+.sidebar-logo svg { width: 32px; height: 32px; display: block; }
+.sidebar-brand-name { font-size: 1.1rem; font-weight: 700; color: #1a1a1a; }
+
+/* ─── Section label ─── */
+.sidebar-section-label {
+  margin: 0;
+  padding: 0 1.5rem 0.5rem;
+  font-size: 0.74rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ─── Nav ─── */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  flex: 1;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #6b7280;
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  width: 100%;
+  text-align: left;
+  transition: background 0.15s, color 0.15s;
+}
+
+.nav-item svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.nav-item:hover {
+  background: #f0faf5;
+  color: #2D6A4F;
+}
+
+.nav-item.active {
+  background: #2D6A4F;
+  color: #ffffff;
+}
+
+/* ─── User card ─── */
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  margin: 0 0.75rem 0.5rem;
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.sidebar-user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #2D6A4F;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sidebar-user-avatar svg {
+  width: 16px;
+  height: 16px;
+  stroke: #ffffff;
+}
+
+.sidebar-user-info {
+  min-width: 0;
+}
+
+.sidebar-user-name {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-user-role {
+  display: block;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+/* ─── Logout ─── */
+.sidebar-logout {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #6b7280;
+  transition: color 0.15s;
+  font-family: inherit;
+  width: 100%;
+}
+
+.sidebar-logout svg {
+  width: 18px;
+  height: 18px;
+}
+
+.sidebar-logout:hover {
+  color: #dc2626;
+}
+
+/* ─── Close button (hidden on desktop) ─── */
+.sidebar-close {
+  display: none;
+}
+
+/* ─── Tablet + Mobile (≤ 1024px) ─── */
+@media (max-width: 1024px) {
+  /* Backdrop becomes a real overlay */
+  .sidebar-backdrop {
+    display: block;
+  }
+
+  .sidebar-backdrop.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Sidebar becomes a fixed left-side drawer */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100dvh;
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.28s ease;
+    box-shadow: none;
+    padding-top: 1rem;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Close (X) button inside sidebar */
+  .sidebar-close {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 1rem 0.75rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-left: auto;
+    color: #6b7280;
+    transition: color 0.15s;
+  }
+
+  .sidebar-close:hover { color: #111827; }
+
+  .sidebar-close svg {
+    width: 22px;
+    height: 22px;
+  }
+}

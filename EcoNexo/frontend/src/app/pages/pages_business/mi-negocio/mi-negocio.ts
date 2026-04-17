@@ -1,19 +1,20 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { finalize, timeout } from 'rxjs/operators';
 import { ApiBusiness, ApiImage } from '../../../core/models/business.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { BusinessService } from '../../../core/services/business.service';
+import { BusinessSidebar } from '../business-sidebar/business-sidebar';
 
 const BUSINESS_REQUEST_TIMEOUT_MS = 30_000;
 
 @Component({
   selector: 'app-mi-negocio',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, BusinessSidebar],
   templateUrl: './mi-negocio.html',
   styleUrl: './mi-negocio.css',
 })
