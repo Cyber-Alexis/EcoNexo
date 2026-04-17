@@ -128,6 +128,42 @@ export interface SettingsResponse {
   data: AdminSettings;
 }
 
+export interface AnalyticsKpi {
+  label: string;
+  value: string;
+  icon_key: string;
+  change_label: string;
+  change_positive: boolean;
+}
+
+export interface AnalyticsMonthlySale {
+  month: string;
+  revenue: number;
+}
+
+export interface AnalyticsDailyTraffic {
+  day: string;
+  orders: number;
+}
+
+export interface AnalyticsCategoryItem {
+  name: string;
+  total: number;
+  percentage: number;
+}
+
+export interface AdminAnalytics {
+  kpis: AnalyticsKpi[];
+  monthly_sales: AnalyticsMonthlySale[];
+  weekly_traffic: AnalyticsDailyTraffic[];
+  category_distribution: AnalyticsCategoryItem[];
+}
+
+export interface AnalyticsResponse {
+  success: boolean;
+  data: AdminAnalytics;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -225,5 +261,9 @@ export class AdminService {
 
   checkForUpdates(): Observable<SettingsResponse> {
     return this.http.post<SettingsResponse>(`${this.baseUrl}/settings/check-updates`, {});
+  }
+
+  getAnalytics(): Observable<AnalyticsResponse> {
+    return this.http.get<AnalyticsResponse>(`${this.baseUrl}/analytics`);
   }
 }

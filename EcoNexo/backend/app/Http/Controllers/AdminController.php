@@ -423,6 +423,145 @@ class AdminController extends Controller
         ], 200);
     }
 
+    /**
+     * Get analytics data from real database records
+     */
+    public function getAnalytics()
+    {
+        $now = now();
+        $today = $now->copy()->startOfDay();
+        $startOfThisWeek = $now->copy()->subDays(6)->startOfDay();
+        $startOfPrevWeek = $startOfThisWeek->copy()->subDays(7);
+        $prevMonthStart = $now->copy()->subMonth()->startOfMonth();
+        $prevMonthEnd = $now->copy()->subMonth()->endOfMonth();
+
+        // ── KPIs ──────────────────────────────────────────────
+        $ordersToday = Order::where('created_at', '>=', $today)->count();
+        $ordersYesterday = Order::whereBetween('created_at', [
+            $today->copy()->subDay(), $today,
+        ])->count();
+
+        $totalOrders = Order::count();
+        $completedOrders = Order::whereIn('status', ['confirmed', 'completed'])->count();
+        $conversionRate = $totalOrders > 0 ? round($completedOrders / $totalOrders * 100, 1) : 0.0;
+
+        $prevTotalOrders = Order::whereBetween('created_at', [$prevMonthStart, $prevMonthEnd])->count();
+        $prevCompletedOrders = Order::whereIn('status', ['confirmed', 'completed'])
+            ->whereBetween('created_at', [$prevMonthStart, $prevMonthEnd])
+            ->count();
+        $prevConversionRate = $prevTotalOrders > 0 ? round($prevCompletedOrders / $prevTotalOrders * 100, 1) : 0.0;
+        $conversionChange = round($conversionRate - $prevConversionRate, 1);
+
+        $newUsersThisWeek = User::where('created_at', '>=', $startOfThisWeek)->count();
+        $newUsersPrevWeek = User::whereBetween('created_at', [$startOfPrevWeek, $startOfThisWeek])->count();
+
+        $avgTicket = (float) (Order::whereIn('status', ['confirmed', 'completed'])->avg('total_price') ?? 0);
+        $prevAvgTicket = (float) (Order::whereIn('status', ['confirmed', 'completed'])
+            ->whereBetween('created_at', [$prevMonthStart, $prevMonthEnd])
+            ->avg('total_price') ?? 0);
+
+        $kpis = [
+            [
+                'label' => 'Pedidos Hoy',
+                'value' => (string) $ordersToday,
+                'icon_key' => 'orders',
+                'change_label' => $this->buildChangeLabel($ordersToday, $ordersYesterday, 'vs ayer'),
+                'change_positive' => $ordersToday >= $ordersYesterday,
+            ],
+            [
+                'label' => 'Tasa Conversión',
+                'value' => $conversionRate . '%',
+                'icon_key' => 'conversion',
+                'change_label' => ($conversionChange >= 0 ? '+' : '') . $conversionChange . '% este mes',
+                'change_positive' => $conversionChange >= 0,
+            ],
+            [
+                'label' => 'Nuevos Usuarios',
+                'value' => (string) $newUsersThisWeek,
+                'icon_key' => 'users',
+                'change_label' => 'Esta semana',
+                'change_positive' => $newUsersThisWeek >= $newUsersPrevWeek,
+            ],
+            [
+                'label' => 'Ticket Medio',
+                'value' => '€' . number_format($avgTicket, 2, '.', ''),
+                'icon_key' => 'ticket',
+                'change_label' => $this->buildChangeLabel($avgTicket, $prevAvgTicket, 'vs mes anterior'),
+                'change_positive' => $avgTicket >= $prevAvgTicket,
+            ],
+        ];
+
+        // ── Monthly Sales (last 6 months) ─────────────────────
+        $spanishMonths = ['', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        $monthlySales = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $monthStart = $now->copy()->subMonths($i)->startOfMonth();
+            $monthEnd   = $now->copy()->subMonths($i)->endOfMonth();
+            $revenue = (float) Order::whereIn('status', ['confirmed', 'completed'])
+                ->whereBetween('created_at', [$monthStart, $monthEnd])
+                ->sum('total_price');
+            $monthlySales[] = [
+                'month'   => $spanishMonths[(int) $monthStart->format('n')],
+                'revenue' => round($revenue, 2),
+            ];
+        }
+
+        // ── Weekly Traffic (orders per day, last 7 days) ──────
+        $dayLabels = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        $weeklyTraffic = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $dayStart = $now->copy()->subDays($i)->startOfDay();
+            $dayEnd   = $now->copy()->subDays($i)->endOfDay();
+            $count = Order::whereBetween('created_at', [$dayStart, $dayEnd])->count();
+            $weeklyTraffic[] = [
+                'day'    => $dayLabels[$dayStart->dayOfWeek],
+                'orders' => $count,
+            ];
+        }
+
+        // ── Category Distribution ─────────────────────────────
+        $rawCategories = DB::table('order_items')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->join('products', 'order_items.product_id', '=', 'products.id')
+            ->join('categories', 'products.category_id', '=', 'categories.id')
+            ->whereIn('orders.status', ['confirmed', 'completed'])
+            ->select('categories.name', DB::raw('SUM(order_items.quantity * order_items.unit_price) as total'))
+            ->groupBy('categories.id', 'categories.name')
+            ->orderByDesc('total')
+            ->get();
+
+        $totalCategoryRevenue = $rawCategories->sum('total');
+        $categoryDistribution = $rawCategories->map(function ($item) use ($totalCategoryRevenue) {
+            return [
+                'name'       => $item->name,
+                'total'      => round((float) $item->total, 2),
+                'percentage' => $totalCategoryRevenue > 0
+                    ? (int) round($item->total / $totalCategoryRevenue * 100)
+                    : 0,
+            ];
+        })->values()->toArray();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'kpis'                 => $kpis,
+                'monthly_sales'        => $monthlySales,
+                'weekly_traffic'       => $weeklyTraffic,
+                'category_distribution' => $categoryDistribution,
+            ],
+        ], 200);
+    }
+
+    private function buildChangeLabel(float $current, float $previous, string $suffix): string
+    {
+        if ($previous == 0) {
+            return $suffix;
+        }
+        $pct = round(($current - $previous) / $previous * 100, 1);
+
+        return ($pct >= 0 ? '+' : '') . $pct . '% ' . $suffix;
+    }
+
     private function calculateChangePercentage(float|int $current, float|int $previous): float
     {
         if ((float) $previous === 0.0) {

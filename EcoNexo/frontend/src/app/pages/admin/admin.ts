@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, NgZone, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Subscription, interval } from 'rxjs';
+import { Subscription, interval } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { AuthService, AuthUser } from '../../core/services/auth.service';
 import {
@@ -15,6 +15,10 @@ import {
   AdminSettings,
   AdminStatistics,
   AdminSystemStatusItem,
+  AdminAnalytics,
+  AnalyticsCategoryItem,
+  AnalyticsMonthlySale,
+  AnalyticsDailyTraffic,
   User
 } from '../../services/admin.service';
 
@@ -45,17 +49,11 @@ export class Admin implements OnInit {
 
   // Users data
   users: User[] = [];
-  private usersSubject = new BehaviorSubject<User[]>([]);
-  users$ = this.usersSubject.asObservable();
-
-  private statisticsSubject = new BehaviorSubject<AdminStatistics | null>(null);
-  readonly statistics$ = this.statisticsSubject.asObservable();
+  statistics: AdminStatistics | null = null;
   currentPage = 1;
   totalPages = 1;
   totalUsers = 0;
   isLoading = false;
-  private loadingSubject = new BehaviorSubject<boolean>(false);
-  isLoading$ = this.loadingSubject.asObservable();
 
   error: string | null = null;
   successMessage: string | null = null;
@@ -69,6 +67,14 @@ export class Admin implements OnInit {
   isSavingNotifications = false;
   isSavingMaintenance = false;
   isCheckingUpdates = false;
+
+  // Analytics
+  analytics: AdminAnalytics | null = null;
+  isAnalyticsLoading = false;
+
+  // Cache timestamps (ms)
+  private statsLoadedAt = 0;
+  private readonly STATS_TTL_MS = 60_000; // 1 min
 
   // Filters
   selectedRole = 'todos';
@@ -99,7 +105,7 @@ export class Admin implements OnInit {
 
     // Load dashboard data immediately from cached user while fetchMe is in flight
     if (this.currentUser?.role === 'admin') {
-      this.loadStatistics();
+      this.loadStatistics(true);
       this.startAutoRefresh();
     }
 
@@ -144,7 +150,18 @@ export class Admin implements OnInit {
     }
 
     if (section === 'configuracion') {
-      this.loadSettings();
+      // Use cached settings if already loaded
+      if (!this.settings) {
+        this.loadSettings();
+      }
+      return;
+    }
+
+    if (section === 'analisis') {
+      // Use cached analytics if already loaded
+      if (!this.analytics) {
+        this.loadAnalytics();
+      }
       return;
     }
 
@@ -155,7 +172,6 @@ export class Admin implements OnInit {
   loadUsers(page = 1, silent = false): void {
     if (!silent) {
       this.isLoading = true;
-      this.loadingSubject.next(true);
     }
     this.error = null;
 
@@ -163,7 +179,6 @@ export class Admin implements OnInit {
       .pipe(finalize(() => {
         if (!silent) {
           this.isLoading = false;
-          this.loadingSubject.next(false);
         }
       }))
       .subscribe({
@@ -171,7 +186,6 @@ export class Admin implements OnInit {
         const pageData = res?.data?.data ? res.data : res?.data ? res : null;
 
         this.users = Array.isArray(pageData?.data) ? pageData.data : [];
-        this.usersSubject.next(this.users);
         this.currentPage = Number(pageData?.current_page ?? 1);
         this.totalPages = Number(pageData?.last_page ?? 1);
         this.totalUsers = Number(pageData?.total ?? this.users.length);
@@ -179,9 +193,9 @@ export class Admin implements OnInit {
       error: (err) => {
         console.error('Error loading admin users:', err);
         if (!silent) {
-          this.loadingSubject.next(false);
+          this.isLoading = false;
         }
-        this.usersSubject.next([]);
+        this.users = [];
         this.error = err.status === 403
           ? 'No tienes permisos para consultar usuarios administradores.'
           : 'Error al cargar los usuarios';
@@ -189,11 +203,16 @@ export class Admin implements OnInit {
     });
   }
 
-  loadStatistics(): void {
+  loadStatistics(force = false): void {
+    const now = Date.now();
+    if (!force && this.statsLoadedAt && (now - this.statsLoadedAt) < this.STATS_TTL_MS) {
+      return; // Data is still fresh
+    }
     this.adminService.getStatistics().subscribe({
       next: (res: any) => {
         const stats: AdminStatistics = res?.data ?? res ?? null;
-        this.statisticsSubject.next(stats);
+        this.statistics = stats;
+        this.statsLoadedAt = Date.now();
         this.lastUpdatedAt = stats?.last_updated_at ?? new Date().toISOString();
       },
       error: (err) => {
@@ -223,8 +242,93 @@ export class Admin implements OnInit {
       });
   }
 
+  loadAnalytics(): void {
+    this.isAnalyticsLoading = true;
+    this.adminService.getAnalytics().subscribe({
+      next: (res: any) => {
+        this.analytics = res?.data ?? null;
+        this.isAnalyticsLoading = false;
+      },
+      error: (err) => {
+        console.error('Error loading analytics:', err);
+        this.isAnalyticsLoading = false;
+        this.error = 'No se pudieron cargar los datos de análisis.';
+      }
+    });
+  }
+
+  // ── Chart helpers ─────────────────────────────────────────
+
+  getMonthlySalesBars(): { x: number; y: number; width: number; height: number; label: string; value: number }[] {
+    const data = this.analytics?.monthly_sales ?? [];
+    if (!data.length) return [];
+    const max = Math.max(...data.map((d: AnalyticsMonthlySale) => d.revenue), 1);
+    const chartHeight = 150;
+    const barWidth = 38;
+    const gap = 20;
+    const totalWidth = data.length * (barWidth + gap) - gap;
+    const offsetX = Math.max(0, (460 - totalWidth) / 2);
+
+    return data.map((d: AnalyticsMonthlySale, i: number) => {
+      const height = Math.max((d.revenue / max) * chartHeight, 2);
+      return {
+        x: offsetX + i * (barWidth + gap),
+        y: 165 - height,
+        width: barWidth,
+        height,
+        label: d.month,
+        value: d.revenue,
+      };
+    });
+  }
+
+  getBarChartMaxLabel(): string {
+    const data = this.analytics?.monthly_sales ?? [];
+    const max = Math.max(...data.map((d: AnalyticsMonthlySale) => d.revenue), 0);
+    return max >= 1000 ? (max / 1000).toFixed(0) + 'k' : max.toFixed(0);
+  }
+
+  getWeeklyTrafficPoints(): string {
+    const data = this.analytics?.weekly_traffic ?? [];
+    if (data.length < 2) return '';
+    const max = Math.max(...data.map((d: AnalyticsDailyTraffic) => d.orders), 1);
+    const step = 400 / (data.length - 1);
+    return data.map((d: AnalyticsDailyTraffic, i: number) => {
+      const x = Math.round(i * step);
+      const y = Math.round(165 - (d.orders / max) * 150);
+      return `${x},${y}`;
+    }).join(' ');
+  }
+
+  getWeeklyTrafficDots(): { cx: number; cy: number }[] {
+    const data = this.analytics?.weekly_traffic ?? [];
+    if (data.length < 2) return [];
+    const max = Math.max(...data.map((d: AnalyticsDailyTraffic) => d.orders), 1);
+    const step = 400 / (data.length - 1);
+    return data.map((d: AnalyticsDailyTraffic, i: number) => ({
+      cx: Math.round(i * step),
+      cy: Math.round(165 - (d.orders / max) * 150),
+    }));
+  }
+
+  getCategoryGradient(): string {
+    const data = this.analytics?.category_distribution ?? [];
+    if (!data.length) return 'conic-gradient(#e5e7eb 0% 100%)';
+    const colors = ['#0f6b53', '#8b7355', '#8d9db6', '#3b506e', '#c2b89a'];
+    let current = 0;
+    const stops = data.map((item: AnalyticsCategoryItem, i: number) => {
+      const start = current;
+      current += item.percentage;
+      return `${colors[i % colors.length]} ${start}% ${current}%`;
+    });
+    return `conic-gradient(${stops.join(', ')})`;
+  }
+
+  getCategoryColors(): string[] {
+    return ['#0f6b53', '#8b7355', '#8d9db6', '#3b506e', '#c2b89a'];
+  }
+
   applyFilters(): void {
-    this.currentPage = 1;
     this.loadUsers();
   }
 
@@ -278,7 +382,7 @@ export class Admin implements OnInit {
           this.showSuccess('Usuario actualizado correctamente');
           this.closeModal();
           this.loadUsers(this.currentPage);
-          this.loadStatistics();
+          this.loadStatistics(true);
         },
         error: (err) => {
           this.error = err.error?.message || 'Error al actualizar el usuario';
@@ -291,7 +395,7 @@ export class Admin implements OnInit {
           this.showSuccess('Usuario creado correctamente');
           this.closeModal();
           this.loadUsers();
-          this.loadStatistics();
+          this.loadStatistics(true);
         },
         error: (err) => {
           this.error = err.error?.message || 'Error al crear el usuario';
@@ -308,7 +412,7 @@ export class Admin implements OnInit {
       next: () => {
         this.showSuccess('Estado actualizado correctamente');
         this.loadUsers(this.currentPage);
-        this.loadStatistics();
+        this.loadStatistics(true);
       },
       error: () => { this.error = 'Error al cambiar el estado'; }
     });
@@ -321,7 +425,7 @@ export class Admin implements OnInit {
       next: () => {
         this.showSuccess('Usuario eliminado correctamente');
         this.loadUsers(this.currentPage);
-        this.loadStatistics();
+        this.loadStatistics(true);
       },
       error: (err) => { this.error = err.error?.message || 'Error al eliminar el usuario'; }
     });
@@ -365,15 +469,15 @@ export class Admin implements OnInit {
   }
 
   getOverviewCards(): AdminOverviewCard[] {
-    return this.statisticsSubject.value?.overview_cards ?? [];
+    return this.statistics?.overview_cards ?? [];
   }
 
   getSystemStatus(): AdminSystemStatusItem[] {
-    return this.statisticsSubject.value?.system_status ?? [];
+    return this.statistics?.system_status ?? [];
   }
 
   getRecentActivity(): AdminRecentActivityItem[] {
-    return this.statisticsSubject.value?.recent_activity ?? [];
+    return this.statistics?.recent_activity ?? [];
   }
 
   formatDate(date: string): string {
@@ -639,10 +743,13 @@ export class Admin implements OnInit {
     this.error = null;
     this.loadStatistics();
 
+    // Only load section data if not already cached
     if (this.activeSection === 'usuarios') {
       this.loadUsers();
-    } else if (this.activeSection === 'configuracion') {
+    } else if (this.activeSection === 'configuracion' && !this.settings) {
       this.loadSettings();
+    } else if (this.activeSection === 'analisis' && !this.analytics) {
+      this.loadAnalytics();
     }
 
     this.startAutoRefresh();
@@ -653,7 +760,9 @@ export class Admin implements OnInit {
       return;
     }
 
-    this.refreshSubscription = interval(30000).subscribe(() => {
+    // Refresh every 90s instead of 30s to reduce server load
+    this.refreshSubscription = interval(90_000).subscribe(() => {
+      this.statsLoadedAt = 0; // Invalidate cache for background refresh
       this.loadStatistics();
 
       if (this.activeSection === 'usuarios') {

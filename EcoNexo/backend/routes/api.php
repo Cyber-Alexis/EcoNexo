@@ -98,6 +98,7 @@ Route::middleware(['auth:api', \App\Http\Middleware\EnsureActiveApiUser::class, 
     Route::patch('/admin/users/{id}/status',    [AdminController::class, 'changeUserStatus']);
     Route::delete('/admin/users/{id}',          [AdminController::class, 'deleteUser']);
     Route::get('/admin/statistics',             [AdminController::class, 'getStatistics']);
+    Route::get('/admin/analytics',              [AdminController::class, 'getAnalytics']);
     Route::get('/admin/settings',               [AdminController::class, 'getSettings']);
     Route::put('/admin/settings/general',       [AdminController::class, 'updateGeneralSettings']);
     Route::put('/admin/settings/notifications', [AdminController::class, 'updateNotificationSettings']);

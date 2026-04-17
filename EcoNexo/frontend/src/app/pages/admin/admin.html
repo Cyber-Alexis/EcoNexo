@@ -73,6 +73,15 @@
         </span>
         <span class="nav-label">Usuarios</span>
       </button>
+      <button type="button" class="nav-item" [class.active]="activeSection === 'analisis'" (click)="setSection('analisis')">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <polyline points="3,17 8,11 13,14 21,5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="3" y1="20" x2="21" y2="20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Análisis</span>
+      </button>
       <button type="button" class="nav-item" [class.active]="activeSection === 'configuracion'" (click)="setSection('configuracion')">
         <span class="nav-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none">
@@ -119,22 +128,22 @@
       </div>
 
       <!-- Stats -->
-      <ng-container *ngIf="statistics$ | async as stats">
+      <ng-container *ngIf="statistics">
         <div class="stats-grid">
           <div class="stat-card">
-            <div class="stat-number">{{ stats.total_users }}</div>
+            <div class="stat-number">{{ statistics!.total_users }}</div>
             <div class="stat-label">Total Usuarios</div>
           </div>
           <div class="stat-card">
-            <div class="stat-number">{{ stats.consumer_users }}</div>
+            <div class="stat-number">{{ statistics!.consumer_users }}</div>
             <div class="stat-label">Clientes</div>
           </div>
           <div class="stat-card">
-            <div class="stat-number">{{ stats.business_users }}</div>
+            <div class="stat-number">{{ statistics!.business_users }}</div>
             <div class="stat-label">Productores</div>
           </div>
           <div class="stat-card stat-blocked">
-            <div class="stat-number">{{ stats.blocked_users }}</div>
+            <div class="stat-number">{{ statistics!.blocked_users }}</div>
             <div class="stat-label">Bloqueados</div>
           </div>
         </div>
@@ -174,12 +183,12 @@
 
         <!-- Table -->
         <div class="table-wrapper">
-          <div *ngIf="isLoading$ | async" class="loading-state">
+          <div *ngIf="isLoading" class="loading-state">
             <div class="spinner"></div>
             <p>Cargando usuarios...</p>
           </div>
 
-          <table *ngIf="!(isLoading$ | async)" class="users-table">
+          <table *ngIf="!isLoading" class="users-table">
             <thead>
               <tr>
                 <th>Usuario</th>
@@ -191,7 +200,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let user of (users$ | async) || []">
+              <tr *ngFor="let user of users">
                 <td class="user-cell">
                   <div class="user-avatar-sm">{{ user.name.charAt(0) }}</div>
                   <div>
@@ -225,7 +234,7 @@
                   </div>
                 </td>
               </tr>
-              <tr *ngIf="((users$ | async)?.length ?? 0) === 0 && !(isLoading$ | async)">
+              <tr *ngIf="users.length === 0 && !isLoading">
                 <td colspan="6" class="empty-state">No hay usuarios que coincidan con los filtros</td>
               </tr>
             </tbody>
@@ -241,9 +250,165 @@
       </div>
     </div>
 
+    <!-- ========== ANÁLISIS SECTION ========== -->
+    <div *ngIf="activeSection === 'analisis'">
+      <div class="page-header">
+        <h1>Análisis y Control</h1>
+        <p class="page-subtitle">Métricas reales extraídas de la base de datos de EcoNexo.</p>
+      </div>
+
+      <div *ngIf="isAnalyticsLoading" class="analytics-loading">
+        <div class="spinner"></div>
+        <p>Cargando datos...</p>
+      </div>
+
+      <ng-container *ngIf="!isAnalyticsLoading && analytics">
+
+        <!-- KPI Cards -->
+        <div class="analytics-kpi-grid">
+          <article class="analytics-kpi-card" *ngFor="let kpi of analytics.kpis">
+            <div class="analytics-kpi-label">{{ kpi.label }}</div>
+            <div class="analytics-kpi-value">{{ kpi.value }}</div>
+            <div class="analytics-kpi-change" [class.change-positive]="kpi.change_positive" [class.change-negative]="!kpi.change_positive">
+              {{ kpi.change_label }}
+            </div>
+          </article>
+        </div>
+
+        <!-- Charts row -->
+        <div class="analytics-charts-row">
+
+          <!-- Ventas Mensuales bar chart -->
+          <section class="panel analytics-chart-panel">
+            <div class="analytics-chart-header">
+              <h2>Ventas Mensuales</h2>
+              <p>Evolución de ventas en los últimos 6 meses</p>
+            </div>
+            <div class="analytics-chart-body">
+              <svg viewBox="0 0 460 200" class="analytics-svg" aria-hidden="true">
+                <!-- grid lines -->
+                <line x1="0" y1="15" x2="460" y2="15" stroke="#f1f5f9" stroke-width="1"/>
+                <line x1="0" y1="53" x2="460" y2="53" stroke="#f1f5f9" stroke-width="1"/>
+                <line x1="0" y1="90" x2="460" y2="90" stroke="#f1f5f9" stroke-width="1"/>
+                <line x1="0" y1="128" x2="460" y2="128" stroke="#f1f5f9" stroke-width="1"/>
+                <!-- bars -->
+                <rect
+                  *ngFor="let bar of getMonthlySalesBars()"
+                  [attr.x]="bar.x"
+                  [attr.y]="bar.y"
+                  [attr.width]="bar.width"
+                  [attr.height]="bar.height"
+                  rx="4"
+                  fill="#0f6b53"
+                />
+                <!-- x-axis labels -->
+                <text
+                  *ngFor="let bar of getMonthlySalesBars()"
+                  [attr.x]="bar.x + bar.width / 2"
+                  y="185"
+                  text-anchor="middle"
+                  font-size="11"
+                  fill="#9ca3af"
+                >{{ bar.label }}</text>
+                <!-- x-axis line -->
+                <line x1="0" y1="168" x2="460" y2="168" stroke="#e5e7eb" stroke-width="1"/>
+              </svg>
+            </div>
+          </section>
+
+          <!-- Tráfico Semanal line chart -->
+          <section class="panel analytics-chart-panel">
+            <div class="analytics-chart-header">
+              <h2>Pedidos Semanales</h2>
+              <p>Pedidos por día de la semana (últimos 7 días)</p>
+            </div>
+            <div class="analytics-chart-body">
+              <svg viewBox="0 0 400 200" class="analytics-svg" aria-hidden="true">
+                <!-- grid lines -->
+                <line x1="0" y1="15" x2="400" y2="15" stroke="#f1f5f9" stroke-width="1"/>
+                <line x1="0" y1="53" x2="400" y2="53" stroke="#f1f5f9" stroke-width="1"/>
+                <line x1="0" y1="90" x2="400" y2="90" stroke="#f1f5f9" stroke-width="1"/>
+                <line x1="0" y1="128" x2="400" y2="128" stroke="#f1f5f9" stroke-width="1"/>
+                <!-- area fill -->
+                <polyline
+                  *ngIf="getWeeklyTrafficPoints()"
+                  [attr.points]="'0,168 ' + getWeeklyTrafficPoints() + ' 400,168'"
+                  fill="rgba(15,107,83,0.08)"
+                  stroke="none"
+                />
+                <!-- line -->
+                <polyline
+                  *ngIf="getWeeklyTrafficPoints()"
+                  [attr.points]="getWeeklyTrafficPoints()"
+                  fill="none"
+                  stroke="#0f6b53"
+                  stroke-width="2"
+                  stroke-linejoin="round"
+                  stroke-linecap="round"
+                />
+                <!-- dots -->
+                <circle
+                  *ngFor="let dot of getWeeklyTrafficDots()"
+                  [attr.cx]="dot.cx"
+                  [attr.cy]="dot.cy"
+                  r="4"
+                  fill="#ffffff"
+                  stroke="#0f6b53"
+                  stroke-width="2"
+                />
+                <!-- x-axis labels -->
+                <text
+                  *ngFor="let item of analytics.weekly_traffic; let i = index"
+                  [attr.x]="i * (400 / (analytics.weekly_traffic.length - 1))"
+                  y="188"
+                  text-anchor="middle"
+                  font-size="11"
+                  fill="#9ca3af"
+                >{{ item.day }}</text>
+                <!-- x-axis line -->
+                <line x1="0" y1="168" x2="400" y2="168" stroke="#e5e7eb" stroke-width="1"/>
+              </svg>
+            </div>
+          </section>
+        </div>
+
+        <!-- Category Distribution -->
+        <section class="panel analytics-category-panel" *ngIf="analytics.category_distribution.length">
+          <div class="analytics-chart-header">
+            <h2>Distribución por Categoría</h2>
+            <p>Porcentaje de ventas por categoría de producto</p>
+          </div>
+          <div class="analytics-category-body">
+            <div class="analytics-pie-wrapper">
+              <div class="analytics-pie" [style.background]="getCategoryGradient()"></div>
+            </div>
+            <div class="analytics-category-legend">
+              <div class="analytics-legend-item" *ngFor="let item of analytics.category_distribution; let i = index">
+                <span class="analytics-legend-dot" [style.background]="getCategoryColors()[i % getCategoryColors().length]"></span>
+                <span class="analytics-legend-name">{{ item.name }}:</span>
+                <strong>{{ item.percentage }}%</strong>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Empty state for categories -->
+        <section class="panel analytics-category-panel" *ngIf="!analytics.category_distribution.length">
+          <div class="analytics-chart-header">
+            <h2>Distribución por Categoría</h2>
+            <p>Porcentaje de ventas por categoría de producto</p>
+          </div>
+          <div class="analytics-empty-state">
+            <p>Sin datos de ventas por categoría todavía.</p>
+          </div>
+        </section>
+
+      </ng-container>
+    </div>
+
     <!-- ========== DASHBOARD SECTION ========== -->
     <div *ngIf="activeSection === 'dashboard'">
-      <ng-container *ngIf="statistics$ | async as stats">
+      <ng-container *ngIf="statistics">
       <div class="page-header dashboard-header">
         <div>
           <h1>Panel de Administración</h1>
@@ -266,7 +431,7 @@
         </article>
       </div>
 
-      <div class="dashboard-grid" *ngIf="statistics$ | async">
+      <div class="dashboard-grid" *ngIf="statistics">
         <section class="panel dashboard-panel">
           <div class="panel-header panel-header-stack">
             <div>
@@ -310,21 +475,21 @@
         </section>
       </div>
 
-      <div class="dashboard-mini-grid" *ngIf="statistics$ | async as stats">
+      <div class="dashboard-mini-grid" *ngIf="statistics">
         <article class="mini-stat-card">
           <span class="mini-stat-label">Pedidos totales</span>
-          <strong>{{ stats.total_orders }}</strong>
-          <small>{{ stats.completed_orders }} completados · {{ stats.pending_orders }} pendientes</small>
+          <strong>{{ statistics!.total_orders }}</strong>
+          <small>{{ statistics!.completed_orders }} completados · {{ statistics!.pending_orders }} pendientes</small>
         </article>
         <article class="mini-stat-card">
           <span class="mini-stat-label">Catalogo activo</span>
-          <strong>{{ stats.active_products }}</strong>
-          <small>{{ stats.products_with_stock }} productos con stock</small>
+          <strong>{{ statistics!.active_products }}</strong>
+          <small>{{ statistics!.products_with_stock }} productos con stock</small>
         </article>
         <article class="mini-stat-card">
           <span class="mini-stat-label">Base de clientes</span>
-          <strong>{{ stats.consumer_users }}</strong>
-          <small>{{ stats.active_users }} usuarios activos</small>
+          <strong>{{ statistics!.consumer_users }}</strong>
+          <small>{{ statistics!.active_users }} usuarios activos</small>
         </article>
       </div>
       </ng-container>
