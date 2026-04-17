@@ -69,9 +69,13 @@ Route::middleware(['auth:api', \App\Http\Middleware\EnsureActiveApiUser::class, 
     Route::put('/cart',     [CartController::class, 'sync']);
     Route::delete('/cart',  [CartController::class, 'clear']);
 
-    // Orders
+    // Orders (customer)
     Route::post('/orders',  [OrderController::class, 'store']);
     Route::get('/orders',   [OrderController::class, 'index']);
+
+    // Orders (business owner)
+    Route::get('/mis-pedidos-productor',                    [OrderController::class, 'businessOrders']);
+    Route::patch('/mis-pedidos-productor/{id}/status',      [OrderController::class, 'updateStatus']);
 
     // Reviews
     Route::get('/resenas',                        [ReviewController::class, 'index']);
