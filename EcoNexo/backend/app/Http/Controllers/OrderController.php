@@ -62,7 +62,7 @@ class OrderController extends Controller
 
     /**
      * GET /api/orders
-     * Returns all orders for the authenticated user.
+     * Returns all orders for the authenticated user (customer).
      */
     public function index(Request $request)
     {
@@ -99,5 +99,81 @@ class OrderController extends Controller
             });
 
         return response()->json($orders);
+    }
+
+    /**
+     * GET /api/mis-pedidos-productor
+     * Returns all orders for the authenticated business owner.
+     */
+    public function businessOrders(Request $request)
+    {
+        $user = $request->user();
+        $business = $user->business;
+
+        if (!$business) {
+            return response()->json(['message' => 'No tienes un negocio registrado.'], 403);
+        }
+
+        $orders = Order::where('business_id', $business->id)
+            ->with([
+                'user:id,name,email',
+                'items.product:id,name,price,price_unit',
+            ])
+            ->latest()
+            ->get()
+            ->map(function ($order) {
+                return [
+                    'id'             => $order->id,
+                    'code'           => 'ORD-' . str_pad($order->id, 3, '0', STR_PAD_LEFT),
+                    'status'         => $order->status,
+                    'total_price'    => $order->total_price,
+                    'payment_method' => $order->payment_method,
+                    'pickup_date'    => $order->pickup_date,
+                    'created_at'     => $order->created_at,
+                    'client_name'    => $order->user?->name,
+                    'client_email'   => $order->user?->email,
+                    'items_count'    => $order->items->count(),
+                    'items'          => $order->items->map(fn($item) => [
+                        'product_id'   => $item->product_id,
+                        'product_name' => $item->product?->name,
+                        'unit_price'   => $item->unit_price,
+                        'quantity'     => $item->quantity,
+                        'subtotal'     => round($item->unit_price * $item->quantity, 2),
+                    ]),
+                ];
+            });
+
+        return response()->json($orders);
+    }
+
+    /**
+     * PATCH /api/mis-pedidos-productor/{id}/status
+     * Updates the status of an order belonging to the authenticated business.
+     */
+    public function updateStatus(Request $request, int $id)
+    {
+        $validated = $request->validate([
+            'status' => 'required|string|in:pending,confirmed,listo,completed,cancelled',
+        ]);
+
+        $user = $request->user();
+        $business = $user->business;
+
+        if (!$business) {
+            return response()->json(['message' => 'No tienes un negocio registrado.'], 403);
+        }
+
+        $order = Order::where('id', $id)->where('business_id', $business->id)->first();
+
+        if (!$order) {
+            return response()->json(['message' => 'Pedido no encontrado.'], 404);
+        }
+
+        $order->update(['status' => $validated['status']]);
+
+        return response()->json([
+            'id'     => $order->id,
+            'status' => $order->status,
+        ]);
     }
 }

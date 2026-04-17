@@ -21,7 +21,10 @@ export class App {
 
   isAdminRoute(): boolean {
     const url = this.router.url || '';
-    return url.startsWith('/admin') || url.startsWith('/mi-negocio') || url.startsWith('/mis-productos');
+    return url.startsWith('/admin')
+      || url.startsWith('/mi-negocio')
+      || url.startsWith('/mis-productos')
+      || url.startsWith('/mis-pedidos-productor');
   }
 
   isProfileRoute(): boolean {

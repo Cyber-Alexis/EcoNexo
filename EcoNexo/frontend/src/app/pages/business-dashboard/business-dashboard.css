@@ -111,6 +111,10 @@
   margin-bottom: 0.75rem;
 }
 
+.sidebar-link svg {
+  flex-shrink: 0;
+}
+
 .logout-btn {
   width: 100%;
   padding: 0.7rem 0.9rem;
@@ -118,6 +122,11 @@
   background: #fff;
   border-radius: 10px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font: inherit;
+  color: #374151;
 }
 
 .producer-main {
