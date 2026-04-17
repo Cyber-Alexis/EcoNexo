@@ -101,6 +101,7 @@ class AuthController extends Controller
         Business::create([
             'user_id' => $user->id,
             'name'    => $data['business_name'],
+            'status'  => 'active',
         ]);
 
         $token = auth('api')->login($user);

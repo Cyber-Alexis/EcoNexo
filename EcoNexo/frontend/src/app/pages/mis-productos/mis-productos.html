@@ -1,0 +1,330 @@
+<div class="producer-layout">
+  <!-- Sidebar -->
+  <aside class="producer-sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-badge">E</div>
+      <div>
+        <strong>EcoNexo</strong>
+        <small>Lleida Local</small>
+      </div>
+    </div>
+
+    <p class="sidebar-title">Panel de Productor</p>
+
+    <nav class="sidebar-nav">
+      <a routerLink="/home" class="sidebar-link">
+        <span>⌂</span>
+        <span>Dashboard</span>
+      </a>
+      <a routerLink="/mis-productos" class="sidebar-link active">
+        <span>□</span>
+        <span>Productos</span>
+      </a>
+      <button type="button" class="sidebar-link sidebar-link--muted">
+        <span>🛒</span>
+        <span>Pedidos</span>
+      </button>
+      <button type="button" class="sidebar-link sidebar-link--muted">
+        <span>📅</span>
+        <span>Calendario</span>
+      </button>
+      <button type="button" class="sidebar-link sidebar-link--muted">
+        <span>📊</span>
+        <span>Estadísticas</span>
+      </button>
+      <a routerLink="/mi-negocio" class="sidebar-link">
+        <span>🏪</span>
+        <span>Mi Negocio</span>
+      </a>
+      <a routerLink="/configuracion" class="sidebar-link">
+        <span>⚙</span>
+        <span>Configuración</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="store-card">
+        <strong>{{ userName }}</strong>
+        <small>Productor</small>
+      </div>
+      <button type="button" class="logout-btn" (click)="onLogout()">Cerrar Sesión</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="producer-main">
+    <div class="page-header">
+      <div>
+        <h1>Gestión de Productos</h1>
+        <p class="page-subtitle">Administra tu catálogo de productos</p>
+      </div>
+      @if (hasBusiness) {
+        <button type="button" class="btn btn-primary" (click)="openCreateModal()">
+          <svg viewBox="0 0 24 24" fill="none" width="16" height="16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Nuevo Producto
+        </button>
+      }
+    </div>
+
+    @if (successMessage) {
+      <div class="alert alert-success">{{ successMessage }}</div>
+    }
+    @if (errorMessage) {
+      <div class="alert alert-error">
+        {{ errorMessage }}
+        @if (!hasBusiness) {
+          <a routerLink="/mi-negocio" class="alert-link">Crear negocio →</a>
+        }
+      </div>
+    }
+
+    @if (loading$ | async) {
+      <div class="loading-card">Cargando productos...</div>
+    } @else if (hasBusiness) {
+      <!-- Search & filter bar -->
+      <div class="toolbar">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" width="16" height="16" stroke="#9ca3af" stroke-width="2" stroke-linecap="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Buscar productos..."
+            [ngModel]="searchQuery"
+            (ngModelChange)="searchQuery = $event"
+          />
+        </div>
+        <select class="category-select" [ngModel]="categoryFilter" (ngModelChange)="categoryFilter = $event">
+          <option value="Todas">Todas las categorías</option>
+          @for (cat of uniqueCategories$ | async; track cat) {
+            <option [value]="cat">{{ cat }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Products table -->
+      <div class="table-card">
+        @let products = filteredProducts$ | async;
+        @if (!products || products.length === 0) {
+          <div class="empty-state">
+            <p>No hay productos todavía.</p>
+            <button type="button" class="btn btn-primary" (click)="openCreateModal()">
+              Añadir primer producto
+            </button>
+          </div>
+        } @else {
+          <table class="products-table">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Categoría</th>
+                <th>Precio</th>
+                <th>Stock</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (product of products; track product.id) {
+                <tr>
+                  <td class="product-cell">
+                    <div class="product-thumb-wrap">
+                      @if (productImage(product.images)) {
+                        <img [src]="productImage(product.images)" [alt]="product.name" class="product-thumb" />
+                      } @else {
+                        <div class="product-thumb-placeholder">
+                          <svg viewBox="0 0 24 24" fill="none" width="22" height="22" stroke="#d1d5db" stroke-width="1.5">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+                          </svg>
+                        </div>
+                      }
+                    </div>
+                    <div class="product-cell-info">
+                      <span class="product-cell-name">{{ product.name }}</span>
+                      @if (product.description) {
+                        <span class="product-cell-desc">{{ product.description | slice:0:45 }}{{ product.description.length > 45 ? '...' : '' }}</span>
+                      }
+                    </div>
+                  </td>
+                  <td>{{ product.category?.name ?? '—' }}</td>
+                  <td class="price-cell">€{{ product.price | number:'1.2-2' }}</td>
+                  <td [class.stock-low]="product.stock <= 5 && product.stock > 0" [class.stock-zero]="product.stock === 0">
+                    {{ product.stock }} uds.
+                  </td>
+                  <td>
+                    <span class="status-badge" [ngClass]="getStatusClass(product)">{{ getStatusLabel(product) }}</span>
+                  </td>
+                  <td class="actions-cell">
+                    <button
+                      type="button"
+                      class="action-btn"
+                      [class.action-btn--activate]="!product.active"
+                      [class.action-btn--deactivate]="product.active"
+                      (click)="onToggleActive(product)"
+                      [title]="product.active ? 'Desactivar' : 'Activar'"
+                    >
+                      @if (product.active) {
+                        <svg viewBox="0 0 24 24" fill="none" width="16" height="16" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                          <circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/>
+                        </svg>
+                      } @else {
+                        <svg viewBox="0 0 24 24" fill="none" width="16" height="16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                      }
+                    </button>
+                    <button type="button" class="action-btn action-btn--edit" (click)="openEditModal(product)" title="Editar">
+                      <svg viewBox="0 0 24 24" fill="none" width="16" height="16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                    </button>
+                    <button type="button" class="action-btn action-btn--delete" (click)="onDeleteProduct(product)" title="Eliminar">
+                      <svg viewBox="0 0 24 24" fill="none" width="16" height="16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                        <path d="M10 11v6M14 11v6"/>
+                        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    }
+  </main>
+</div>
+
+<!-- Modal overlay -->
+@if (modalOpen) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">{{ modalMode === 'create' ? 'Nuevo Producto' : 'Editar Producto' }}</h2>
+          <p class="modal-subtitle">{{ modalMode === 'create' ? 'Añade un nuevo producto a tu catálogo' : 'Modifica los datos del producto' }}</p>
+        </div>
+        <button type="button" class="modal-close" (click)="closeModal()">
+          <svg viewBox="0 0 24 24" fill="none" width="20" height="20" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      @if (modalError) {
+        <div class="alert alert-error modal-alert">{{ modalError }}</div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="onSaveProduct()" class="modal-form">
+        <!-- Image upload -->
+        <div class="image-upload-wrap">
+          <label class="image-upload-label" for="productImage">
+            @if (imagePreview) {
+              <img [src]="imagePreview" alt="Preview" class="image-preview" />
+            } @else {
+              <svg viewBox="0 0 24 24" fill="none" width="32" height="32" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+                <line x1="12" y1="10" x2="12" y2="16"/>
+                <line x1="9" y1="13" x2="15" y2="13"/>
+              </svg>
+            }
+          </label>
+          <input id="productImage" type="file" accept="image/*" class="image-input-hidden" (change)="onImageSelected($event)" />
+        </div>
+
+        <label class="field-label" for="prodName">Nombre del producto</label>
+        <input
+          id="prodName"
+          type="text"
+          class="field-input"
+          formControlName="name"
+          placeholder="Ej: Tomates Ecológicos"
+        />
+        @if (form.get('name')?.invalid && form.get('name')?.touched) {
+          <span class="field-error">El nombre es obligatorio.</span>
+        }
+
+        <label class="field-label" for="prodDesc">Descripción</label>
+        <textarea
+          id="prodDesc"
+          class="field-input field-textarea"
+          formControlName="description"
+          placeholder="Describe tu producto..."
+          rows="3">
+        </textarea>
+
+        <div class="field-row">
+          <div>
+            <label class="field-label" for="prodPrice">Precio (€)</label>
+            <input
+              id="prodPrice"
+              type="number"
+              step="0.01"
+              min="0"
+              class="field-input"
+              formControlName="price"
+              placeholder="0.00"
+            />
+            @if (form.get('price')?.invalid && form.get('price')?.touched) {
+              <span class="field-error">Precio requerido.</span>
+            }
+          </div>
+          <div>
+            <label class="field-label" for="prodStock">Stock</label>
+            <input
+              id="prodStock"
+              type="number"
+              min="0"
+              class="field-input"
+              formControlName="stock"
+              placeholder="0"
+            />
+            @if (form.get('stock')?.invalid && form.get('stock')?.touched) {
+              <span class="field-error">Stock requerido.</span>
+            }
+          </div>
+        </div>
+
+        <label class="field-label" for="prodCat">Categoría</label>
+        <select id="prodCat" class="field-input" formControlName="category">
+          <option value="" disabled>Selecciona una categoría</option>
+          @for (cat of categoryOptions; track cat) {
+            <option [value]="cat">{{ cat }}</option>
+          }
+        </select>
+        @if (form.get('category')?.invalid && form.get('category')?.touched) {
+          <span class="field-error">La categoría es obligatoria.</span>
+        }
+
+        @if (modalMode === 'edit') {
+          <div class="active-toggle">
+            <input id="prodActive" type="checkbox" formControlName="active" class="toggle-check" />
+            <label for="prodActive" class="toggle-label">Producto activo (visible para clientes)</label>
+          </div>
+        }
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()" [disabled]="modalSaving">Cancelar</button>
+          <button type="submit" class="btn btn-primary" [disabled]="modalSaving || form.invalid">
+            @if (modalSaving) {
+              Guardando...
+            } @else if (modalMode === 'create') {
+              Crear Producto
+            } @else {
+              Guardar Cambios
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
