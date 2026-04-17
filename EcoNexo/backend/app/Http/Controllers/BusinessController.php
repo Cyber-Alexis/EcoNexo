@@ -38,7 +38,7 @@ class BusinessController extends Controller
             'user:id,name,last_name,email',
             'images',
             'categories' => fn ($q) => $q->select(['id', 'business_id', 'name']),
-            'products' => fn ($q) => $q->where('active', true)->with('images'),
+            'products' => fn ($q) => $q->where('active', 1)->with('images'),
             'reviews' => fn ($q) => $q->with('user')->latest()->limit(20),
         ]);
 

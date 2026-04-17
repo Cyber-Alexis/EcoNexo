@@ -8,6 +8,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
 // Handle OPTIONS preflight for all API routes (needed for PUT/DELETE CORS)
@@ -56,6 +57,13 @@ Route::middleware(['auth:api', \App\Http\Middleware\EnsureActiveApiUser::class, 
     Route::post('/mi-negocio',        [BusinessController::class, 'updateMine']);
     Route::post('/mi-negocio/imagenes', [BusinessController::class, 'uploadImages']);
     Route::delete('/mi-negocio/imagenes/{imageId}', [BusinessController::class, 'deleteImage']);
+
+    // Business product management
+    Route::get('/mis-productos',                        [ProductController::class, 'mine']);
+    Route::post('/mis-productos',                       [ProductController::class, 'store']);
+    Route::post('/mis-productos/{id}',                  [ProductController::class, 'update']);
+    Route::patch('/mis-productos/{id}/toggle-active',   [ProductController::class, 'toggleActive']);
+    Route::delete('/mis-productos/{id}',                [ProductController::class, 'destroy']);
     // Cart
     Route::get('/cart',     [CartController::class, 'index']);
     Route::put('/cart',     [CartController::class, 'sync']);
