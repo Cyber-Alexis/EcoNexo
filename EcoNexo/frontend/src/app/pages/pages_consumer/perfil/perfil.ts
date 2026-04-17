@@ -26,9 +26,10 @@ export class Perfil implements OnInit {
   savingError = '';
 
   form = this.fb.group({
-    name: ['', [Validators.required]],
+    name: ['', [Validators.required, Validators.maxLength(30)]],
     email: ['', [Validators.required, Validators.email]],
-    phone: [''],
+    phone: ['', [Validators.pattern(/^[679]\d{8}$/)]],
+
     address: [''],
     city: [''],
     postal_code: [''],

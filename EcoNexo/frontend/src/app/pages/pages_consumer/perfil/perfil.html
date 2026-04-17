@@ -139,7 +139,10 @@
           <div class="form-grid two-col">
             <div class="form-group">
               <label class="form-label">Nombre Completo</label>
-              <input formControlName="name" type="text" class="form-input" placeholder="Tu nombre"/>
+              <input formControlName="name" type="text" class="form-input" placeholder="Tu nombre" maxlength="30"/>
+              @if (form.get('name')?.errors?.['maxlength'] && form.get('name')?.touched) {
+                <span class="field-error">Máximo 30 caracteres</span>
+              }
             </div>
             <div class="form-group">
               <label class="form-label">Correo Electrónico</label>
@@ -150,6 +153,9 @@
                 </svg>
                 <input formControlName="email" type="email" class="form-input with-icon" placeholder="tu@email.com"/>
               </div>
+              @if (form.get('email')?.errors?.['email'] && form.get('email')?.touched) {
+                <span class="field-error">Introduce un correo electrónico válido</span>
+              }
             </div>
           </div>
 
@@ -162,6 +168,9 @@
                 </svg>
                 <input formControlName="phone" type="tel" class="form-input with-icon" placeholder="612 345 678"/>
               </div>
+              @if (form.get('phone')?.errors?.['pattern'] && form.get('phone')?.touched) {
+                <span class="field-error">El teléfono debe empezar por 6, 7 o 9 y tener 9 dígitos</span>
+              }
             </div>
           </div>
         </div>
