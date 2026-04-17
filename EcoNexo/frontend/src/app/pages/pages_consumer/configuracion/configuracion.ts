@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
@@ -18,7 +18,7 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
   templateUrl: './configuracion.html',
   styleUrl: './configuracion.css',
 })
-export class Configuracion {
+export class Configuracion implements OnInit {
   private router = inject(Router);
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
@@ -34,9 +34,29 @@ export class Configuracion {
     confirm_password: ['', [Validators.required, passwordsMatch]],
   });
 
+  // Notifications
+  notifSaving = false;
+  notifSuccess = '';
+  notifError = '';
+
+  notifOrderUpdates = true;
+  notifPromotions = false;
+  notifNewProducts = true;
+  notifReviewResponses = true;
+
   // Account deletion
   showDeleteModal = false;
   deleting = false;
+
+  ngOnInit(): void {
+    const user = this.authService.getUser();
+    if (user) {
+      this.notifOrderUpdates    = user.notif_order_updates    ?? true;
+      this.notifPromotions      = user.notif_promotions       ?? false;
+      this.notifNewProducts     = user.notif_new_products     ?? true;
+      this.notifReviewResponses = user.notif_review_responses ?? true;
+    }
+  }
 
   onChangePwd(): void {
     if (this.pwdForm.invalid || this.pwdSaving) return;
@@ -56,6 +76,37 @@ export class Configuracion {
       error: (err) => {
         this.pwdSaving = false;
         this.pwdError = err?.error?.message ?? 'Error al cambiar la contraseña. Inténtalo de nuevo.';
+      },
+    });
+  }
+
+  onSaveNotifications(): void {
+    if (this.notifSaving) return;
+    this.notifError = '';
+
+    // Optimistic: persist locally and show success immediately
+    this.authService.patchUser({
+      notif_order_updates:    this.notifOrderUpdates,
+      notif_promotions:       this.notifPromotions,
+      notif_new_products:     this.notifNewProducts,
+      notif_review_responses: this.notifReviewResponses,
+    });
+    this.notifSuccess = 'Preferencias guardadas correctamente.';
+    setTimeout(() => (this.notifSuccess = ''), 4000);
+
+    // Sync to backend in background
+    this.notifSaving = true;
+    this.authService.updateNotifications({
+      notif_order_updates:    this.notifOrderUpdates,
+      notif_promotions:       this.notifPromotions,
+      notif_new_products:     this.notifNewProducts,
+      notif_review_responses: this.notifReviewResponses,
+    }).subscribe({
+      next: () => { this.notifSaving = false; },
+      error: () => {
+        this.notifSaving = false;
+        this.notifSuccess = '';
+        this.notifError = 'Error al guardar las preferencias. Inténtalo de nuevo.';
       },
     });
   }

@@ -2,6 +2,16 @@
 
   <!-- ─── Sidebar ─── -->
   <aside class="sidebar">
+    <a routerLink="/home" class="sidebar-brand">
+      <div class="sidebar-logo">
+        <svg viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="8" fill="#2D6A4F"/>
+          <path d="M16 6 C8 10, 6 20, 16 26 C26 20, 24 10, 16 6Z" fill="white" opacity="0.9"/>
+          <path d="M16 14 L16 26" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <span class="sidebar-brand-name">EcoNexo</span>
+    </a>
     <nav class="sidebar-nav">
       <a routerLink="/home" class="nav-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -19,6 +29,20 @@
           <circle cx="12" cy="7" r="4"/>
         </svg>
         Mi Perfil
+      </a>
+
+      <a routerLink="/mis-pedidos" class="nav-item" routerLinkActive="active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
+        </svg>
+        Mis Pedidos
+      </a>
+
+      <a routerLink="/mis-resenas" class="nav-item" routerLinkActive="active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+        Mis Reseñas
       </a>
 
       <a routerLink="/configuracion" class="nav-item">

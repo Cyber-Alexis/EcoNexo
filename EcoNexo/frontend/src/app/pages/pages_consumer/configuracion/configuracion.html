@@ -2,6 +2,16 @@
 
   <!-- ─── Sidebar ─── -->
   <aside class="sidebar">
+    <a routerLink="/home" class="sidebar-brand">
+      <div class="sidebar-logo">
+        <svg viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="8" fill="#2D6A4F"/>
+          <path d="M16 6 C8 10, 6 20, 16 26 C26 20, 24 10, 16 6Z" fill="white" opacity="0.9"/>
+          <path d="M16 14 L16 26" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <span class="sidebar-brand-name">EcoNexo</span>
+    </a>
     <nav class="sidebar-nav">
       <a routerLink="/home" class="nav-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -19,6 +29,20 @@
           <circle cx="12" cy="7" r="4"/>
         </svg>
         Mi Perfil
+      </a>
+
+      <a routerLink="/mis-pedidos" class="nav-item" routerLinkActive="active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
+        </svg>
+        Mis Pedidos
+      </a>
+
+      <a routerLink="/mis-resenas" class="nav-item" routerLinkActive="active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+        Mis Reseñas
       </a>
 
       <a routerLink="/configuracion" class="nav-item" routerLinkActive="active">
@@ -121,6 +145,105 @@
           </button>
         </div>
       </form>
+    </section>
+
+    <!-- ─── Notificaciones ─── -->
+    <section class="card">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="card-title">Notificaciones</h2>
+          <p class="card-subtitle">Configura qué notificaciones quieres recibir</p>
+        </div>
+      </div>
+
+      @if (notifSuccess) {
+        <div class="success-banner">{{ notifSuccess }}</div>
+      }
+      @if (notifError) {
+        <div class="error-banner">{{ notifError }}</div>
+      }
+
+      <div class="notif-list">
+        <div class="notif-item">
+          <div class="notif-info">
+            <span class="notif-title">Actualizaciones de pedidos</span>
+            <span class="notif-desc">Recibe notificaciones sobre el estado de tus pedidos</span>
+          </div>
+          <button
+            type="button"
+            class="toggle"
+            [class.toggle--on]="notifOrderUpdates"
+            (click)="notifOrderUpdates = !notifOrderUpdates"
+            [attr.aria-checked]="notifOrderUpdates"
+            role="switch"
+          >
+            <span class="toggle-thumb"></span>
+          </button>
+        </div>
+
+        <div class="notif-item">
+          <div class="notif-info">
+            <span class="notif-title">Promociones y ofertas</span>
+            <span class="notif-desc">Ofertas especiales de los negocios locales</span>
+          </div>
+          <button
+            type="button"
+            class="toggle"
+            [class.toggle--on]="notifPromotions"
+            (click)="notifPromotions = !notifPromotions"
+            [attr.aria-checked]="notifPromotions"
+            role="switch"
+          >
+            <span class="toggle-thumb"></span>
+          </button>
+        </div>
+
+        <div class="notif-item">
+          <div class="notif-info">
+            <span class="notif-title">Nuevos productos</span>
+            <span class="notif-desc">Cuando tus negocios favoritos añaden productos</span>
+          </div>
+          <button
+            type="button"
+            class="toggle"
+            [class.toggle--on]="notifNewProducts"
+            (click)="notifNewProducts = !notifNewProducts"
+            [attr.aria-checked]="notifNewProducts"
+            role="switch"
+          >
+            <span class="toggle-thumb"></span>
+          </button>
+        </div>
+
+        <div class="notif-item">
+          <div class="notif-info">
+            <span class="notif-title">Respuestas a reseñas</span>
+            <span class="notif-desc">Cuando un negocio responde a tu reseña</span>
+          </div>
+          <button
+            type="button"
+            class="toggle"
+            [class.toggle--on]="notifReviewResponses"
+            (click)="notifReviewResponses = !notifReviewResponses"
+            [attr.aria-checked]="notifReviewResponses"
+            role="switch"
+          >
+            <span class="toggle-thumb"></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="card-footer">
+        <button type="button" class="btn-primary" (click)="onSaveNotifications()" [disabled]="notifSaving">
+          @if (notifSaving) { Guardando... } @else { Guardar Preferencias }
+        </button>
+      </div>
     </section>
 
     <!-- ─── Zona de peligro ─── -->

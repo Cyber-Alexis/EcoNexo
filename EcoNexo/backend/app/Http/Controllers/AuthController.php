@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\SendEmail;
 use App\Models\Business;
 use App\Models\SystemSetting;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
@@ -121,6 +124,81 @@ class AuthController extends Controller
     public function me()
     {
         return response()->json($this->serializeUser(auth('api')->user()));
+    }
+
+    /**
+     * POST /api/auth/forgot-password
+     */
+    public function forgotPassword(Request $request)
+    {
+        $data = $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $user = User::where('email', $data['email'])->first();
+
+        // Always respond the same to prevent email enumeration
+        if ($user) {
+            $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+            DB::table('password_reset_tokens')->updateOrInsert(
+                ['email' => $user->email],
+                [
+                    'token'      => Hash::make($code),
+                    'created_at' => now(),
+                ]
+            );
+
+            Mail::to($user->email)->send(new SendEmail(
+                mailSubject:   'Recuperación de contraseña – EcoNexo',
+                messageBody:   'Hemos recibido una solicitud para restablecer tu contraseña. Usa el código de 6 dígitos que aparece a continuación. Este código expira en 15 minutos.',
+                recipientName: $user->name,
+                recoveryCode:  $code,
+            ));
+        }
+
+        return response()->json([
+            'message' => 'Si el correo está registrado, recibirás un código de recuperación.',
+        ]);
+    }
+
+    /**
+     * POST /api/auth/reset-password
+     */
+    public function resetPassword(Request $request)
+    {
+        $data = $request->validate([
+            'email'                 => 'required|email',
+            'code'                  => 'required|string|size:6',
+            'password'              => 'required|string|min:6|confirmed',
+            'password_confirmation' => 'required|string',
+        ]);
+
+        $record = DB::table('password_reset_tokens')
+            ->where('email', $data['email'])
+            ->first();
+
+        if (!$record) {
+            return response()->json(['message' => 'Código inválido o expirado.'], 422);
+        }
+
+        // 15-minute expiry
+        if (now()->diffInMinutes($record->created_at) > 15) {
+            DB::table('password_reset_tokens')->where('email', $data['email'])->delete();
+            return response()->json(['message' => 'El código ha expirado. Solicita uno nuevo.'], 422);
+        }
+
+        if (!Hash::check($data['code'], $record->token)) {
+            return response()->json(['message' => 'El código introducido no es correcto.'], 422);
+        }
+
+        User::where('email', $data['email'])->update([
+            'password' => Hash::make($data['password']),
+        ]);
+
+        DB::table('password_reset_tokens')->where('email', $data['email'])->delete();
+
+        return response()->json(['message' => 'Contraseña restablecida correctamente.']);
     }
 
     private function respondWithToken(string $token, int $status = 200)

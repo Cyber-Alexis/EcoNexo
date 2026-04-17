@@ -1,0 +1,296 @@
+<div class="dashboard-layout">
+
+  <!-- ─── Sidebar ─── -->
+  <aside class="sidebar">
+    <a routerLink="/home" class="sidebar-brand">
+      <div class="sidebar-logo">
+        <svg viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="8" fill="#2D6A4F"/>
+          <path d="M16 6 C8 10, 6 20, 16 26 C26 20, 24 10, 16 6Z" fill="white" opacity="0.9"/>
+          <path d="M16 14 L16 26" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <span class="sidebar-brand-name">EcoNexo</span>
+    </a>
+    <nav class="sidebar-nav">
+      <a routerLink="/home" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="3" y="3" width="7" height="7" rx="1"/>
+          <rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/>
+          <rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        Panel Principal
+      </a>
+      <a routerLink="/perfil" class="nav-item" routerLinkActive="active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        Mi Perfil
+      </a>
+      <a routerLink="/mis-pedidos" class="nav-item" routerLinkActive="active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
+        </svg>
+        Mis Pedidos
+      </a>
+      <a routerLink="/mis-resenas" class="nav-item" routerLinkActive="active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+        Mis Reseñas
+      </a>
+      <a routerLink="/configuracion" class="nav-item" routerLinkActive="active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+        </svg>
+        Configuración
+      </a>
+    </nav>
+    <button class="sidebar-logout" (click)="onLogout()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      Cerrar Sesión
+    </button>
+  </aside>
+
+  <!-- ─── Main ─── -->
+  <main class="dashboard-main">
+
+    <div class="page-header">
+      <h1 class="page-title">Mis Reseñas</h1>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <span class="stat-label">Reseñas Escritas</span>
+        <span class="stat-value">{{ reviews().length }}</span>
+        <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Valoración Media</span>
+        <span class="stat-value">{{ avgRating() }}</span>
+        <div class="stat-stars">
+          @for (s of starsArray(5); track s) {
+            <svg viewBox="0 0 24 24" [class.filled]="s <= avgRating()" stroke="currentColor" stroke-width="1.5">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+          }
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Pendientes</span>
+        <span class="stat-value">{{ pending().length }}</span>
+        @if (pending().length > 0) {
+          <span class="stat-badge">{{ pending().length }} por valorar</span>
+        }
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn" [class.active]="activeTab() === 'written'" (click)="activeTab.set('written')">
+        Mis Reseñas
+      </button>
+      <button class="tab-btn" [class.active]="activeTab() === 'pending'" (click)="activeTab.set('pending')">
+        Pendientes
+        @if (pending().length > 0) {
+          <span class="tab-badge">{{ pending().length }}</span>
+        }
+      </button>
+    </div>
+
+    <!-- ─── Mis Reseñas tab ─── -->
+    @if (activeTab() === 'written') {
+      @if (loading()) {
+        <div class="empty-state">Cargando reseñas...</div>
+      } @else if (reviews().length === 0) {
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+          <p>Todavía no has escrito ninguna reseña.</p>
+        </div>
+      } @else {
+        <div class="reviews-grid">
+          @for (review of reviews(); track review.id) {
+            <div class="review-card">
+              <div class="review-card-top">
+                <div class="review-meta">
+                  <span class="review-business">{{ review.business_name }}</span>
+                  @if (review.type === 'product') {
+                    <span class="review-product">{{ review.product_name }}</span>
+                  }
+                </div>
+                <span class="review-badge" [class.badge-product]="review.type === 'product'" [class.badge-business]="review.type === 'business'">
+                  {{ review.type === 'product' ? 'Producto' : 'Negocio' }}
+                </span>
+              </div>
+              <div class="review-stars">
+                @for (s of starsArray(5); track s) {
+                  <svg viewBox="0 0 24 24" [class.filled]="s <= review.rating" stroke="currentColor" stroke-width="1.5">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                  </svg>
+                }
+              </div>
+              @if (review.comment) {
+                <p class="review-comment">{{ review.comment }}</p>
+              }
+              <div class="review-card-footer">
+                <span class="review-date">{{ review.created_at | date:'yyyy-MM-dd' }}</span>
+                <div class="review-actions">
+                  <button class="action-btn" title="Editar" (click)="openEdit(review)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                  </button>
+                  <button class="action-btn action-btn-danger" title="Eliminar" (click)="openDelete(review)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                      <path d="M10 11v6M14 11v6"/>
+                      <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- ─── Pendientes tab ─── -->
+    @if (activeTab() === 'pending') {
+      @if (pending().length === 0) {
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          <p>¡Todo al día! No tienes valoraciones pendientes.</p>
+        </div>
+      } @else {
+        <div class="reviews-grid">
+          @for (item of pending(); track item.product_id ?? item.business_id) {
+            <div class="review-card pending-card">
+              <div class="review-card-top">
+                <div class="review-meta">
+                  <span class="review-business">{{ item.business_name }}</span>
+                  @if (item.type === 'product') {
+                    <span class="review-product">{{ item.product_name }}</span>
+                  }
+                </div>
+                <span class="review-badge" [class.badge-product]="item.type === 'product'" [class.badge-business]="item.type === 'business'">
+                  {{ item.type === 'product' ? 'Producto' : 'Negocio' }}
+                </span>
+              </div>
+              <p class="pending-label">Aún no has valorado esto</p>
+              <button class="btn-primary btn-sm" (click)="openCreate(item)">Escribir reseña</button>
+            </div>
+          }
+        </div>
+      }
+    }
+
+  </main>
+</div>
+
+<!-- ─── Edit modal ─── -->
+@if (editingReview()) {
+  <div class="modal-overlay" (click)="closeEdit()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3 class="modal-title">Editar Reseña</h3>
+      <p class="modal-subtitle">{{ editingReview()!.business_name }}{{ editingReview()!.product_name ? ' · ' + editingReview()!.product_name : '' }}</p>
+
+      @if (editError()) { <div class="error-banner">{{ editError() }}</div> }
+
+      <form [formGroup]="editForm" (ngSubmit)="onSaveEdit()">
+        <div class="star-picker-row">
+          <div class="star-picker">
+            @for (s of starsArray(5); track s) {
+              <button type="button" (click)="setEditRating(s)">
+                <svg viewBox="0 0 24 24" [class.filled]="s <= (editForm.get('rating')?.value ?? 0)" stroke="currentColor" stroke-width="1.5">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+              </button>
+            }
+          </div>
+          <span class="star-label" [attr.data-val]="editForm.get('rating')?.value">{{ ratingToLabel(editForm.get('rating')?.value ?? 0) }}</span>
+        </div>
+        <textarea formControlName="comment" class="modal-textarea" placeholder="Tu comentario (opcional)" rows="4"></textarea>
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" (click)="closeEdit()">Cancelar</button>
+          <button type="submit" class="btn-primary" [disabled]="editSaving()">
+            @if (editSaving()) { Guardando... } @else { Guardar }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- ─── Delete modal ─── -->
+@if (deletingReview()) {
+  <div class="modal-overlay" (click)="closeDelete()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-danger-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+        </svg>
+      </div>
+      <h3 class="modal-title">¿Eliminar reseña?</h3>
+      <p class="modal-subtitle">Esta acción no se puede deshacer.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" (click)="closeDelete()" [disabled]="deleteLoading()">Cancelar</button>
+        <button type="button" class="btn-danger" (click)="onConfirmDelete()" [disabled]="deleteLoading()">
+          @if (deleteLoading()) { Eliminando... } @else { Eliminar }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ─── Create modal ─── -->
+@if (creatingReview()) {
+  <div class="modal-overlay" (click)="closeCreate()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3 class="modal-title">Escribir Reseña</h3>
+      <p class="modal-subtitle">{{ creatingReview()!.business_name }}{{ creatingReview()!.product_name ? ' · ' + creatingReview()!.product_name : '' }}</p>
+
+      @if (createError()) { <div class="error-banner">{{ createError() }}</div> }
+
+      <form [formGroup]="createForm" (ngSubmit)="onSubmitCreate()">
+        <div class="star-picker-row">
+          <div class="star-picker">
+            @for (s of starsArray(5); track s) {
+              <button type="button" (click)="setCreateRating(s)">
+                <svg viewBox="0 0 24 24" [class.filled]="s <= (createForm.get('rating')?.value ?? 0)" stroke="currentColor" stroke-width="1.5">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+              </button>
+            }
+          </div>
+          <span class="star-label" [attr.data-val]="createForm.get('rating')?.value">{{ ratingToLabel(createForm.get('rating')?.value ?? 0) }}</span>
+        </div>
+        <textarea formControlName="comment" class="modal-textarea" placeholder="Tu comentario (opcional)" rows="4"></textarea>
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" (click)="closeCreate()">Cancelar</button>
+          <button type="submit" class="btn-primary" [disabled]="createSaving() || createForm.invalid">
+            @if (createSaving()) { Enviando... } @else { Publicar reseña }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

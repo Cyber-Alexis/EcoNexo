@@ -48,7 +48,8 @@ export class Admin implements OnInit {
   private usersSubject = new BehaviorSubject<User[]>([]);
   users$ = this.usersSubject.asObservable();
 
-  statistics: AdminStatistics | null = null;
+  private statisticsSubject = new BehaviorSubject<AdminStatistics | null>(null);
+  readonly statistics$ = this.statisticsSubject.asObservable();
   currentPage = 1;
   totalPages = 1;
   totalUsers = 0;
@@ -96,6 +97,12 @@ export class Admin implements OnInit {
       return;
     }
 
+    // Load dashboard data immediately from cached user while fetchMe is in flight
+    if (this.currentUser?.role === 'admin') {
+      this.loadStatistics();
+      this.startAutoRefresh();
+    }
+
     this.authService.fetchMe().subscribe({
       next: user => this.initializeAdminSession(user),
       error: err => {
@@ -105,11 +112,8 @@ export class Admin implements OnInit {
         }
 
         console.error('Error verifying admin session:', err);
-        this.ngZone.run(() => {
-          this.authService.clearAuth();
-          this.router.navigate(['/login']);
-          this.cdr.detectChanges();
-        });
+        this.authService.clearAuth();
+        this.router.navigate(['/login']);
       }
     });
   }
@@ -148,41 +152,39 @@ export class Admin implements OnInit {
     this.loadStatistics();
   }
 
-  loadUsers(page = 1): void {
-    this.isLoading = true;
-    this.loadingSubject.next(true);
+  loadUsers(page = 1, silent = false): void {
+    if (!silent) {
+      this.isLoading = true;
+      this.loadingSubject.next(true);
+    }
     this.error = null;
 
     this.adminService.getAllUsers(page, this.selectedRole, 'todos', this.searchQuery)
       .pipe(finalize(() => {
-        this.ngZone.run(() => {
+        if (!silent) {
           this.isLoading = false;
           this.loadingSubject.next(false);
-          this.cdr.detectChanges();
-        });
+        }
       }))
       .subscribe({
       next: (res: any) => {
-        this.ngZone.run(() => {
-          const pageData = res?.data?.data ? res.data : res?.data ? res : null;
+        const pageData = res?.data?.data ? res.data : res?.data ? res : null;
 
-          this.users = Array.isArray(pageData?.data) ? pageData.data : [];
-          this.usersSubject.next(this.users);
-          this.currentPage = Number(pageData?.current_page ?? 1);
-          this.totalPages = Number(pageData?.last_page ?? 1);
-          this.totalUsers = Number(pageData?.total ?? this.users.length);
-          this.cdr.detectChanges();
-        });
+        this.users = Array.isArray(pageData?.data) ? pageData.data : [];
+        this.usersSubject.next(this.users);
+        this.currentPage = Number(pageData?.current_page ?? 1);
+        this.totalPages = Number(pageData?.last_page ?? 1);
+        this.totalUsers = Number(pageData?.total ?? this.users.length);
       },
       error: (err) => {
         console.error('Error loading admin users:', err);
-        this.ngZone.run(() => {
-          this.usersSubject.next([]);
-          this.error = err.status === 403
-            ? 'No tienes permisos para consultar usuarios administradores.'
-            : 'Error al cargar los usuarios';
-          this.cdr.detectChanges();
-        });
+        if (!silent) {
+          this.loadingSubject.next(false);
+        }
+        this.usersSubject.next([]);
+        this.error = err.status === 403
+          ? 'No tienes permisos para consultar usuarios administradores.'
+          : 'Error al cargar los usuarios';
       }
     });
   }
@@ -190,20 +192,15 @@ export class Admin implements OnInit {
   loadStatistics(): void {
     this.adminService.getStatistics().subscribe({
       next: (res: any) => {
-        this.ngZone.run(() => {
-          this.statistics = res?.data ?? res ?? null;
-          this.lastUpdatedAt = this.statistics?.last_updated_at ?? new Date().toISOString();
-          this.cdr.detectChanges();
-        });
+        const stats: AdminStatistics = res?.data ?? res ?? null;
+        this.statisticsSubject.next(stats);
+        this.lastUpdatedAt = stats?.last_updated_at ?? new Date().toISOString();
       },
       error: (err) => {
         console.error('Error loading admin statistics:', err);
-        this.ngZone.run(() => {
-          this.error = err.status === 403
-            ? 'No tienes permisos para acceder al panel de administración.'
-            : 'No se pudieron cargar las métricas en tiempo real.';
-          this.cdr.detectChanges();
-        });
+        this.error = err.status === 403
+          ? 'No tienes permisos para acceder al panel de administración.'
+          : 'No se pudieron cargar las métricas en tiempo real.';
       }
     });
   }
@@ -213,24 +210,15 @@ export class Admin implements OnInit {
 
     this.adminService.getSettings()
       .pipe(finalize(() => {
-        this.ngZone.run(() => {
-          this.isSettingsLoading = false;
-          this.cdr.detectChanges();
-        });
+        this.isSettingsLoading = false;
       }))
       .subscribe({
         next: (response) => {
-          this.ngZone.run(() => {
-            this.applySettings(response.data);
-            this.cdr.detectChanges();
-          });
+          this.applySettings(response.data);
         },
         error: (err) => {
           console.error('Error loading admin settings:', err);
-          this.ngZone.run(() => {
-            this.error = 'No se pudo cargar la configuración del sistema.';
-            this.cdr.detectChanges();
-          });
+          this.error = 'No se pudo cargar la configuración del sistema.';
         }
       });
   }
@@ -377,15 +365,15 @@ export class Admin implements OnInit {
   }
 
   getOverviewCards(): AdminOverviewCard[] {
-    return this.statistics?.overview_cards ?? [];
+    return this.statisticsSubject.value?.overview_cards ?? [];
   }
 
   getSystemStatus(): AdminSystemStatusItem[] {
-    return this.statistics?.system_status ?? [];
+    return this.statisticsSubject.value?.system_status ?? [];
   }
 
   getRecentActivity(): AdminRecentActivityItem[] {
-    return this.statistics?.recent_activity ?? [];
+    return this.statisticsSubject.value?.recent_activity ?? [];
   }
 
   formatDate(date: string): string {
@@ -641,27 +629,23 @@ export class Admin implements OnInit {
   }
 
   private initializeAdminSession(user: AuthUser): void {
-    this.ngZone.run(() => {
-      this.currentUser = user;
+    this.currentUser = user;
 
-      if (user.role !== 'admin') {
-        this.router.navigate(['/home']);
-        this.cdr.detectChanges();
-        return;
-      }
+    if (user.role !== 'admin') {
+      this.router.navigate(['/home']);
+      return;
+    }
 
-      this.error = null;
-      this.loadStatistics();
+    this.error = null;
+    this.loadStatistics();
 
-      if (this.activeSection === 'usuarios') {
-        this.loadUsers();
-      } else if (this.activeSection === 'configuracion') {
-        this.loadSettings();
-      }
+    if (this.activeSection === 'usuarios') {
+      this.loadUsers();
+    } else if (this.activeSection === 'configuracion') {
+      this.loadSettings();
+    }
 
-      this.startAutoRefresh();
-      this.cdr.detectChanges();
-    });
+    this.startAutoRefresh();
   }
 
   private startAutoRefresh(): void {
@@ -673,7 +657,7 @@ export class Admin implements OnInit {
       this.loadStatistics();
 
       if (this.activeSection === 'usuarios') {
-        this.loadUsers(this.currentPage);
+        this.loadUsers(this.currentPage, true);
       }
     });
   }

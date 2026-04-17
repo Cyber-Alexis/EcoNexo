@@ -19,6 +19,21 @@
   height: 100vh;
 }
 
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0 1.25rem 1.25rem;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 0.5rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.sidebar-brand:hover { opacity: 0.8; }
+.sidebar-logo svg { width: 32px; height: 32px; display: block; }
+.sidebar-brand-name { font-size: 1.1rem; font-weight: 700; color: #1a1a1a; }
+
 .sidebar-nav {
   display: flex;
   flex-direction: column;
@@ -382,18 +397,129 @@
 }
 
 /* ─── Responsive ─── */
-@media (max-width: 768px) {
-  .sidebar {
-    display: none;
-  }
+@media (max-width: 1024px) {
+  .dashboard-main { max-width: none; }
+}
 
+@media (max-width: 768px) {
+  /* Sidebar → bottom tab bar */
+  .sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 58px;
+    flex-direction: row;
+    border-right: none;
+    border-top: 1px solid #e5e7eb;
+    padding: 0;
+    z-index: 50;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+  }
+  .sidebar-brand { display: none; }
+  .sidebar-logout { display: none; }
+  .sidebar-nav {
+    flex-direction: row;
+    padding: 0;
+    gap: 0;
+    width: 100%;
+    height: 100%;
+    justify-content: space-around;
+  }
+  .nav-item {
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.35rem 0.25rem;
+    font-size: 0.6rem;
+    flex: 1;
+    justify-content: center;
+    border-radius: 0;
+    height: 100%;
+    line-height: 1.1;
+  }
+  .nav-item svg { width: 18px; height: 18px; }
+  .nav-item.active {
+    background: transparent;
+    color: #2D6A4F;
+    border-top: 2px solid #2D6A4F;
+  }
   .dashboard-main {
-    padding: 1.25rem 1rem;
+    padding: 1.25rem 1rem 78px;
     max-width: 100%;
   }
-
   .danger-body {
     flex-direction: column;
     align-items: flex-start;
   }
+}
+
+/* ─── Notifications list ─── */
+.notif-list {
+  padding: 0.75rem 1.5rem 0.25rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.notif-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.notif-item:last-child {
+  border-bottom: none;
+}
+
+.notif-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.notif-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.notif-desc {
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
+/* ─── Toggle switch ─── */
+.toggle {
+  position: relative;
+  width: 46px;
+  height: 26px;
+  border-radius: 999px;
+  background: #d1d5db;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.toggle--on {
+  background: #2D6A4F;
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: transform 0.2s;
+}
+
+.toggle--on .toggle-thumb {
+  transform: translateX(20px);
 }

@@ -25,8 +25,11 @@ export class App {
   }
 
   isProfileRoute(): boolean {
-    // Consider both the main profile page and the "configuracion" section
     const url = this.router.url || '';
-    return url.startsWith('/perfil') || url.startsWith('/configuracion') || url.includes('/perfil/');
+    return url.startsWith('/perfil')
+      || url.startsWith('/configuracion')
+      || url.startsWith('/mis-pedidos')
+      || url.startsWith('/mis-resenas')
+      || url.includes('/perfil/');
   }
 }

@@ -1,16 +1,20 @@
-﻿import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { HttpClient } from '@angular/common/http';
 import { BusinessService } from '../../core/services/business.service';
 import { CartService } from '../../core/services/cart.service';
+import { AuthService } from '../../core/services/auth.service';
 import { ApiBusiness, ApiImage, ApiProduct } from '../../core/models/business.model';
+import { environment } from '../../../environments/environment';
 import { Subscription, interval } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-negocio-detalle',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './negocio-detalle.html',
   styleUrl: './negocio-detalle.css',
 })
@@ -22,7 +26,19 @@ export class NegocioDetalle implements OnInit, OnDestroy {
   showAllPhotos = false;
   activeTab: 'desc' | 'productos' | 'mapa' | 'comentarios' = 'desc';
   expandedReviews = new Set<number>();
-  
+
+  // Write review form
+  reviewOpen     = false;
+  reviewRating   = 5;
+  reviewComment  = '';
+  reviewSaving   = false;
+  reviewError    = '';
+  reviewSuccess  = false;
+
+  private http        = inject(HttpClient);
+  private authService = inject(AuthService);
+  private base        = environment.apiUrl;
+
   // Polling disabled for better stability (business details don't change frequently)
   private readonly POLLING_INTERVAL = 0; // Desactivado
   private pollingSubscription?: Subscription;
@@ -94,11 +110,18 @@ export class NegocioDetalle implements OnInit, OnDestroy {
   }
 
   get ratingLabel(): string {
+    if (!this.business?.reviews_count) return 'Sin valoraciones aún';
+    return this.ratingToLabel(Math.round(this.avgRating));
+  }
+
+  get ratingLabelColor(): string {
+    if (!this.business?.reviews_count) return '#9CA3AF';
     const r = this.avgRating;
-    if (r >= 4.5) return 'Muy positivas';
-    if (r >= 3.5) return 'Positivas';
-    if (r >= 2.5) return 'Regulares';
-    return 'Negativas';
+    if (r >= 4.5) return '#22C55E';
+    if (r >= 3.5) return '#84CC16';
+    if (r >= 2.5) return '#EAB308';
+    if (r >= 1.5) return '#F97316';
+    return '#EF4444';
   }
 
   get galleryPreview(): ApiImage[] {
@@ -212,5 +235,55 @@ export class NegocioDetalle implements OnInit, OnDestroy {
     } else {
       this.expandedReviews.add(reviewId);
     }
+  }
+
+  get isLoggedIn(): boolean {
+    return this.authService.isLoggedIn();
+  }
+
+  openReviewForm(): void {
+    this.reviewOpen    = true;
+    this.reviewRating  = 5;
+    this.reviewComment = '';
+    this.reviewError   = '';
+  }
+
+  closeReviewForm(): void {
+    this.reviewOpen = false;
+  }
+
+  setReviewRating(n: number): void {
+    this.reviewRating = n;
+  }
+
+  ratingToLabel(n: number): string {
+    if (n >= 5) return 'Excelente';
+    if (n >= 4) return 'Bueno';
+    if (n >= 3) return 'Regular';
+    if (n >= 2) return 'Malo';
+    return 'Muy malo';
+  }
+
+  submitReview(): void {
+    if (!this.business || this.reviewSaving) return;
+    this.reviewSaving = true;
+    this.reviewError  = '';
+
+    this.http.post(`${this.base}/resenas/negocio`, {
+      business_id: this.business.id,
+      rating:      this.reviewRating,
+      comment:     this.reviewComment || null,
+    }).subscribe({
+      next: () => {
+        this.reviewSaving  = false;
+        this.reviewOpen    = false;
+        this.reviewSuccess = true;
+        this.loadBusiness();
+      },
+      error: (err) => {
+        this.reviewSaving = false;
+        this.reviewError  = err?.error?.message ?? 'Error al publicar la reseña.';
+      },
+    });
   }
 }
