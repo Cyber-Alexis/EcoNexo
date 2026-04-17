@@ -147,6 +147,63 @@ class OrderController extends Controller
     }
 
     /**
+     * GET /api/calendario-pedidos?year=&month=
+     * Returns orders for the given month grouped by day, for the authenticated business owner.
+     */
+    public function calendarOrders(Request $request)
+    {
+        $user = $request->user();
+        $business = $user->business;
+
+        if (!$business) {
+            return response()->json(['message' => 'No tienes un negocio registrado.'], 403);
+        }
+
+        $year  = (int) $request->query('year',  now()->year);
+        $month = (int) $request->query('month', now()->month);
+
+        $orders = Order::where('business_id', $business->id)
+            ->whereYear('created_at',  $year)
+            ->whereMonth('created_at', $month)
+            ->with(['user:id,name,email', 'items'])
+            ->orderBy('created_at')
+            ->get();
+
+        // Group by day for calendar dots
+        $days = [];
+        foreach ($orders as $order) {
+            $day = (int) $order->created_at->format('j');
+            if (!isset($days[$day])) {
+                $days[$day] = ['count' => 0, 'total' => 0];
+            }
+            $days[$day]['count']++;
+            $days[$day]['total'] = round($days[$day]['total'] + $order->total_price, 2);
+        }
+
+        $ordersList = $orders->map(fn($order) => [
+            'id'          => $order->id,
+            'code'        => 'ORD-' . str_pad($order->id, 3, '0', STR_PAD_LEFT),
+            'day'         => (int) $order->created_at->format('j'),
+            'time'        => $order->created_at->format('H:i'),
+            'status'      => $order->status,
+            'client_name' => $order->user?->name,
+            'items_count' => $order->items->count(),
+            'total_price' => (float) $order->total_price,
+        ])->values();
+
+        return response()->json([
+            'year'  => $year,
+            'month' => $month,
+            'days'  => $days,
+            'monthly_stats' => [
+                'orders_count'  => $orders->count(),
+                'total_revenue' => round($orders->sum('total_price'), 2),
+            ],
+            'orders' => $ordersList,
+        ]);
+    }
+
+    /**
      * PATCH /api/mis-pedidos-productor/{id}/status
      * Updates the status of an order belonging to the authenticated business.
      */

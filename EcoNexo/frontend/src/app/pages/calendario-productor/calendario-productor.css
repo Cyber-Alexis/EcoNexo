@@ -1,0 +1,384 @@
+/* ── Layout ─────────────────────────────────────────────────── */
+.producer-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────── */
+.producer-sidebar {
+  background: #fff;
+  border-right: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  padding: 1.2rem 0.9rem;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.4rem;
+}
+
+.brand-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #0f6b4b;
+  display: grid;
+  place-items: center;
+}
+
+.sidebar-brand strong { display: block; font-size: 0.95rem; }
+.sidebar-brand small  { color: #6b7280; font-size: 0.75rem; }
+
+.sidebar-title {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.5rem 0.25rem;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.sidebar-link {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.7rem 0.75rem;
+  border: 0;
+  background: transparent;
+  border-radius: 10px;
+  text-align: left;
+  color: #374151;
+  text-decoration: none;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.95rem;
+}
+.sidebar-link svg    { flex-shrink: 0; }
+.sidebar-link:hover  { background: #eceff1; }
+.sidebar-link.active { background: #e8f3ee; color: #0f6b4b; font-weight: 600; }
+.sidebar-link--muted { color: #9ca3af; cursor: not-allowed; }
+
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.store-card {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: 12px;
+  background: #f1f5f9;
+  margin-bottom: 0.75rem;
+}
+.store-card strong { display: block; font-size: 0.9rem; }
+.store-card small  { color: #6b7280; font-size: 0.78rem; }
+
+.logout-btn {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  border-radius: 10px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #374151;
+}
+.logout-btn:hover { background: #fef2f2; border-color: #fca5a5; color: #dc2626; }
+
+/* ── Main ──────────────────────────────────────────────────────── */
+.producer-main { padding: 1.4rem 1.8rem; }
+
+.loading-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 2.5rem;
+  text-align: center;
+  color: #6b7280;
+}
+
+/* ── Page header ────────────────────────────────────────────── */
+.cal-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.4rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.cal-title    { font-size: 1.5rem; font-weight: 700; margin: 0; }
+.cal-subtitle { font-size: 0.88rem; color: #6b7280; margin: 0.2rem 0 0; }
+
+/* Month navigator */
+.month-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 0.35rem 0.5rem;
+}
+.month-nav-label {
+  min-width: 130px;
+  text-align: center;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #374151;
+}
+.month-nav-btn {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 0.3rem;
+  border-radius: 7px;
+  color: #6b7280;
+  display: grid;
+  place-items: center;
+  line-height: 0;
+}
+.month-nav-btn:hover { background: #f1f5f9; color: #0f6b4b; }
+
+/* ── Two-column body ─────────────────────────────────────────── */
+.cal-body {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 1.1rem;
+  align-items: start;
+}
+
+/* ── Calendar card ───────────────────────────────────────────── */
+.calendar-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 1.2rem 1.4rem;
+  margin-bottom: 1rem;
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.cal-header-cell {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #9ca3af;
+  padding: 0.4rem 0 0.7rem;
+  text-transform: uppercase;
+}
+
+.cal-cell {
+  aspect-ratio: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+  position: relative;
+  gap: 2px;
+}
+.cal-cell--empty { cursor: default; pointer-events: none; }
+.cal-cell:not(.cal-cell--empty):hover { background: #f3f4f6; }
+
+.cal-day-num {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: #374151;
+  line-height: 1;
+}
+
+.cal-cell--today .cal-day-num {
+  background: #0f6b4b;
+  color: #fff;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.cal-cell--selected {
+  background: #e8f3ee !important;
+}
+.cal-cell--selected .cal-day-num { color: #0f6b4b; font-weight: 700; }
+
+.cal-dot {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  background: #0f6b4b;
+  color: #fff;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* ── Stats row ───────────────────────────────────────────────── */
+.cal-stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
+}
+
+.cal-stat-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.1rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.cal-stat-label {
+  font-size: 0.8rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+.cal-stat-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #111827;
+}
+
+/* ── Right panel ─────────────────────────────────────────────── */
+.day-panel {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 1.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.day-panel--empty {
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  color: #9ca3af;
+  gap: 0.75rem;
+  text-align: center;
+}
+.day-panel--empty p { margin: 0; font-size: 0.88rem; }
+
+.day-panel-header { border-bottom: 1px solid #f3f4f6; padding-bottom: 0.75rem; }
+.day-panel-title  { font-size: 1.05rem; font-weight: 700; margin: 0; color: #111827; }
+.day-panel-subtitle { font-size: 0.8rem; color: #6b7280; margin: 0.2rem 0 0; }
+
+.status-filter {
+  width: 100%;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.88rem;
+  background: #fff;
+  color: #374151;
+  cursor: pointer;
+}
+.status-filter:focus { outline: none; border-color: #0f6b4b; }
+
+.day-no-orders {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  text-align: center;
+  padding: 1rem 0;
+  margin: 0;
+}
+
+/* ── Order card ──────────────────────────────────────────────── */
+.order-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.order-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.order-card-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.order-code {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #111827;
+}
+.order-time {
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
+.order-card-client {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.83rem;
+  color: #374151;
+}
+
+.order-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.1rem;
+}
+.order-items { font-size: 0.8rem; color: #6b7280; }
+.order-total { font-weight: 700; font-size: 0.95rem; color: #111827; }
+
+/* ── Status badges ───────────────────────────────────────────── */
+.status-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.badge--orange { background: #fff7ed; color: #c2410c; }
+.badge--blue   { background: #eff6ff; color: #1d4ed8; }
+.badge--teal   { background: #f0fdfa; color: #0f766e; }
+.badge--green  { background: #f0fdf4; color: #15803d; }
+.badge--red    { background: #fef2f2; color: #dc2626; }

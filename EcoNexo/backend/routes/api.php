@@ -9,6 +9,7 @@ use App\Http\Controllers\MailController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\BusinessStatisticsController;
 use Illuminate\Support\Facades\Route;
 
 // Handle OPTIONS preflight for all API routes (needed for PUT/DELETE CORS)
@@ -76,6 +77,10 @@ Route::middleware(['auth:api', \App\Http\Middleware\EnsureActiveApiUser::class, 
     // Orders (business owner)
     Route::get('/mis-pedidos-productor',                    [OrderController::class, 'businessOrders']);
     Route::patch('/mis-pedidos-productor/{id}/status',      [OrderController::class, 'updateStatus']);
+    Route::get('/calendario-pedidos',                       [OrderController::class, 'calendarOrders']);
+
+    // Business statistics
+    Route::get('/mis-estadisticas',  [BusinessStatisticsController::class, 'index']);
 
     // Reviews
     Route::get('/resenas',                        [ReviewController::class, 'index']);

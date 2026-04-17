@@ -5,6 +5,8 @@ import { RegisterNegocio } from './pages/register-negocio/register-negocio';
 import { BusinessDashboard } from './pages/business-dashboard/business-dashboard';
 import { MisProductos } from './pages/mis-productos/mis-productos';
 import { MisPedidosProductor } from './pages/mis-pedidos-productor/mis-pedidos-productor';
+import { EstadisticasProductor } from './pages/estadisticas-productor/estadisticas-productor';
+import { CalendarioProductor } from './pages/calendario-productor/calendario-productor';
 import { Home } from './pages/home/home';
 import { Negocios } from './pages/negocios/negocios';
 import { Productos } from './pages/productos/productos';
@@ -32,6 +34,8 @@ export const routes: Routes = [
   { path: 'mi-negocio', component: BusinessDashboard, canActivate: [businessGuard] },
   { path: 'mis-productos', component: MisProductos, canActivate: [businessGuard] },
   { path: 'mis-pedidos-productor', component: MisPedidosProductor, canActivate: [businessGuard] },
+  { path: 'estadisticas-productor', component: EstadisticasProductor, canActivate: [businessGuard] },
+  { path: 'calendario-productor', component: CalendarioProductor, canActivate: [businessGuard] },
   { path: 'home', component: Home },
   { path: 'negocios', component: Negocios },
   { path: 'negocios/:id', component: NegocioDetalle },

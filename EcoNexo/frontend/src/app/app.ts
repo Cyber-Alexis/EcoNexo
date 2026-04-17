@@ -24,7 +24,9 @@ export class App {
     return url.startsWith('/admin')
       || url.startsWith('/mi-negocio')
       || url.startsWith('/mis-productos')
-      || url.startsWith('/mis-pedidos-productor');
+      || url.startsWith('/mis-pedidos-productor')
+      || url.startsWith('/estadisticas-productor')
+      || url.startsWith('/calendario-productor');
   }
 
   isProfileRoute(): boolean {
