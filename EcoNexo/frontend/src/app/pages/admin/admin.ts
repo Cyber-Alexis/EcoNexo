@@ -229,15 +229,24 @@ export class Admin implements OnInit {
 
     this.adminService.getSettings()
       .pipe(finalize(() => {
-        this.isSettingsLoading = false;
+        this.ngZone.run(() => {
+          this.isSettingsLoading = false;
+          this.cdr.detectChanges();
+        });
       }))
       .subscribe({
         next: (response) => {
-          this.applySettings(response.data);
+          this.ngZone.run(() => {
+            this.applySettings(response.data);
+            this.cdr.detectChanges();
+          });
         },
         error: (err) => {
-          console.error('Error loading admin settings:', err);
-          this.error = 'No se pudo cargar la configuración del sistema.';
+          this.ngZone.run(() => {
+            console.error('Error loading admin settings:', err);
+            this.error = 'No se pudo cargar la configuración del sistema.';
+            this.cdr.detectChanges();
+          });
         }
       });
   }
@@ -246,13 +255,19 @@ export class Admin implements OnInit {
     this.isAnalyticsLoading = true;
     this.adminService.getAnalytics().subscribe({
       next: (res: any) => {
-        this.analytics = res?.data ?? null;
-        this.isAnalyticsLoading = false;
+        this.ngZone.run(() => {
+          this.analytics = res?.data ?? null;
+          this.isAnalyticsLoading = false;
+          this.cdr.detectChanges();
+        });
       },
       error: (err) => {
-        console.error('Error loading analytics:', err);
-        this.isAnalyticsLoading = false;
-        this.error = 'No se pudieron cargar los datos de análisis.';
+        this.ngZone.run(() => {
+          console.error('Error loading analytics:', err);
+          this.isAnalyticsLoading = false;
+          this.error = 'No se pudieron cargar los datos de análisis.';
+          this.cdr.detectChanges();
+        });
       }
     });
   }
