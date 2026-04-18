@@ -90,6 +90,7 @@ class BusinessController extends Controller
             'city' => 'nullable|string|max:100',
             'postal_code' => 'nullable|string|max:20',
             'phone' => 'nullable|string|max:30',
+            'contact_person_name' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255|unique:users,email,' . $user->id,
             'website' => 'nullable|string|max:255',
             'opening_hours' => 'nullable|string|max:255',
@@ -117,16 +118,26 @@ class BusinessController extends Controller
             'city' => $data['city'] ?? $business->city,
             'postal_code' => $data['postal_code'] ?? $business->postal_code,
             'phone' => $data['phone'] ?? $business->phone,
+            'contact_person_name' => $data['contact_person_name'] ?? $business->contact_person_name,
             'website' => $data['website'] ?? $business->website,
             'opening_hours' => $data['opening_hours'] ?? $business->opening_hours,
             'status' => $business->status ?: 'active',
         ]);
 
         if (array_key_exists('category_name', $data) && !empty($data['category_name'])) {
-            $business->categories()->delete();
-            $business->categories()->create([
-                'name' => $data['category_name'],
-            ]);
+            // FIX: No eliminar categorías, solo actualizar o crear
+            // Para evitar pérdida de productos por cascadeOnDelete
+            $existingCategory = $business->categories()->first();
+            
+            if ($existingCategory) {
+                // Actualizar categoría existente
+                $existingCategory->update(['name' => $data['category_name']]);
+            } else {
+                // Crear nueva categoría solo si no existe ninguna
+                $business->categories()->create([
+                    'name' => $data['category_name'],
+                ]);
+            }
         }
 
         if (array_key_exists('main_image', $data) && !empty($data['main_image'])) {
@@ -268,7 +279,7 @@ class BusinessController extends Controller
     private function loadOwnerBusinessRelations(Business $business): void
     {
         $business->load([
-            'user:id,name,last_name,email',
+            'user:id,name,last_name,email,phone,postal_code',
             'images',
             'categories' => fn ($q) => $q->select(['id', 'business_id', 'name']),
         ]);

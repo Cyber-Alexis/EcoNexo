@@ -21,6 +21,7 @@ import { authGuard } from './core/guards/auth.guard';
 import { checkoutGuard } from './core/guards/checkout.guard';
 import { guestGuard } from './core/guards/guest.guard';
 import { ForgotPassword } from './pages/forgot-password/forgot-password';
+import { canDeactivateMiNegocioGuard } from './core/guards/can-deactivate-mi-negocio.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -29,7 +30,7 @@ export const routes: Routes = [
   { path: 'register', redirectTo: 'register/cliente', pathMatch: 'full' },
   { path: 'register/cliente', component: RegisterCliente, canActivate: [guestGuard] },
   { path: 'register/negocio', component: RegisterNegocio, canActivate: [guestGuard] },
-  { path: 'mi-negocio', component: MiNegocio, canActivate: [businessGuard] },
+  { path: 'mi-negocio', component: MiNegocio, canActivate: [businessGuard], canDeactivate: [canDeactivateMiNegocioGuard] },
   { path: 'home', component: Home, canActivate: [noBusinessGuard] },
   { path: 'negocios', component: Negocios, canActivate: [noBusinessGuard] },
   { path: 'negocios/:id', component: NegocioDetalle, canActivate: [noBusinessGuard] },

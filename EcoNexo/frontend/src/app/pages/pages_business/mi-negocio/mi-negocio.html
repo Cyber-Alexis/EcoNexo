@@ -15,9 +15,8 @@
       <span class="topbar-section-title">Mi Negocio</span>
       <div class="topbar-actions">
         <button class="topbar-icon-btn" aria-label="Notificaciones">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-            <path d="M13.73 21a2 2 0 01-3.46 0"/>
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
         <button class="topbar-icon-btn topbar-hamburger" (click)="sidebar.toggle()" aria-label="Abrir menú">
@@ -46,21 +45,63 @@
 
     <div class="tabs-row">
       <div class="tabs-bar">
-        <button type="button" class="tab-btn" [class.active]="activeTab === 'informacion'" (click)="activeTab = 'informacion'">
+        <button type="button" class="tab-btn" [class.active]="activeTab === 'informacion'" [disabled]="editMode" (click)="changeTab('informacion')">
           Información
         </button>
-        <button type="button" class="tab-btn" [class.active]="activeTab === 'horarios'" (click)="activeTab = 'horarios'">
+        <button type="button" class="tab-btn" [class.active]="activeTab === 'horarios'" [disabled]="editMode" (click)="changeTab('horarios')">
           Horarios
         </button>
-        <button type="button" class="tab-btn" [class.active]="activeTab === 'imagenes'" (click)="activeTab = 'imagenes'">
+        <button type="button" class="tab-btn" [class.active]="activeTab === 'imagenes'" [disabled]="editMode" (click)="changeTab('imagenes')">
           Imágenes
         </button>
       </div>
       <div class="tabs-actions">
-        <button type="button" class="btn btn-secondary" (click)="viewPublicProfile()">Ver Perfil Público</button>
-        <button type="button" class="btn btn-primary" (click)="onSave()" [disabled]="saving || form.invalid">
-          @if (saving) { Guardando... } @else { Guardar Cambios }
+        <button type="button" class="btn btn-secondary" (click)="viewPublicProfile()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          Ver Perfil Público
         </button>
+        @if (!editMode) {
+          <button type="button" class="btn btn-primary" (click)="enterEditMode()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            Modificar datos
+          </button>
+        } @else {
+          <button type="button" class="btn btn-danger" (click)="cancelEdit()" [disabled]="saving">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+            Cancelar
+          </button>
+          <button type="button" class="btn btn-success" (click)="onSave()" [disabled]="saving || form.invalid">
+            @if (saving) {
+              <svg class="spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="2" x2="12" y2="6"/>
+                <line x1="12" y1="18" x2="12" y2="22"/>
+                <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/>
+                <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/>
+                <line x1="2" y1="12" x2="6" y2="12"/>
+                <line x1="18" y1="12" x2="22" y2="12"/>
+                <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/>
+                <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/>
+              </svg>
+              Guardando...
+            } @else {
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                <polyline points="17 21 17 13 7 13 7 21"/>
+                <polyline points="7 3 7 8 15 8"/>
+              </svg>
+              Guardar cambios
+            }
+          </button>
+        }
       </div>
     </div>
 
@@ -75,11 +116,28 @@
               </div>
             </div>
 
-            <label class="field-label" for="name">Nombre del negocio</label>
-            <input id="name" type="text" class="field-input" formControlName="name" placeholder="Nombre de tu negocio" />
+            <label class="field-label" for="name">Nombre del negocio <span class="required">*</span></label>
+            <input 
+              id="name" 
+              type="text" 
+              class="field-input" 
+              [class.field-input--invalid]="isFieldInvalid('name')"
+              [class.field-input--valid]="isFieldValid('name')"
+              [class.field-input--readonly]="!editMode"
+              [attr.readonly]="!editMode ? true : null"
+              formControlName="name" 
+              placeholder="Nombre de tu negocio" />
+            @if (isFieldInvalid('name')) {
+              <small class="field-error">{{ getErrorMessage('name') }}</small>
+            }
 
             <label class="field-label" for="category_name">Categoría</label>
-            <select id="category_name" class="field-input" formControlName="category_name">
+            <select 
+              id="category_name" 
+              class="field-input" 
+              [class.field-input--readonly]="!editMode"
+              [attr.disabled]="!editMode ? true : null"
+              formControlName="category_name">
               <option value="">Selecciona una categoría</option>
               @for (option of categoryOptions; track option) {
                 <option [value]="option">{{ option }}</option>
@@ -90,10 +148,17 @@
             <textarea
               id="description"
               class="field-input field-textarea"
+              [class.field-input--invalid]="isFieldInvalid('description')"
+              [class.field-input--valid]="isFieldValid('description')"
+              [class.field-input--readonly]="!editMode"
+              [attr.readonly]="!editMode ? true : null"
               formControlName="description"
               rows="6"
               placeholder="Describe tu negocio y qué verán los clientes en EcoNexo."></textarea>
             <small class="field-help">{{ descriptionLength }}/500 caracteres</small>
+            @if (isFieldInvalid('description')) {
+              <small class="field-error">{{ getErrorMessage('description') }}</small>
+            }
           </section>
 
           <section class="dashboard-card">
@@ -104,31 +169,111 @@
               </div>
             </div>
 
-            <label class="field-label">Persona de contacto</label>
-            <input type="text" class="field-input field-input--readonly" [value]="contactPersonName" readonly />
+            <label class="field-label" for="contact_person_name">Persona de contacto</label>
+            <input 
+              id="contact_person_name"
+              type="text" 
+              class="field-input"
+              [class.field-input--readonly]="!editMode"
+              [class.field-input--invalid]="isFieldInvalid('contact_person_name')"
+              [class.field-input--valid]="isFieldValid('contact_person_name')"
+              formControlName="contact_person_name"
+              [attr.readonly]="!editMode ? true : null"
+              placeholder="Nombre y apellidos del contacto"
+            />
+            @if (!editMode) {
+              <small class="field-help field-help--readonly">
+                Puedes editarlo desde el modo edición o se usará tu nombre de perfil
+              </small>
+            }
+            @if (isFieldInvalid('contact_person_name')) {
+              <small class="field-help field-help--error">
+                {{ getErrorMessage('contact_person_name') }}
+              </small>
+            }
 
             <label class="field-label" for="address">Dirección</label>
-            <input id="address" type="text" class="field-input" formControlName="address" placeholder="Calle, número, barrio..." />
+            <input 
+              id="address" 
+              type="text" 
+              class="field-input" 
+              [class.field-input--invalid]="isFieldInvalid('address')"
+              [class.field-input--valid]="isFieldValid('address')"
+              [class.field-input--readonly]="!editMode"
+              [attr.readonly]="!editMode ? true : null"
+              formControlName="address" 
+              placeholder="Calle, número, barrio..." />
+            @if (isFieldInvalid('address')) {
+              <small class="field-error">{{ getErrorMessage('address') }}</small>
+            }
 
             <div class="field-row">
               <div>
                 <label class="field-label" for="city">Ciudad</label>
-                <input id="city" type="text" class="field-input" formControlName="city" placeholder="Tu ciudad" />
+                <input 
+                  id="city" 
+                  type="text" 
+                  class="field-input" 
+                  [class.field-input--invalid]="isFieldInvalid('city')"
+                  [class.field-input--valid]="isFieldValid('city')"
+                  [class.field-input--readonly]="!editMode"
+                  [attr.readonly]="!editMode ? true : null"
+                  formControlName="city" 
+                  placeholder="Tu ciudad" />
+                @if (isFieldInvalid('city')) {
+                  <small class="field-error">{{ getErrorMessage('city') }}</small>
+                }
               </div>
               <div>
                 <label class="field-label" for="postal_code">Código Postal</label>
-                <input id="postal_code" type="text" class="field-input" formControlName="postal_code" placeholder="CP" />
+                <input 
+                  id="postal_code" 
+                  type="text" 
+                  class="field-input" 
+                  [class.field-input--invalid]="isFieldInvalid('postal_code')"
+                  [class.field-input--valid]="isFieldValid('postal_code')"
+                  [class.field-input--readonly]="!editMode"
+                  [attr.readonly]="!editMode ? true : null"
+                  formControlName="postal_code" 
+                  inputmode="numeric"
+                  maxlength="5"
+                  placeholder="Ej: 25001" />
+                @if (isFieldInvalid('postal_code')) {
+                  <small class="field-error">{{ getErrorMessage('postal_code') }}</small>
+                }
               </div>
             </div>
 
             <label class="field-label" for="phone">Teléfono</label>
-            <input id="phone" type="text" class="field-input" formControlName="phone" placeholder="Teléfono de contacto" />
+            <input 
+              id="phone" 
+              type="tel" 
+              class="field-input" 
+              [class.field-input--invalid]="isFieldInvalid('phone')"
+              [class.field-input--valid]="isFieldValid('phone')"
+              [class.field-input--readonly]="!editMode"
+              [attr.readonly]="!editMode ? true : null"
+              formControlName="phone" 
+              inputmode="numeric"
+              placeholder="Ej: 600123456" />
+            @if (isFieldInvalid('phone')) {
+              <small class="field-error">{{ getErrorMessage('phone') }}</small>
+            }
 
-            <label class="field-label" for="email">Email</label>
-            <input id="email" type="email" class="field-input" formControlName="email" placeholder="Correo público del negocio" />
-
-            <label class="field-label" for="website">Sitio Web</label>
-            <input id="website" type="text" class="field-input" formControlName="website" placeholder="www.tunegocio.com" />
+            <label class="field-label" for="email">Email <span class="required">*</span></label>
+            <input 
+              id="email" 
+              type="email" 
+              class="field-input" 
+              [class.field-input--invalid]="isFieldInvalid('email')"
+              [class.field-input--valid]="isFieldValid('email')"
+              [class.field-input--readonly]="!editMode"
+              [attr.readonly]="!editMode ? true : null"
+              formControlName="email" 
+              placeholder="correo@negocio.com" />
+            @if (isFieldInvalid('email')) {
+              <small class="field-error">{{ getErrorMessage('email') }}</small>
+            }
           </section>
         </div>
       }
@@ -146,9 +291,16 @@
           <textarea
             id="opening_hours"
             class="field-input field-textarea"
+            [class.field-input--invalid]="isFieldInvalid('opening_hours')"
+            [class.field-input--valid]="isFieldValid('opening_hours')"
+            [class.field-input--readonly]="!editMode"
+            [attr.readonly]="!editMode ? true : null"
             formControlName="opening_hours"
             rows="6"
-            placeholder="Lun-Vie: 09:00 - 18:00 · Sáb: 09:00 - 14:00"></textarea>
+            placeholder="Ej: Lun-Vie: 8:30-14:00, 17:00-20:00, Sáb: 8:30-14:00"></textarea>
+          @if (isFieldInvalid('opening_hours')) {
+            <small class="field-error">{{ getErrorMessage('opening_hours') }}</small>
+          }
         </section>
       }
 

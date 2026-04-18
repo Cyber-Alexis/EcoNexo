@@ -12,8 +12,8 @@ export interface UpdateOwnedBusinessPayload {
   city?: string | null;
   postal_code?: string | null;
   phone?: string | null;
+  contact_person_name?: string | null;
   email?: string | null;
-  website?: string | null;
   opening_hours?: string | null;
   main_image?: string | null;
 }
@@ -37,7 +37,7 @@ export class BusinessService {
   }
 
   updateMine(payload: UpdateOwnedBusinessPayload): Observable<{ message: string; business: ApiBusiness }> {
-    return this.http.post<{ message: string; business: ApiBusiness }>(`${this.base}/mi-negocio`, payload);
+    return this.http.put<{ message: string; business: ApiBusiness }>(`${this.base}/mi-negocio`, payload);
   }
 
   uploadImages(files: File[] | FileList, type: 'main' | 'gallery'): Observable<{ message: string; business: ApiBusiness }> {

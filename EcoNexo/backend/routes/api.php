@@ -10,9 +10,6 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
 
-// Handle OPTIONS preflight for all API routes (needed for PUT/DELETE CORS)
-Route::options('{any}', fn () => response('', 204))->where('any', '.*');
-
 /*
 |--------------------------------------------------------------------------
 | Public API Routes

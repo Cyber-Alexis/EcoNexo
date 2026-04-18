@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { finalize, timeout } from 'rxjs/operators';
@@ -8,17 +8,45 @@ import { ApiBusiness, ApiImage } from '../../../core/models/business.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { BusinessService } from '../../../core/services/business.service';
 import { BusinessSidebar } from '../business-sidebar/business-sidebar';
+import { CanComponentDeactivate } from '../../../core/interfaces/can-component-deactivate.interface';
 
 const BUSINESS_REQUEST_TIMEOUT_MS = 30_000;
+
+// Teléfono español: 9 dígitos empezando por 6, 7 o 9
+const SPANISH_PHONE_PATTERN = /^[679]\d{8}$/;
+
+function phoneValidator(control: AbstractControl): ValidationErrors | null {
+  const value: string = control.value ?? '';
+  if (!value) return null; // Campo opcional
+  const digits = value.replace(/\s/g, '');
+  if (!SPANISH_PHONE_PATTERN.test(digits)) {
+    return { invalidPhone: true };
+  }
+  return null;
+}
+
+// Código postal español: 5 dígitos (01000-52999)
+function postalCodeValidator(control: AbstractControl): ValidationErrors | null {
+  const value: string = control.value ?? '';
+  if (!value) return null; // Campo opcional
+  if (!/^\d{5}$/.test(value)) {
+    return { invalidPostalCode: true };
+  }
+  const num = parseInt(value, 10);
+  if (num < 1000 || num > 52999) {
+    return { postalCodeRange: true };
+  }
+  return null;
+}
 
 @Component({
   selector: 'app-mi-negocio',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, BusinessSidebar],
+  imports: [CommonModule, ReactiveFormsModule, BusinessSidebar],
   templateUrl: './mi-negocio.html',
   styleUrl: './mi-negocio.css',
 })
-export class MiNegocio implements OnInit {
+export class MiNegocio implements OnInit, CanComponentDeactivate {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
@@ -31,6 +59,10 @@ export class MiNegocio implements OnInit {
   errorMessage = '';
   syncMessage = '';
   businessId: number | null = null;
+
+  // Modo lectura/edición
+  editMode = false;
+  private originalFormValues: any = null;
 
   private readonly uploadingMainSubject = new BehaviorSubject<boolean>(false);
   private readonly uploadingGallerySubject = new BehaviorSubject<boolean>(false);
@@ -56,15 +88,15 @@ export class MiNegocio implements OnInit {
   ];
 
   readonly form = this.fb.group({
-    name: ['', [Validators.required, Validators.maxLength(255)]],
+    name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(255)]],
     category_name: ['', [Validators.maxLength(120)]],
     description: ['', [Validators.maxLength(500)]],
     address: ['', [Validators.maxLength(255)]],
-    city: ['', [Validators.maxLength(100)]],
-    postal_code: ['', [Validators.maxLength(20)]],
-    phone: ['', [Validators.maxLength(30)]],
+    city: ['', [Validators.minLength(2), Validators.maxLength(100)]],
+    postal_code: ['', [postalCodeValidator, Validators.maxLength(20)]],
+    phone: ['', [phoneValidator, Validators.maxLength(30)]],
+    contact_person_name: ['', [Validators.maxLength(255)]],
     email: ['', [Validators.required, Validators.email]],
-    website: ['', [Validators.maxLength(255)]],
     opening_hours: ['', [Validators.maxLength(255)]],
   });
 
@@ -78,6 +110,10 @@ export class MiNegocio implements OnInit {
   }
 
   get contactPersonName(): string {
+    // Prioridad: 1) Valor del formulario, 2) Usuario logueado
+    const formValue = this.form.value.contact_person_name?.trim();
+    if (formValue) return formValue;
+    
     const user = this.authService.getUser();
     return [user?.name, user?.last_name].filter(Boolean).join(' ').trim() || 'Sin asignar';
   }
@@ -86,13 +122,101 @@ export class MiNegocio implements OnInit {
     return this.form.value.description?.length ?? 0;
   }
 
+  // ──────────────────────────────────────────────────────────────
+  // Validación y comparación de cambios
+  // ──────────────────────────────────────────────────────────────
+
+  /**
+   * Comprueba si un campo tiene valor (no está vacío)
+   */
+  private hasValue(value: any): boolean {
+    if (value === null || value === undefined) return false;
+    if (typeof value === 'string') return value.trim().length > 0;
+    return true;
+  }
+
+  /**
+   * Normaliza un valor para comparación
+   */
+  private normalizeValue(value: any): string {
+    if (value === null || value === undefined || value === '') return '';
+    return String(value).trim();
+  }
+
+  /**
+   * Compara valor actual con valor original del backend
+   * Retorna true si el valor ha cambiado realmente
+   */
+  isFieldChanged(field: string): boolean {
+    if (!this.originalFormValues) return false;
+    
+    const currentValue = this.form.get(field)?.value;
+    const originalValue = this.originalFormValues[field];
+    
+    // Normalizar ambos valores para comparación sensible
+    const currentNormalized = this.normalizeValue(currentValue);
+    const originalNormalized = this.normalizeValue(originalValue);
+    
+    return currentNormalized !== originalNormalized;
+  }
+
+  /**
+   * Campo inválido: mostrar borde rojo si inválido y (touched o dirty)
+   */
+  isFieldInvalid(field: string): boolean {
+    const ctrl = this.form.get(field);
+    return !!(ctrl && ctrl.invalid && (ctrl.touched || ctrl.dirty));
+  }
+
+  /**
+   * Campo válido: mostrar borde verde SOLO si:
+   * - Está en modo edición
+   * - Es válido
+   * - Tiene valor (no vacío)
+   * - Ha cambiado respecto al valor original del backend
+   */
+  isFieldValid(field: string): boolean {
+    if (!this.editMode) return false; // Nunca verde en modo lectura
+    
+    const ctrl = this.form.get(field);
+    if (!ctrl || !ctrl.valid) return false;
+    
+    const currentValue = ctrl.value;
+    if (!this.hasValue(currentValue)) return false; // No verde si está vacío
+    
+    return this.isFieldChanged(field); // Solo verde si cambió realmente
+  }
+
+  getErrorMessage(field: string): string {
+    const ctrl = this.form.get(field);
+    if (!ctrl || !(ctrl.touched || ctrl.dirty) || !ctrl.errors) return '';
+    const err = ctrl.errors;
+
+    // Errores comunes
+    if (err['required']) return 'Este campo es obligatorio';
+    if (err['minlength']) return `Mínimo ${err['minlength'].requiredLength} caracteres`;
+    if (err['maxlength']) return `Máximo ${err['maxlength'].requiredLength} caracteres`;
+    if (err['email']) return 'Formato de email inválido';
+
+    // Errores específicos por campo
+    if (err['invalidPhone']) return 'Teléfono debe tener 9 dígitos y empezar por 6, 7 o 9';
+    if (err['invalidPostalCode']) return 'Código postal debe tener 5 dígitos';
+    if (err['postalCodeRange']) return 'Código postal fuera de rango válido (01000-52999)';
+
+    return 'Campo inválido';
+  }
+
+  // ──────────────────────────────────────────────────────────────
+  // Ciclo de vida y carga de datos
+  // ──────────────────────────────────────────────────────────────
+
   private prefillFromSession(): void {
     const currentUser = this.authService.getUser();
 
     this.form.patchValue({
       name: currentUser?.business_name ?? '',
       email: currentUser?.email ?? '',
-      phone: currentUser?.phone ?? '',
+      phone: '',
       address: currentUser?.address ?? '',
       city: currentUser?.city ?? '',
       postal_code: currentUser?.postal_code ?? '',
@@ -107,18 +231,22 @@ export class MiNegocio implements OnInit {
     this.mainImageSubject.next(mainImage);
     this.galleryPreviewSlotsSubject.next(this.gallerySlots.map((index) => galleryImages[index] ?? null));
 
-    this.form.patchValue({
+    const formData = {
       name: business.name ?? this.form.value.name ?? '',
       category_name: business.categories?.[0]?.name ?? '',
       description: business.description ?? '',
       address: business.address ?? '',
       city: business.city ?? '',
-      postal_code: business.postal_code ?? '',
-      phone: business.phone ?? '',
-      email: business.user?.email ?? this.form.value.email ?? '',
-      website: business.website ?? '',
-      opening_hours: business.opening_hours ?? '',
-    });
+      postal_code: business.postal_code ?? business.user?.postal_code ?? '',
+      phone: business.phone ?? business.user?.phone ?? '',
+      contact_person_name: business.contact_person_name ?? '',
+      email: business.user?.email ?? '',
+      opening_hours: business.opening_hours || 'Lun-Vie: 8:30-14:00, 17:00-20:00, Sáb: 8:30-14:00',
+    };
+
+    this.form.patchValue(formData);
+    // Guardar valores originales para poder cancelar
+    this.originalFormValues = { ...formData };
   }
 
   private loadBusiness(): void {
@@ -137,6 +265,41 @@ export class MiNegocio implements OnInit {
         this.errorMessage = err?.error?.message || 'No se pudo cargar la informacion actual del negocio.';
       },
     });
+  }
+
+  // ──────────────────────────────────────────────────────────────
+  // Guardado y persistencia de datos
+  // ──────────────────────────────────────────────────────────────
+
+  /**
+   * Activar modo edición
+   */
+  enterEditMode(): void {
+    this.editMode = true;
+    this.successMessage = '';
+    this.errorMessage = '';
+  }
+
+  /**
+   * Cancelar edición: restaurar valores originales y limpiar estados
+   */
+  cancelEdit(): void {
+    if (this.originalFormValues) {
+      this.form.patchValue(this.originalFormValues);
+    }
+    
+    // Limpiar todos los estados de validación
+    this.form.markAsPristine();
+    this.form.markAsUntouched();
+    Object.keys(this.form.controls).forEach(key => {
+      const control = this.form.get(key);
+      control?.markAsUntouched();
+      control?.markAsPristine();
+    });
+    
+    this.editMode = false;
+    this.successMessage = '';
+    this.errorMessage = '';
   }
 
   onSave(): void {
@@ -159,8 +322,8 @@ export class MiNegocio implements OnInit {
       city: raw.city?.trim() || null,
       postal_code: raw.postal_code?.trim() || null,
       phone: raw.phone?.trim() || null,
+      contact_person_name: raw.contact_person_name?.trim() || null,
       email: raw.email?.trim() || null,
-      website: raw.website?.trim() || null,
       opening_hours: raw.opening_hours?.trim() || null,
     }).subscribe({
       next: (response) => {
@@ -176,6 +339,10 @@ export class MiNegocio implements OnInit {
           business_name: response.business.name,
         });
         this.successMessage = 'Cambios guardados correctamente.';
+        // Volver a modo lectura después de guardar
+        this.editMode = false;
+        this.form.markAsPristine();
+        this.form.markAsUntouched();
       },
       error: (err) => {
         this.saving = false;
@@ -183,6 +350,10 @@ export class MiNegocio implements OnInit {
       },
     });
   }
+
+  // ──────────────────────────────────────────────────────────────
+  // Gestión de imágenes (principal y galería)
+  // ──────────────────────────────────────────────────────────────
 
   onMainImageSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -285,6 +456,23 @@ export class MiNegocio implements OnInit {
     });
   }
 
+  // ──────────────────────────────────────────────────────────────
+  // Navegación y acciones de usuario
+  // ──────────────────────────────────────────────────────────────
+
+  /**
+   * Cambiar de pestaña - Solo permitido fuera de modo edición
+   */
+  changeTab(newTab: 'informacion' | 'horarios' | 'imagenes'): void {
+    // Bloquear navegación si estamos en modo edición
+    if (this.editMode) {
+      return;
+    }
+
+    // Cambiar a la nueva pestaña
+    this.activeTab = newTab;
+  }
+
   viewPublicProfile(): void {
     const publicBusinessId = this.businessId ?? this.authService.getUser()?.business_id ?? null;
 
@@ -301,5 +489,55 @@ export class MiNegocio implements OnInit {
       next: () => this.router.navigate(['/login']),
       error: () => this.router.navigate(['/login']),
     });
+  }
+
+  // ──────────────────────────────────────────────────────────────
+  // Protección contra pérdida de datos (CanDeactivate)
+  // ──────────────────────────────────────────────────────────────
+
+  /**
+   * Detecta si hay cambios sin guardar en cualquier pestaña
+   * Comprueba: formulario modificado o imágenes en proceso de subida
+   */
+  hasUnsavedChanges(): boolean {
+    // Solo bloquear si estamos en modo edición
+    if (!this.editMode) {
+      return false;
+    }
+
+    // Bloquear si el formulario está dirty (Angular detecta cambios)
+    if (this.form.dirty) {
+      return true;
+    }
+
+    // Bloquear si hay imágenes en proceso de subida
+    if (this.uploadingMainSubject.value || this.uploadingGallerySubject.value) {
+      return true;
+    }
+
+    // Comparar con valores originales por si Angular no detectó el cambio
+    if (this.originalFormValues) {
+      const currentValues = this.form.getRawValue();
+      const hasChanges = Object.keys(currentValues).some(key => {
+        const fieldKey = key as keyof typeof currentValues;
+        const current = this.normalizeValue(currentValues[fieldKey]);
+        const original = this.normalizeValue(this.originalFormValues![fieldKey]);
+        return current !== original;
+      });
+      
+      if (hasChanges) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Método requerido por CanComponentDeactivate
+   * Retorna true si se puede navegar, false si hay cambios sin guardar
+   */
+  canDeactivate(): boolean {
+    return !this.hasUnsavedChanges();
   }
 }
