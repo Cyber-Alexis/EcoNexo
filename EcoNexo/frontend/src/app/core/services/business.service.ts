@@ -18,6 +18,12 @@ export interface UpdateOwnedBusinessPayload {
   main_image?: string | null;
 }
 
+export interface BusinessApiResponse {
+  success: boolean;
+  message: string;
+  business: ApiBusiness;
+}
+
 @Injectable({ providedIn: 'root' })
 export class BusinessService {
   private readonly base = environment.apiUrl;
@@ -40,7 +46,7 @@ export class BusinessService {
     return this.http.put<{ message: string; business: ApiBusiness }>(`${this.base}/mi-negocio`, payload);
   }
 
-  uploadImages(files: File[] | FileList, type: 'main' | 'gallery'): Observable<{ message: string; business: ApiBusiness }> {
+  uploadImages(files: File[] | FileList, type: 'main' | 'gallery'): Observable<BusinessApiResponse> {
     const formData = new FormData();
     formData.append('type', type);
 
@@ -48,10 +54,10 @@ export class BusinessService {
       formData.append('images[]', file);
     });
 
-    return this.http.post<{ message: string; business: ApiBusiness }>(`${this.base}/mi-negocio/imagenes`, formData);
+    return this.http.post<BusinessApiResponse>(`${this.base}/mi-negocio/imagenes`, formData);
   }
 
-  deleteImage(imageId: number): Observable<{ message: string; business: ApiBusiness }> {
-    return this.http.delete<{ message: string; business: ApiBusiness }>(`${this.base}/mi-negocio/imagenes/${imageId}`);
+  deleteImage(imageId: number): Observable<BusinessApiResponse> {
+    return this.http.delete<BusinessApiResponse>(`${this.base}/mi-negocio/imagenes/${imageId}`);
   }
 }

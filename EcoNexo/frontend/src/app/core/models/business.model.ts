@@ -1,7 +1,9 @@
 export interface ApiImage {
   id: number;
   path: string;
+  url: string;
   type: string | null;
+  position?: number;
 }
 
 export interface ApiCategory {

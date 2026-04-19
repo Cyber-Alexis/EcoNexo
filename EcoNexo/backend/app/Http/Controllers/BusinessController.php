@@ -2,13 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UploadBusinessImagesRequest;
 use App\Models\Business;
 use App\Models\Image;
+use App\Services\BusinessImageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class BusinessController extends Controller
 {
+    /**
+     * @var BusinessImageService
+     */
+    private BusinessImageService $imageService;
+
+    public function __construct(BusinessImageService $imageService)
+    {
+        $this->imageService = $imageService;
+    }
     /**
      * GET /api/negocios
      * Returns all active businesses with avg rating, review count and main image.
@@ -158,66 +169,44 @@ class BusinessController extends Controller
 
     /**
      * POST /api/mi-negocio/imagenes
-     * Uploads one main image or multiple gallery images from the user's device.
+     * Uploads images (main or gallery) for the authenticated business user.
      */
-    public function uploadImages(Request $request)
+    public function uploadImages(UploadBusinessImagesRequest $request)
     {
         $user = auth('api')->user();
-
-        if (!$user || $user->role !== 'business') {
-            return response()->json([
-                'message' => 'Solo los usuarios negocio pueden gestionar esta sección.',
-            ], 403);
-        }
-
-        $data = $request->validate([
-            'type' => 'required|in:main,gallery',
-            'images' => 'required|array|min:1|max:6',
-            'images.*' => 'required|image|mimes:jpg,jpeg,png,webp|max:4096',
-        ]);
-
         $business = $this->resolveOwnedBusiness($user);
+
+        $type = $request->validated('type');
         $files = $request->file('images', []);
 
-        if ($data['type'] === 'main') {
-            foreach ($business->images()->where('type', 'main')->get() as $image) {
-                $this->deleteStoredImage($image);
-                $image->delete();
+        try {
+            if ($type === 'main') {
+                $this->imageService->uploadMainImage($business, $files[0]);
+                $message = 'Imagen principal actualizada correctamente.';
+            } else {
+                $uploadedImages = $this->imageService->uploadGalleryImages($business, $files);
+                $count = count($uploadedImages);
+                $message = "Se subieron {$count} imagen(es) a la galería correctamente.";
             }
 
-            $path = $files[0]->store('businesses/' . $business->id, 'public');
-            $business->images()->create([
-                'path' => $path,
-                'type' => 'main',
+            $this->loadOwnerBusinessRelations($business);
+
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'business' => $business,
             ]);
-        } else {
-            $currentGalleryCount = $business->images()->where('type', 'gallery')->count();
-            if (($currentGalleryCount + count($files)) > 6) {
-                return response()->json([
-                    'message' => 'Solo puedes tener hasta 6 imágenes en la galería.',
-                ], 422);
-            }
-
-            foreach ($files as $file) {
-                $path = $file->store('businesses/' . $business->id, 'public');
-                $business->images()->create([
-                    'path' => $path,
-                    'type' => 'gallery',
-                ]);
-            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
         }
-
-        $this->loadOwnerBusinessRelations($business);
-
-        return response()->json([
-            'message' => 'Imágenes actualizadas correctamente.',
-            'business' => $business,
-        ]);
     }
 
     /**
      * DELETE /api/mi-negocio/imagenes/{imageId}
-     * Deletes one image (main or gallery) owned by the authenticated business user.
+     * Deletes a specific image owned by the authenticated business user.
      */
     public function deleteImage(int $imageId)
     {
@@ -225,28 +214,28 @@ class BusinessController extends Controller
 
         if (!$user || $user->role !== 'business') {
             return response()->json([
+                'success' => false,
                 'message' => 'Solo los usuarios negocio pueden gestionar esta sección.',
             ], 403);
         }
 
         $business = $this->resolveOwnedBusiness($user);
-        $image = $business->images()->whereKey($imageId)->first();
 
-        if (!$image) {
+        try {
+            $this->imageService->deleteImage($business, $imageId);
+            $this->loadOwnerBusinessRelations($business);
+
             return response()->json([
-                'message' => 'La imagen no existe o no pertenece a tu negocio.',
+                'success' => true,
+                'message' => 'Imagen eliminada correctamente.',
+                'business' => $business,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
             ], 404);
         }
-
-        $this->deleteStoredImage($image);
-        $image->delete();
-
-        $this->loadOwnerBusinessRelations($business);
-
-        return response()->json([
-            'message' => 'Imagen eliminada correctamente.',
-            'business' => $business,
-        ]);
     }
 
     private function resolveOwnedBusiness($user, ?string $preferredName = null): Business
@@ -280,9 +269,14 @@ class BusinessController extends Controller
     {
         $business->load([
             'user:id,name,last_name,email,phone,postal_code',
-            'images',
+            'images' => fn ($q) => $q->orderBy('type', 'desc')->orderBy('position'),
             'categories' => fn ($q) => $q->select(['id', 'business_id', 'name']),
+            'products' => fn ($q) => $q->where('active', true)->with('images'),
+            'reviews' => fn ($q) => $q->with('user')->latest()->limit(20),
         ]);
+
+        $business->loadAvg('reviews', 'rating');
+        $business->loadCount('reviews');
     }
 
     private function deleteStoredImage(Image $image): void

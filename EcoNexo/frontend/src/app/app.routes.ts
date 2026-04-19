@@ -3,6 +3,7 @@ import { Login } from './pages/login/login';
 import { RegisterCliente } from './pages/register-cliente/register-cliente';
 import { RegisterNegocio } from './pages/register-negocio/register-negocio';
 import { MiNegocio } from './pages/pages_business/mi-negocio/mi-negocio';
+import { VistaNegocio } from './pages/pages_business/vista-negocio/vista-negocio';
 import { Home } from './pages/home/home';
 import { Negocios } from './pages/negocios/negocios';
 import { Productos } from './pages/productos/productos';
@@ -31,6 +32,7 @@ export const routes: Routes = [
   { path: 'register/cliente', component: RegisterCliente, canActivate: [guestGuard] },
   { path: 'register/negocio', component: RegisterNegocio, canActivate: [guestGuard] },
   { path: 'mi-negocio', component: MiNegocio, canActivate: [businessGuard], canDeactivate: [canDeactivateMiNegocioGuard] },
+  { path: 'vista-negocio', component: VistaNegocio, canActivate: [businessGuard] },
   { path: 'home', component: Home, canActivate: [noBusinessGuard] },
   { path: 'negocios', component: Negocios, canActivate: [noBusinessGuard] },
   { path: 'negocios/:id', component: NegocioDetalle, canActivate: [noBusinessGuard] },

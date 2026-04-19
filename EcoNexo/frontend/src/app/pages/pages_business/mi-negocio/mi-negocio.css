@@ -430,7 +430,7 @@
   display: grid;
   grid-template-columns: 1fr 1.8fr;
   gap: 1.25rem;
-  align-items: start;
+  align-items: stretch;
 }
 
 .images-col-label {
@@ -466,29 +466,14 @@
 .images-gallery-col {
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 
-.images-gallery-col .gallery-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-template-rows: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
-  height: var(--img-h, 460px);
+.images-gallery-col {
+  min-height: 460px;
 }
 
-.images-gallery-col .gallery-slot {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
-.images-gallery-col .upload-tile--gallery {
-  flex: 1;
-  height: auto;
-  min-height: 0;
-}
-
-/* ─── Upload tiles ─── */
+/* ─── Upload tiles (main image) ─── */
 .upload-tile {
   width: 100%;
   border: 1.5px dashed #d1d5db;
@@ -506,11 +491,19 @@
   height: var(--img-h, 460px);
 }
 
-.upload-tile--gallery {
-  height: 160px;
+.upload-tile--filled {
+  cursor: default;
+  border: 1px solid #e5e7eb;
+  border-style: solid;
+  background: #f3f4f6;
 }
 
-.upload-tile:hover:not(:disabled) {
+.upload-tile--filled:hover {
+  border-color: #e5e7eb;
+  background: #f3f4f6;
+}
+
+.upload-tile:hover:not(:disabled):not(.upload-tile--filled) {
   border-color: #2D6A4F;
   background: #f0faf5;
 }
@@ -547,6 +540,144 @@
   stroke: #d1d5db;
 }
 
+/* ─── Gallery grid (3×2) ─── */
+.images-gallery-col .gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(2, 1fr);
+  gap: 1rem;
+  flex: 1;
+  height: 100%;
+}
+
+.images-gallery-col .gallery-slot {
+  position: relative;
+  display: flex;
+  min-height: 0;
+}
+
+/* ─── Gallery card (with image) ─── */
+.gallery-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.gallery-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.gallery-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ─── Gallery delete button (hover overlay) ─── */
+.gallery-delete-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  color: #dc2626;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s, background 0.15s, transform 0.15s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.gallery-card:hover .gallery-delete-btn,
+.upload-tile--filled:hover .gallery-delete-btn {
+  opacity: 1;
+}
+
+.gallery-delete-btn:hover:not(:disabled) {
+  background: #fee2e2;
+  transform: scale(1.1);
+}
+
+.gallery-delete-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── Gallery placeholder (empty slot) ─── */
+.gallery-placeholder {
+  width: 100%;
+  height: 100%;
+  border: 1.5px dashed #d1d5db;
+  border-radius: 12px;
+  background: #fafafa;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s, background 0.2s;
+  padding: 0;
+}
+
+.gallery-placeholder svg {
+  width: 24px;
+  height: 24px;
+  stroke: #d1d5db;
+  transition: stroke 0.2s;
+}
+
+.gallery-placeholder:hover:not(:disabled) {
+  border-color: #2D6A4F;
+  background: #f0fdf4;
+}
+
+.gallery-placeholder:hover:not(:disabled) svg {
+  stroke: #2D6A4F;
+}
+
+.gallery-placeholder:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── Upload overlay (loading state) ─── */
+.upload-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+/* ─── Spinner ─── */
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e5e7eb;
+  border-top-color: #2D6A4F;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* ─── Gallery grid (default — outside images section) ─── */
 .gallery-grid {
   display: grid;
@@ -560,40 +691,43 @@
   gap: 0.35rem;
 }
 
-/* ─── Image actions ─── */
+/* ─── Image actions (DEPRECATED - now using .gallery-delete-btn) ─── */
+/*
 .image-action-row {
   display: flex;
   justify-content: flex-end;
-  margin-top: 0.35rem;
+  margin-top: 0.5rem;
 }
 
 .btn-delete-image {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   border: 1px solid #fecaca;
-  background: #fff7f7;
-  color: #b91c1c;
+  background: #fff;
+  color: #dc2626;
   border-radius: 8px;
-  padding: 0.3rem 0.55rem;
-  font-size: 0.75rem;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background 0.15s, border-color 0.15s;
 }
 
 .btn-delete-image:hover:not(:disabled) {
   background: #fee2e2;
+  border-color: #dc2626;
 }
 
 .btn-delete-image:disabled {
-  opacity: 0.55;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
-.upload-status {
-  margin: 0.5rem 0 0;
-  color: #2D6A4F;
-  font-size: 0.85rem;
-  font-weight: 500;
+.btn-delete-image svg {
+  flex-shrink: 0;
 }
+*/
 
 /* ─── Tips ─── */
 .images-tips {
@@ -645,6 +779,19 @@
   display: none;
 }
 
+/* ──────────────────────────────────────────────────────────────
+   RESPONSIVE: Gallery Grid
+────────────────────────────────────────────────────────────── */
+
+/* Desktop large: 3 columns × 2 rows */
+@media (min-width: 1400px) {
+  .images-gallery-col .gallery-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
 @media (max-width: 1024px) {
   /* En tablet/móvil permitir scroll normal del body */
   .dashboard-layout {
@@ -672,10 +819,23 @@
 
   .images-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
 
-  .gallery-grid {
+  .images-main-col,
+  .images-gallery-col {
+    height: auto;
+  }
+
+  .upload-tile--main {
+    height: 360px;
+  }
+
+  .images-gallery-col .gallery-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(2, 1fr);
+    gap: 0.85rem;
+    min-height: 360px;
   }
 }
 
@@ -706,13 +866,72 @@
 
   .tabs-actions .btn {
     flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .field-row {
     grid-template-columns: 1fr;
   }
 
-  .gallery-grid {
-    grid-template-columns: 1fr;
+  /* Tablet: 2 columns × 3 rows */
+  .images-gallery-col .gallery-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(3, 1fr);
+    gap: 0.75rem;
+    min-height: 360px;
+  }
+
+  .upload-tile--main {
+    height: 360px;
+  }
+}
+
+/* Tablets en modo portrait y móviles grandes */
+@media (max-width: 600px) {
+  /* Mobile: 2 columns × 3 rows */
+  .images-gallery-col .gallery-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(3, 1fr);
+    gap: 0.65rem;
+    min-height: 320px;
+  }
+
+  .upload-tile--main {
+    height: 320px;
+  }
+}
+
+/* Mobile small screens (iPhone SE, etc.) */
+@media (max-width: 425px) {
+  .tabs-actions {
+    width: 100%;
+    gap: 0.4rem;
+  }
+
+  .tabs-actions .btn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0.65rem 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .tabs-actions .btn svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  /* Mobile small: 2 columns × 3 rows (compact) */
+  .images-gallery-col .gallery-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(3, 1fr);
+    gap: 0.5rem;
+    min-height: 280px;
+  }
+
+  .upload-tile--main {
+    height: 280px;
   }
 }

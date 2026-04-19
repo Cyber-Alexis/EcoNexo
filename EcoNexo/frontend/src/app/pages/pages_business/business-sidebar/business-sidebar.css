@@ -147,16 +147,17 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.65rem 1.5rem;
+  padding: 0.65rem 0.75rem;
+  margin: 0 0.75rem;
   background: none;
-  border: none;
+  border: 1px solid transparent;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.9rem;
   font-weight: 500;
-  color: #6b7280;
-  transition: color 0.15s;
+  color: #dc2626;
+  transition: color 0.15s, border-color 0.15s;
   font-family: inherit;
-  width: 100%;
 }
 
 .sidebar-logout svg {
@@ -166,6 +167,7 @@
 
 .sidebar-logout:hover {
   color: #dc2626;
+  border-color: #dc2626;
 }
 
 /* ─── Close button (hidden on desktop) ─── */

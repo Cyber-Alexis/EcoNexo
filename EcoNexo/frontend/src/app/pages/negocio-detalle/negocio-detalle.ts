@@ -24,7 +24,7 @@ export class NegocioDetalle implements OnInit, OnDestroy {
   error = false;
   liked = false;
   showAllPhotos = false;
-  activeTab: 'desc' | 'productos' | 'mapa' | 'comentarios' = 'desc';
+  activeTab: 'desc' | 'galeria' | 'productos' | 'mapa' | 'comentarios' = 'desc';
   expandedReviews = new Set<number>();
 
   // Write review form
@@ -145,11 +145,17 @@ export class NegocioDetalle implements OnInit, OnDestroy {
   }
 
   productImage(images: ApiImage[]): string {
-    return images?.[0]?.path ?? 'https://placehold.co/80x80?text=Sin+imagen';
+    const img = images?.[0];
+    return img?.url || img?.path || 'https://placehold.co/80x80?text=Sin+imagen';
   }
 
   mainGalleryImage(): string {
-    return this.business?.images?.[0]?.path ?? 'https://placehold.co/800x450?text=Sin+imagen';
+    const img = this.business?.images?.[0];
+    return img?.url || img?.path || 'https://placehold.co/800x450?text=Sin+imagen';
+  }
+
+  galleryImage(image: ApiImage): string {
+    return image?.url || image?.path || 'https://placehold.co/400x300?text=Sin+imagen';
   }
 
   get businessCategories(): string[] {

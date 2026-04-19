@@ -226,7 +226,10 @@ export class MiNegocio implements OnInit, CanComponentDeactivate {
   private applyBusinessData(business: ApiBusiness): void {
     this.businessId = business.id;
     const mainImage = business.images.find((image) => image.type === 'main') ?? null;
-    const galleryImages = business.images.filter((image) => image.type !== 'main').slice(0, 6);
+    const galleryImages = business.images
+      .filter((image) => image.type === 'gallery')
+      .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+      .slice(0, 6);
 
     this.mainImageSubject.next(mainImage);
     this.galleryPreviewSlotsSubject.next(this.gallerySlots.map((index) => galleryImages[index] ?? null));
@@ -474,14 +477,8 @@ export class MiNegocio implements OnInit, CanComponentDeactivate {
   }
 
   viewPublicProfile(): void {
-    const publicBusinessId = this.businessId ?? this.authService.getUser()?.business_id ?? null;
-
-    if (publicBusinessId) {
-      this.router.navigate(['/negocios', publicBusinessId]);
-      return;
-    }
-
-    this.router.navigate(['/negocios']);
+    // Navegar a la vista previa privada dentro del dashboard
+    this.router.navigate(['/vista-negocio']);
   }
 
   onLogout(): void {
