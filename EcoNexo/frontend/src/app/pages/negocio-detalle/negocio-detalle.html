@@ -131,6 +131,7 @@
       <!-- Tabs -->
       <div class="tabs-bar">
         <button class="tab-btn" [class.active]="activeTab === 'desc'" (click)="activeTab = 'desc'">Descripción</button>
+        <button class="tab-btn" [class.active]="activeTab === 'galeria'" (click)="activeTab = 'galeria'">Galería</button>
         <button class="tab-btn" [class.active]="activeTab === 'productos'" (click)="activeTab = 'productos'">Productos</button>
         <button class="tab-btn" [class.active]="activeTab === 'mapa'" (click)="activeTab = 'mapa'">Mapa</button>
         <button class="tab-btn" [class.active]="activeTab === 'comentarios'" (click)="activeTab = 'comentarios'">Comentarios</button>
@@ -141,6 +142,22 @@
         <h2 class="section-title">Descripción general</h2>
         @for (p of descParagraphs; track $index) {
           <p class="desc-paragraph">{{ p }}</p>
+        }
+      </section>
+
+      <!-- Gallery -->
+      <section class="detail-section" [class.hidden]="activeTab !== 'galeria'">
+        <h2 class="section-title">Galería</h2>
+        @if (business.images && business.images.length > 0) {
+          <div class="gallery-grid">
+            @for (img of sortedGalleryImages; track img.id) {
+              <div class="gallery-item">
+                <img [src]="galleryImage(img)" [alt]="'Imagen del negocio'" class="gallery-img" loading="lazy" />
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="no-items-message">No hay imágenes disponibles</p>
         }
       </section>
 

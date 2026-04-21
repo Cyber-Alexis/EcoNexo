@@ -1,7 +1,9 @@
 export interface ApiImage {
   id: number;
   path: string;
+  url: string;
   type: string | null;
+  position?: number;
 }
 
 export interface ApiCategory {
@@ -27,6 +29,8 @@ export interface ApiUser {
   name: string;
   last_name: string;
   email?: string | null;
+  phone?: string | null;
+  postal_code?: string | null;
 }
 
 export interface ApiReview {
@@ -45,6 +49,7 @@ export interface ApiBusiness {
   city: string;
   postal_code: string | null;
   phone: string | null;
+  contact_person_name?: string | null;
   website: string | null;
   opening_hours: string | null;
   status: string;

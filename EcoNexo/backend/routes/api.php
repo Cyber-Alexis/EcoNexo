@@ -12,9 +12,6 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\BusinessStatisticsController;
 use Illuminate\Support\Facades\Route;
 
-// Handle OPTIONS preflight for all API routes (needed for PUT/DELETE CORS)
-Route::options('{any}', fn () => response('', 204))->where('any', '.*');
-
 /*
 |--------------------------------------------------------------------------
 | Public API Routes

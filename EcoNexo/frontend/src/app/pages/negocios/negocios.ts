@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BusinessService } from '../../core/services/business.service';
 import { ApiBusinessListItem } from '../../core/models/business.model';
+import { getMainImageUrl } from '../../core/utils/image.utils';
 
 @Component({
   selector: 'app-negocios',
@@ -144,7 +145,7 @@ export class Negocios implements OnInit, OnDestroy {
   }
 
   businessImage(b: ApiBusinessListItem): string {
-    return b.images?.[0]?.path ?? 'https://placehold.co/500x300?text=Sin+imagen';
+    return getMainImageUrl(b.images ?? []);
   }
 
   private syncView(): void {

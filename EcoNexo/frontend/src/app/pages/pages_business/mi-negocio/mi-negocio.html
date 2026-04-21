@@ -1,0 +1,531 @@
+<div class="dashboard-layout">
+
+  <!-- ─── Sidebar ─── -->
+  <app-business-sidebar
+    #sidebar
+    [businessName]="businessHeaderName"
+    (logout)="onLogout()"
+  />
+
+  <!-- ─── Main wrapper ─── -->
+  <div class="main-wrapper">
+
+    <!-- ─── Topbar (always visible) ─── -->
+    <header class="topbar">
+      <span class="topbar-section-title">Mi Negocio</span>
+      <div class="topbar-actions">
+        <button class="topbar-icon-btn" aria-label="Notificaciones">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button class="topbar-icon-btn topbar-hamburger" (click)="sidebar.toggle()" aria-label="Abrir menú">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="producer-main">
+
+    @if (successMessage) {
+      <div class="alert alert-success">{{ successMessage }}</div>
+    }
+
+    @if (errorMessage) {
+      <div class="alert alert-error">{{ errorMessage }}</div>
+    }
+
+    @if (syncMessage) {
+      <div class="alert alert-sync">{{ syncMessage }}</div>
+    }
+
+    <div class="tabs-row">
+      <div class="tabs-bar">
+        <button type="button" class="tab-btn" [class.active]="activeTab === 'informacion'" [disabled]="editMode" (click)="changeTab('informacion')">
+          Información
+        </button>
+        <button type="button" class="tab-btn" [class.active]="activeTab === 'horarios'" [disabled]="editMode" (click)="changeTab('horarios')">
+          Horarios
+        </button>
+        <button type="button" class="tab-btn" [class.active]="activeTab === 'imagenes'" [disabled]="editMode" (click)="changeTab('imagenes')">
+          Imágenes
+        </button>
+      </div>
+      <div class="tabs-actions">
+        <button type="button" class="btn btn-secondary" (click)="viewPublicProfile()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          Ver Perfil Público
+        </button>
+        @if (!editMode && activeTab !== 'imagenes') {
+          <button type="button" class="btn btn-primary" (click)="enterEditMode()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            Modificar datos
+          </button>
+        } @else if (editMode) {
+          <button type="button" class="btn btn-danger" (click)="cancelEdit()" [disabled]="saving">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+            Cancelar
+          </button>
+          <button type="button" class="btn btn-success" (click)="onSave()" [disabled]="saving || form.invalid">
+            @if (saving) {
+              <svg class="spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="2" x2="12" y2="6"/>
+                <line x1="12" y1="18" x2="12" y2="22"/>
+                <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/>
+                <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/>
+                <line x1="2" y1="12" x2="6" y2="12"/>
+                <line x1="18" y1="12" x2="22" y2="12"/>
+                <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/>
+                <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/>
+              </svg>
+              Guardando...
+            } @else {
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                <polyline points="17 21 17 13 7 13 7 21"/>
+                <polyline points="7 3 7 8 15 8"/>
+              </svg>
+              Guardar cambios
+            }
+          </button>
+        }
+      </div>
+    </div>
+
+    <form [formGroup]="form" class="dashboard-form">
+      @if (activeTab === 'informacion') {
+        <div class="cards-grid">
+          <section class="dashboard-card">
+            <div class="card-heading">
+              <div>
+                <h2>Información del Negocio</h2>
+                <p>Datos guardados desde el registro y editables para tu perfil público</p>
+              </div>
+            </div>
+
+            <label class="field-label" for="name">Nombre del negocio <span class="required">*</span></label>
+            <input 
+              id="name" 
+              type="text" 
+              class="field-input" 
+              [class.field-input--invalid]="isFieldInvalid('name')"
+              [class.field-input--valid]="isFieldValid('name')"
+              [class.field-input--readonly]="!editMode"
+              [attr.readonly]="!editMode ? true : null"
+              formControlName="name" 
+              placeholder="Nombre de tu negocio" />
+            @if (isFieldInvalid('name')) {
+              <small class="field-error">{{ getErrorMessage('name') }}</small>
+            }
+
+            <label class="field-label" for="category_name">Categoría</label>
+            <select 
+              id="category_name" 
+              class="field-input" 
+              [class.field-input--readonly]="!editMode"
+              formControlName="category_name">
+              <option value="">Selecciona una categoría</option>
+              @for (option of categoryOptions; track option) {
+                <option [value]="option">{{ option }}</option>
+              }
+            </select>
+
+            <label class="field-label" for="description">Descripción</label>
+            <textarea
+              id="description"
+              class="field-input field-textarea"
+              [class.field-input--invalid]="isFieldInvalid('description')"
+              [class.field-input--valid]="isFieldValid('description')"
+              [class.field-input--readonly]="!editMode"
+              [attr.readonly]="!editMode ? true : null"
+              formControlName="description"
+              rows="6"
+              placeholder="Describe tu negocio y qué verán los clientes en EcoNexo."></textarea>
+            <small class="field-help">{{ descriptionLength }}/500 caracteres</small>
+            @if (isFieldInvalid('description')) {
+              <small class="field-error">{{ getErrorMessage('description') }}</small>
+            }
+          </section>
+
+          <section class="dashboard-card">
+            <div class="card-heading">
+              <div>
+                <h2>Contacto y Ubicación</h2>
+                <p>Información visible para usuarios registrados y visitantes</p>
+              </div>
+            </div>
+
+            <label class="field-label" for="contact_person_name">Persona de contacto</label>
+            <input 
+              id="contact_person_name"
+              type="text" 
+              class="field-input"
+              [class.field-input--readonly]="!editMode"
+              [class.field-input--invalid]="isFieldInvalid('contact_person_name')"
+              [class.field-input--valid]="isFieldValid('contact_person_name')"
+              formControlName="contact_person_name"
+              [attr.readonly]="!editMode ? true : null"
+              placeholder="Nombre y apellidos del contacto"
+            />
+            @if (!editMode) {
+              <small class="field-help field-help--readonly">
+                Puedes editarlo desde el modo edición o se usará tu nombre de perfil
+              </small>
+            }
+            @if (isFieldInvalid('contact_person_name')) {
+              <small class="field-help field-help--error">
+                {{ getErrorMessage('contact_person_name') }}
+              </small>
+            }
+
+            <label class="field-label" for="address">Dirección</label>
+            <input 
+              id="address" 
+              type="text" 
+              class="field-input" 
+              [class.field-input--invalid]="isFieldInvalid('address')"
+              [class.field-input--valid]="isFieldValid('address')"
+              [class.field-input--readonly]="!editMode"
+              [attr.readonly]="!editMode ? true : null"
+              formControlName="address" 
+              placeholder="Calle, número, barrio..." />
+            @if (isFieldInvalid('address')) {
+              <small class="field-error">{{ getErrorMessage('address') }}</small>
+            }
+
+            <div class="field-row">
+              <div>
+                <label class="field-label" for="city">Ciudad</label>
+                <input 
+                  id="city" 
+                  type="text" 
+                  class="field-input" 
+                  [class.field-input--invalid]="isFieldInvalid('city')"
+                  [class.field-input--valid]="isFieldValid('city')"
+                  [class.field-input--readonly]="!editMode"
+                  [attr.readonly]="!editMode ? true : null"
+                  formControlName="city" 
+                  placeholder="Tu ciudad" />
+                @if (isFieldInvalid('city')) {
+                  <small class="field-error">{{ getErrorMessage('city') }}</small>
+                }
+              </div>
+              <div>
+                <label class="field-label" for="postal_code">Código Postal</label>
+                <input 
+                  id="postal_code" 
+                  type="text" 
+                  class="field-input" 
+                  [class.field-input--invalid]="isFieldInvalid('postal_code')"
+                  [class.field-input--valid]="isFieldValid('postal_code')"
+                  [class.field-input--readonly]="!editMode"
+                  [attr.readonly]="!editMode ? true : null"
+                  formControlName="postal_code" 
+                  inputmode="numeric"
+                  maxlength="5"
+                  placeholder="Ej: 25001" />
+                @if (isFieldInvalid('postal_code')) {
+                  <small class="field-error">{{ getErrorMessage('postal_code') }}</small>
+                }
+              </div>
+            </div>
+
+            <label class="field-label" for="phone">Teléfono</label>
+            <input 
+              id="phone" 
+              type="tel" 
+              class="field-input" 
+              [class.field-input--invalid]="isFieldInvalid('phone')"
+              [class.field-input--valid]="isFieldValid('phone')"
+              [class.field-input--readonly]="!editMode"
+              [attr.readonly]="!editMode ? true : null"
+              formControlName="phone" 
+              inputmode="numeric"
+              placeholder="Ej: 600123456" />
+            @if (isFieldInvalid('phone')) {
+              <small class="field-error">{{ getErrorMessage('phone') }}</small>
+            }
+
+            <label class="field-label" for="email">Email <span class="required">*</span></label>
+            <input 
+              id="email" 
+              type="email" 
+              class="field-input" 
+              [class.field-input--invalid]="isFieldInvalid('email')"
+              [class.field-input--valid]="isFieldValid('email')"
+              [class.field-input--readonly]="!editMode"
+              [attr.readonly]="!editMode ? true : null"
+              formControlName="email" 
+              placeholder="correo@negocio.com" />
+            @if (isFieldInvalid('email')) {
+              <small class="field-error">{{ getErrorMessage('email') }}</small>
+            }
+          </section>
+        </div>
+      }
+
+      @if (activeTab === 'horarios') {
+        <section class="dashboard-card dashboard-card--single">
+          <div class="card-heading">
+            <div>
+              <h2>Horarios de atención</h2>
+              <p>Estos horarios se mostrarán en el perfil público del negocio</p>
+            </div>
+          </div>
+
+          <label class="field-label" for="opening_hours">Horario comercial</label>
+          <textarea
+            id="opening_hours"
+            class="field-input field-textarea"
+            [class.field-input--invalid]="isFieldInvalid('opening_hours')"
+            [class.field-input--valid]="isFieldValid('opening_hours')"
+            [class.field-input--readonly]="!editMode"
+            [attr.readonly]="!editMode ? true : null"
+            formControlName="opening_hours"
+            rows="6"
+            placeholder="Ej: Lun-Vie: 8:30-14:00, 17:00-20:00, Sáb: 8:30-14:00"></textarea>
+          @if (isFieldInvalid('opening_hours')) {
+            <small class="field-error">{{ getErrorMessage('opening_hours') }}</small>
+          }
+        </section>
+      }
+
+      @if (activeTab === 'imagenes') {
+        <div class="images-layout">
+
+          <!-- Header -->
+          <div class="images-header">
+            <div class="images-header-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+            </div>
+            <div>
+              <h2 class="images-title">Imágenes del Negocio</h2>
+              <p class="images-subtitle">Imagen principal + hasta 6 fotos en galería</p>
+            </div>
+          </div>
+
+          <!-- Main grid -->
+          <div class="images-grid">
+
+            <!-- Imagen principal -->
+            <div class="images-main-col">
+              <div class="images-col-label">
+                Imagen Principal
+                @if (mainImage$ | async) {
+                  <span class="images-badge images-badge--green">Subida</span>
+                } @else {
+                  <span class="images-badge images-badge--red">Sin imagen</span>
+                }
+              </div>
+
+              @if (mainImage$ | async; as mainImage) {
+                <!-- Cuando hay imagen: div no clickable -->
+                <div class="upload-tile upload-tile--main upload-tile--filled">
+                  <img [src]="mainImage.url || mainImage.path" alt="Imagen principal del negocio" class="upload-image" />
+                  <button 
+                    type="button" 
+                    class="gallery-delete-btn" 
+                    [disabled]="uploadingMain$ | async" 
+                    (click)="onRemoveMainImage($event)"
+                    aria-label="Eliminar imagen principal"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="18" y1="6" x2="6" y2="18"/>
+                      <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                  @if (uploadingMain$ | async) {
+                    <div class="upload-overlay">
+                      <div class="spinner"></div>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <!-- Cuando NO hay imagen: button clickable -->
+                <button type="button" class="upload-tile upload-tile--main" [disabled]="uploadingMain$ | async" (click)="mainImageInput.click()">
+                  <div class="upload-placeholder">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                      <circle cx="12" cy="13" r="4"/>
+                    </svg>
+                    <span>Haz clic para subir</span>
+                  </div>
+                  @if (uploadingMain$ | async) {
+                    <div class="upload-overlay">
+                      <div class="spinner"></div>
+                    </div>
+                  }
+                </button>
+              }
+
+              <input #mainImageInput type="file" accept="image/jpeg,image/jpg,image/png,image/webp" class="hidden-file-input" (change)="onMainImageSelected($event)" />
+            </div>
+
+            <!-- Galería -->
+            <div class="images-gallery-col">
+              <div class="images-col-label">
+                Galería (máx. 6 imágenes)
+                <button type="button" class="btn btn-secondary btn-sm" [disabled]="uploadingGallery$ | async" (click)="galleryInput.click()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                  Añadir
+                </button>
+              </div>
+
+              <div class="gallery-grid">
+                @for (slotImage of galleryPreviewSlots$ | async; track $index) {
+                  <div class="gallery-slot">
+                    @if (slotImage) {
+                      <div class="gallery-card">
+                        <img [src]="slotImage.url || slotImage.path" [alt]="'Imagen galería ' + ($index + 1)" class="gallery-image" />
+                        <button 
+                          type="button" 
+                          class="gallery-delete-btn" 
+                          [disabled]="uploadingGallery$ | async" 
+                          (click)="onRemoveGalleryImage(slotImage.id, $event)"
+                          [attr.aria-label]="'Eliminar imagen ' + ($index + 1)"
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                          </svg>
+                        </button>
+                        @if (uploadingGallery$ | async) {
+                          <div class="upload-overlay">
+                            <div class="spinner"></div>
+                          </div>
+                        }
+                      </div>
+                    } @else {
+                      <button type="button" class="gallery-placeholder" [disabled]="uploadingGallery$ | async" (click)="galleryInput.click()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                          <line x1="12" y1="5" x2="12" y2="19"/>
+                          <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+
+              <input #galleryInput type="file" accept="image/jpeg,image/jpg,image/png,image/webp" class="hidden-file-input" multiple (change)="onGalleryImagesSelected($event)" />
+            </div>
+          </div>
+
+          <!-- Recomendaciones -->
+          <div class="images-tips">
+            <p class="images-tips-title">💡 Recomendaciones</p>
+            <ul class="images-tips-list">
+              <li>Usa imágenes de alta calidad (mínimo 800×600 píxeles)</li>
+              <li>La imagen principal será la portada de tu perfil</li>
+              <li>Muestra tus productos y tu espacio de trabajo</li>
+              <li>Formatos aceptados: JPG, PNG, WebP</li>
+            </ul>
+          </div>
+
+        </div>
+      }
+    </form>
+    </main>
+  </div>
+</div>
+
+<!-- ─── Modal: Confirmación de cerrar sesión ─── -->
+@if (showLogoutModal) {
+  <div class="leave-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="logoutModalTitle" (click)="cancelLogout()">
+    <div class="leave-modal" (click)="$event.stopPropagation()">
+      <div class="leave-modal-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+      </div>
+      <h3 id="logoutModalTitle" class="leave-modal-title">¿Cerrar sesión?</h3>
+      <p class="leave-modal-message">
+        @if (editMode) {
+          Estás en modo edición. Si cierras sesión ahora,
+          <strong>se perderán los cambios no guardados</strong>.
+        } @else {
+          ¿Estás seguro de que quieres cerrar la sesión?
+        }
+      </p>
+      <div class="leave-modal-actions">
+        <button type="button" class="btn btn-danger" (click)="confirmLogout()" [disabled]="isLoggingOut">
+          @if (isLoggingOut) {
+            Cerrando sesión...
+          } @else {
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Cerrar sesión
+          }
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="cancelLogout()" [disabled]="isLoggingOut">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ─── Modal: Confirmación al salir con datos sin guardar ─── -->
+@if (showLeaveModal) {
+  <div class="leave-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="leaveModalTitle">
+    <div class="leave-modal">
+      <div class="leave-modal-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <h3 id="leaveModalTitle" class="leave-modal-title">¿Salir sin guardar?</h3>
+      <p class="leave-modal-message">
+        Estás en modo edición. Si abandonas esta página ahora,
+        <strong>se perderán los cambios no guardados</strong>.
+      </p>
+      <div class="leave-modal-actions">
+        <button type="button" class="btn btn-danger" (click)="confirmLeave()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Salir sin guardar
+        </button>
+        <button type="button" class="btn btn-success" (click)="saveAndStay()" [disabled]="saving">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+            <polyline points="17 21 17 13 7 13 7 21"/>
+            <polyline points="7 3 7 8 15 8"/>
+          </svg>
+          Guardar y quedarse
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="stayWithoutSaving()">
+          Seguir editando
+        </button>
+      </div>
+    </div>
+  </div>
+}

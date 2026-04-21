@@ -26,7 +26,8 @@ export class App {
       || url.startsWith('/mis-productos')
       || url.startsWith('/mis-pedidos-productor')
       || url.startsWith('/estadisticas-productor')
-      || url.startsWith('/calendario-productor');
+      || url.startsWith('/calendario-productor')
+      || url.startsWith('/vista-negocio');
   }
 
   isProfileRoute(): boolean {

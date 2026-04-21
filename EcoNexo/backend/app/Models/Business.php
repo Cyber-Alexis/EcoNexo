@@ -17,6 +17,7 @@ class Business extends Model
         'city',
         'postal_code',
         'phone',
+        'contact_person_name',
         'website',
         'opening_hours',
         'status',

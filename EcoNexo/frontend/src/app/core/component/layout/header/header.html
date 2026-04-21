@@ -15,16 +15,18 @@
     <li><a routerLink="/about" routerLinkActive="active">Sobre Nosotros</a></li>
   </ul>
   <div class="nav-right">
-    <button class="icon-btn cart-btn" (click)="openCart()" aria-label="Abrir carrito">
-      <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
-        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" stroke="#374151" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-        <line x1="3" y1="6" x2="21" y2="6" stroke="#374151" stroke-width="1.6" stroke-linecap="round"/>
-        <path d="M16 10a4 4 0 0 1-8 0" stroke="#374151" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      @if (cartCount > 0) {
-        <span class="cart-badge">{{ cartCount }}</span>
-      }
-    </button>
+    @if (currentUser?.role !== 'business') {
+      <button class="icon-btn cart-btn" (click)="openCart()" aria-label="Abrir carrito">
+        <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
+          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" stroke="#374151" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="3" y1="6" x2="21" y2="6" stroke="#374151" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M16 10a4 4 0 0 1-8 0" stroke="#374151" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        @if (cartCount > 0) {
+          <span class="cart-badge">{{ cartCount }}</span>
+        }
+      </button>
+    }
     @if (!isLoggedIn) {
       <a routerLink="/login" routerLinkActive="login-link--active" [routerLinkActiveOptions]="{ exact: true }" class="login-link">
         <svg viewBox="0 0 24 24" fill="none">
@@ -73,13 +75,15 @@
               </svg>
               {{ currentUser?.role === 'business' ? 'Mi Negocio' : 'Mi Perfil' }}
             </a>
-            <a routerLink="/negocios" class="dropdown-item" (click)="dropdownOpen = false">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M3 9.5L12 4l9 5.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M9 22V12h6v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              Volver a la tienda
-            </a>
+            @if (currentUser?.role !== 'business') {
+              <a routerLink="/negocios" class="dropdown-item" (click)="dropdownOpen = false">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M3 9.5L12 4l9 5.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M9 22V12h6v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Volver a la tienda
+              </a>
+            }
             <button class="dropdown-item dropdown-item--danger" (click)="logout()">
               <svg viewBox="0 0 24 24" fill="none">
                 <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
