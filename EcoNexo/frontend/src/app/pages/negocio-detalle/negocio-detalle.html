@@ -150,7 +150,7 @@
         <h2 class="section-title">Galería</h2>
         @if (business.images && business.images.length > 0) {
           <div class="gallery-grid">
-            @for (img of business.images; track img.id) {
+            @for (img of sortedGalleryImages; track img.id) {
               <div class="gallery-item">
                 <img [src]="galleryImage(img)" [alt]="'Imagen del negocio'" class="gallery-img" loading="lazy" />
               </div>

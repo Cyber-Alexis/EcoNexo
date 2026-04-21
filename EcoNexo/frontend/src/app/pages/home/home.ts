@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { BusinessService } from '../../core/services/business.service';
 import { ApiBusinessListItem } from '../../core/models/business.model';
+import { getMainImageUrl } from '../../core/utils/image.utils';
 
 @Component({
   selector: 'app-home',
@@ -67,7 +68,7 @@ export class Home implements OnInit {
   }
 
   businessImage(b: ApiBusinessListItem): string {
-    return b.images?.[0]?.path ?? 'https://placehold.co/500x300?text=Sin+imagen';
+    return getMainImageUrl(b.images ?? []);
   }
 }
 

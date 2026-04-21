@@ -8,6 +8,7 @@ import { BusinessService } from '../../core/services/business.service';
 import { CartService } from '../../core/services/cart.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ApiBusiness, ApiImage, ApiProduct } from '../../core/models/business.model';
+import { getMainImageUrl, getGalleryImageUrl, getProductImageUrl, sortedBusinessImages } from '../../core/utils/image.utils';
 import { environment } from '../../../environments/environment';
 import { Subscription, interval } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
@@ -145,17 +146,19 @@ export class NegocioDetalle implements OnInit, OnDestroy {
   }
 
   productImage(images: ApiImage[]): string {
-    const img = images?.[0];
-    return img?.url || img?.path || 'https://placehold.co/80x80?text=Sin+imagen';
+    return getProductImageUrl(images);
   }
 
   mainGalleryImage(): string {
-    const img = this.business?.images?.[0];
-    return img?.url || img?.path || 'https://placehold.co/800x450?text=Sin+imagen';
+    return getMainImageUrl(this.business?.images ?? []);
   }
 
   galleryImage(image: ApiImage): string {
-    return image?.url || image?.path || 'https://placehold.co/400x300?text=Sin+imagen';
+    return getGalleryImageUrl(image);
+  }
+
+  get sortedGalleryImages(): ApiImage[] {
+    return sortedBusinessImages(this.business?.images ?? []);
   }
 
   get businessCategories(): string[] {

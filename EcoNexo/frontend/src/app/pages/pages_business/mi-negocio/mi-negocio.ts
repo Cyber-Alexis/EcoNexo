@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { finalize, timeout } from 'rxjs/operators';
 import { ApiBusiness, ApiImage } from '../../../core/models/business.model';
 import { AuthService } from '../../../core/services/auth.service';
@@ -64,6 +64,14 @@ export class MiNegocio implements OnInit, CanComponentDeactivate {
   editMode = false;
   private originalFormValues: any = null;
 
+  // Modal de confirmación al navegar fuera en modo edición
+  showLeaveModal = false;
+  private leaveDecision$ = new Subject<boolean>();
+
+  // Modal de confirmación de logout + flag anti-spam
+  showLogoutModal = false;
+  isLoggingOut = false;
+
   private readonly uploadingMainSubject = new BehaviorSubject<boolean>(false);
   private readonly uploadingGallerySubject = new BehaviorSubject<boolean>(false);
   private readonly mainImageSubject = new BehaviorSubject<ApiImage | null>(null);
@@ -101,6 +109,7 @@ export class MiNegocio implements OnInit, CanComponentDeactivate {
   });
 
   ngOnInit(): void {
+    this.form.get('category_name')?.disable(); // modo lectura por defecto
     this.prefillFromSession();
     this.loadBusiness();
   }
@@ -279,6 +288,7 @@ export class MiNegocio implements OnInit, CanComponentDeactivate {
    */
   enterEditMode(): void {
     this.editMode = true;
+    this.form.get('category_name')?.enable();
     this.successMessage = '';
     this.errorMessage = '';
   }
@@ -301,6 +311,7 @@ export class MiNegocio implements OnInit, CanComponentDeactivate {
     });
     
     this.editMode = false;
+    this.form.get('category_name')?.disable();
     this.successMessage = '';
     this.errorMessage = '';
   }
@@ -344,6 +355,7 @@ export class MiNegocio implements OnInit, CanComponentDeactivate {
         this.successMessage = 'Cambios guardados correctamente.';
         // Volver a modo lectura después de guardar
         this.editMode = false;
+        this.form.get('category_name')?.disable();
         this.form.markAsPristine();
         this.form.markAsUntouched();
       },
@@ -482,10 +494,34 @@ export class MiNegocio implements OnInit, CanComponentDeactivate {
   }
 
   onLogout(): void {
+    if (this.isLoggingOut) return;
+    if (this.editMode) {
+      // En modo edición mostramos el modal de confirmación
+      if (this.showLogoutModal) return;
+      this.showLogoutModal = true;
+    } else {
+      // Fuera de modo edición cerramos sesión directamente
+      this.confirmLogout();
+    }
+  }
+
+  confirmLogout(): void {
+    if (this.isLoggingOut) return;
+    this.isLoggingOut = true;
+    this.showLogoutModal = false;
+    this.editMode = false; // evitar que CanDeactivate intercepte la navegación siguiente
+
     this.authService.logout().subscribe({
       next: () => this.router.navigate(['/login']),
-      error: () => this.router.navigate(['/login']),
+      error: () => {
+        // 401 o cualquier error: token ya expirado — limpiar sesión igualmente
+        this.router.navigate(['/login']);
+      },
     });
+  }
+
+  cancelLogout(): void {
+    this.showLogoutModal = false;
   }
 
   // ──────────────────────────────────────────────────────────────
@@ -531,10 +567,47 @@ export class MiNegocio implements OnInit, CanComponentDeactivate {
   }
 
   /**
-   * Método requerido por CanComponentDeactivate
-   * Retorna true si se puede navegar, false si hay cambios sin guardar
+   * Método requerido por CanComponentDeactivate.
+   * Si estamos en modo edición, muestra un modal de confirmación.
+   * Retorna Observable<boolean> para que el guard espere la decisión del usuario.
    */
-  canDeactivate(): boolean {
-    return !this.hasUnsavedChanges();
+  canDeactivate(): boolean | Observable<boolean> {
+    if (!this.editMode) {
+      return true;
+    }
+    this.showLeaveModal = true;
+    this.leaveDecision$ = new Subject<boolean>();
+    return this.leaveDecision$.asObservable();
+  }
+
+  /**
+   * El usuario confirma que quiere salir sin guardar.
+   * Permite la navegación y resetea el estado de edición.
+   */
+  confirmLeave(): void {
+    this.editMode = false;
+    this.showLeaveModal = false;
+    this.leaveDecision$.next(true);
+    this.leaveDecision$.complete();
+  }
+
+  /**
+   * El usuario decide quedarse y guardar los datos.
+   * Bloquea la navegación y dispara el guardado.
+   */
+  saveAndStay(): void {
+    this.showLeaveModal = false;
+    this.leaveDecision$.next(false);
+    this.leaveDecision$.complete();
+    this.onSave();
+  }
+
+  /**
+   * El usuario decide quedarse sin guardar (solo cierra el modal).
+   */
+  stayWithoutSaving(): void {
+    this.showLeaveModal = false;
+    this.leaveDecision$.next(false);
+    this.leaveDecision$.complete();
   }
 }

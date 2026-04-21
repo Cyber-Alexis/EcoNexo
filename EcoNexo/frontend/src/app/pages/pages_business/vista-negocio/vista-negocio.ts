@@ -6,6 +6,7 @@ import { HttpClient } from '@angular/common/http';
 import { BusinessService } from '../../../core/services/business.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ApiBusiness, ApiImage, ApiProduct } from '../../../core/models/business.model';
+import { getMainImageUrl, getGalleryImageUrl, getProductImageUrl } from '../../../core/utils/image.utils';
 import { environment } from '../../../../environments/environment';
 import { Router } from '@angular/router';
 import { BusinessSidebar } from '../business-sidebar/business-sidebar';
@@ -106,17 +107,15 @@ export class VistaNegocio implements OnInit {
   }
 
   productImage(images: ApiImage[]): string {
-    const img = images?.[0];
-    return img?.url || img?.path || 'https://placehold.co/80x80?text=Sin+imagen';
+    return getProductImageUrl(images);
   }
 
   mainGalleryImage(): string {
-    const img = this.business?.images?.[0];
-    return img?.url || img?.path || 'https://placehold.co/800x450?text=Sin+imagen';
+    return getMainImageUrl(this.business?.images ?? []);
   }
 
   galleryImage(image: ApiImage): string {
-    return image?.url || image?.path || 'https://placehold.co/400x300?text=Sin+imagen';
+    return getGalleryImageUrl(image);
   }
 
   get businessCategories(): string[] {

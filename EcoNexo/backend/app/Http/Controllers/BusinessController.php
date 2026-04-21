@@ -47,7 +47,7 @@ class BusinessController extends Controller
     {
         $business->load([
             'user:id,name,last_name,email',
-            'images',
+            'images' => fn ($q) => $q->orderBy('type', 'desc')->orderBy('position'),
             'categories' => fn ($q) => $q->select(['id', 'business_id', 'name']),
             'products' => fn ($q) => $q->where('active', true)->with('images'),
             'reviews' => fn ($q) => $q->with('user')->latest()->limit(20),
