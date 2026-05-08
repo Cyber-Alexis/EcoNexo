@@ -34,6 +34,9 @@ export class VistaNegocio implements OnInit {
   private cdr = inject(ChangeDetectorRef);
 
   ngOnInit() {
+    // DEBUG: Verificar estado inicial
+    console.log('[VISTA-NEGOCIO] ngOnInit');
+    
     this.loadMyBusiness();
   }
 

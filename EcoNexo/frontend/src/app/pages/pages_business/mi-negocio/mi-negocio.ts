@@ -110,8 +110,23 @@ export class MiNegocio implements OnInit, CanComponentDeactivate {
 
   ngOnInit(): void {
     this.form.get('category_name')?.disable(); // modo lectura por defecto
+    
+    // FIX: Forzar cierre de todos los modales al iniciar (prevenir bugs de estado)
+    this.showLogoutModal = false;
+    this.showLeaveModal = false;
+    this.editMode = false;
+    this.isLoggingOut = false;
+    
     this.prefillFromSession();
     this.loadBusiness();
+    
+    // DEBUG: Verificar estado inicial de modales y modo edición
+    console.log('[MI-NEGOCIO] ngOnInit - Estado inicial:', {
+      editMode: this.editMode,
+      showLogoutModal: this.showLogoutModal,
+      showLeaveModal: this.showLeaveModal,
+      isLoggingOut: this.isLoggingOut
+    });
   }
 
   get businessHeaderName(): string {

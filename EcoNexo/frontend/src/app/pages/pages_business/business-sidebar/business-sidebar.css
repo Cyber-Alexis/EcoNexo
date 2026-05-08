@@ -8,6 +8,7 @@
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.25s ease;
+  visibility: hidden; /* FIX: Asegurar que esté oculto por defecto */
 }
 
 /* ─── Sidebar ─── */
@@ -185,6 +186,7 @@
   .sidebar-backdrop.visible {
     opacity: 1;
     pointer-events: auto;
+    visibility: visible; /* FIX: Solo visible cuando tiene clase .visible */
   }
 
   /* Sidebar becomes a fixed left-side drawer */
