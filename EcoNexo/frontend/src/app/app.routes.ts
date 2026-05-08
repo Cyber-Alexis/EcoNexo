@@ -1,44 +1,63 @@
 import { Routes } from '@angular/router';
+import { Login } from './pages/login/login';
+import { RegisterCliente } from './pages/register-cliente/register-cliente';
+import { RegisterNegocio } from './pages/register-negocio/register-negocio';
+import { BusinessDashboard } from './pages/business-dashboard/business-dashboard';
+import { MisProductos } from './pages/mis-productos/mis-productos';
+import { MisPedidosProductor } from './pages/mis-pedidos-productor/mis-pedidos-productor';
+import { EstadisticasProductor } from './pages/estadisticas-productor/estadisticas-productor';
+import { CalendarioProductor } from './pages/calendario-productor/calendario-productor';
+import { MiNegocio } from './pages/pages_business/mi-negocio/mi-negocio';
+import { VistaNegocio } from './pages/pages_business/vista-negocio/vista-negocio';
+import { Home } from './pages/home/home';
+import { Negocios } from './pages/negocios/negocios';
+import { Productos } from './pages/productos/productos';
+import { About } from './pages/about/about';
+import { NegocioDetalle } from './pages/negocio-detalle/negocio-detalle';
+import { Perfil } from './pages/pages_consumer/perfil/perfil';
+import { Configuracion } from './pages/pages_consumer/configuracion/configuracion';
+import { MisResenas } from './pages/pages_consumer/mis-resenas/mis-resenas';
+import { MisPedidos } from './pages/pages_consumer/mis-pedidos/mis-pedidos';
+import { Admin } from './pages/admin/admin';
 import { adminGuard } from './core/guards/admin.guard';
-import { authGuard } from './core/guards/auth.guard';
 import { businessGuard } from './core/guards/business.guard';
-import { canDeactivateMiNegocioGuard } from './core/guards/can-deactivate-mi-negocio.guard';
+import { noBusinessGuard } from './core/guards/no-business.guard';
+import { Checkout } from './pages/proceso_pago/checkout/checkout';
+import { authGuard } from './core/guards/auth.guard';
 import { checkoutGuard } from './core/guards/checkout.guard';
 import { guestGuard } from './core/guards/guest.guard';
-import { noBusinessGuard } from './core/guards/no-business.guard';
+import { ForgotPassword } from './pages/forgot-password/forgot-password';
+import { canDeactivateMiNegocioGuard } from './core/guards/can-deactivate-mi-negocio.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
-
-  // Auth
-  { path: 'login', loadComponent: () => import('./pages/login/login').then(m => m.Login), canActivate: [guestGuard] },
-  { path: 'forgot-password', loadComponent: () => import('./pages/forgot-password/forgot-password').then(m => m.ForgotPassword), canActivate: [guestGuard] },
+  { path: 'login', component: Login, canActivate: [guestGuard] },
+  { path: 'forgot-password', component: ForgotPassword, canActivate: [guestGuard] },
   { path: 'register', redirectTo: 'register/cliente', pathMatch: 'full' },
-  { path: 'register/cliente', loadComponent: () => import('./pages/register-cliente/register-cliente').then(m => m.RegisterCliente), canActivate: [guestGuard] },
-  { path: 'register/negocio', loadComponent: () => import('./pages/register-negocio/register-negocio').then(m => m.RegisterNegocio), canActivate: [guestGuard] },
-
-  // Business dashboard
-  { path: 'mi-negocio', loadComponent: () => import('./pages/pages_business/mi-negocio/mi-negocio').then(m => m.MiNegocio), canActivate: [businessGuard], canDeactivate: [canDeactivateMiNegocioGuard] },
-  { path: 'vista-negocio', loadComponent: () => import('./pages/pages_business/vista-negocio/vista-negocio').then(m => m.VistaNegocio), canActivate: [businessGuard] },
-  { path: 'mis-productos', loadComponent: () => import('./pages/mis-productos/mis-productos').then(m => m.MisProductos), canActivate: [businessGuard] },
-  { path: 'mis-pedidos-productor', loadComponent: () => import('./pages/mis-pedidos-productor/mis-pedidos-productor').then(m => m.MisPedidosProductor), canActivate: [businessGuard] },
-  { path: 'estadisticas-productor', loadComponent: () => import('./pages/estadisticas-productor/estadisticas-productor').then(m => m.EstadisticasProductor), canActivate: [businessGuard] },
-  { path: 'calendario-productor', loadComponent: () => import('./pages/calendario-productor/calendario-productor').then(m => m.CalendarioProductor), canActivate: [businessGuard] },
-
-  // Public / Consumer
-  { path: 'home', loadComponent: () => import('./pages/home/home').then(m => m.Home), canActivate: [noBusinessGuard] },
-  { path: 'negocios', loadComponent: () => import('./pages/negocios/negocios').then(m => m.Negocios), canActivate: [noBusinessGuard] },
-  { path: 'negocios/:id', loadComponent: () => import('./pages/negocio-detalle/negocio-detalle').then(m => m.NegocioDetalle), canActivate: [noBusinessGuard] },
-  { path: 'productos', loadComponent: () => import('./pages/productos/productos').then(m => m.Productos), canActivate: [noBusinessGuard] },
-  { path: 'about', loadComponent: () => import('./pages/about/about').then(m => m.About) },
-  { path: 'perfil', loadComponent: () => import('./pages/pages_consumer/perfil/perfil').then(m => m.Perfil), canActivate: [noBusinessGuard] },
-  { path: 'mis-resenas', loadComponent: () => import('./pages/pages_consumer/mis-resenas/mis-resenas').then(m => m.MisResenas), canActivate: [authGuard, noBusinessGuard] },
-  { path: 'mis-pedidos', loadComponent: () => import('./pages/pages_consumer/mis-pedidos/mis-pedidos').then(m => m.MisPedidos), canActivate: [authGuard, noBusinessGuard] },
-  { path: 'configuracion', loadComponent: () => import('./pages/pages_consumer/configuracion/configuracion').then(m => m.Configuracion), canActivate: [noBusinessGuard] },
-
-  // Admin
-  { path: 'admin', loadComponent: () => import('./pages/admin/admin').then(m => m.Admin), canActivate: [adminGuard] },
-
-  // Checkout
-  { path: 'checkout', loadComponent: () => import('./pages/proceso_pago/checkout/checkout').then(m => m.Checkout), canActivate: [authGuard, checkoutGuard] },
+  { path: 'register/cliente', component: RegisterCliente },
+  { path: 'register/negocio', component: RegisterNegocio },
+  { path: 'mi-negocio', component: BusinessDashboard, canActivate: [businessGuard] },
+  { path: 'mis-productos', component: MisProductos, canActivate: [businessGuard] },
+  { path: 'mis-pedidos-productor', component: MisPedidosProductor, canActivate: [businessGuard] },
+  { path: 'estadisticas-productor', component: EstadisticasProductor, canActivate: [businessGuard] },
+  { path: 'calendario-productor', component: CalendarioProductor, canActivate: [businessGuard] },
+  { path: 'home', component: Home },
+  { path: 'negocios', component: Negocios },
+  { path: 'negocios/:id', component: NegocioDetalle },
+  { path: 'productos', component: Productos },
+  { path: 'register/cliente', component: RegisterCliente, canActivate: [guestGuard] },
+  { path: 'register/negocio', component: RegisterNegocio, canActivate: [guestGuard] },
+  { path: 'mi-negocio', component: MiNegocio, canActivate: [businessGuard], canDeactivate: [canDeactivateMiNegocioGuard] },
+  { path: 'vista-negocio', component: VistaNegocio, canActivate: [businessGuard] },
+  { path: 'home', component: Home, canActivate: [noBusinessGuard] },
+  { path: 'negocios', component: Negocios, canActivate: [noBusinessGuard] },
+  { path: 'negocios/:id', component: NegocioDetalle, canActivate: [noBusinessGuard] },
+  { path: 'productos', component: Productos, canActivate: [noBusinessGuard] },
+  { path: 'about', component: About },
+  { path: 'perfil', component: Perfil, canActivate: [noBusinessGuard] },
+  { path: 'mis-resenas', component: MisResenas, canActivate: [authGuard, noBusinessGuard] },
+  { path: 'mis-pedidos', component: MisPedidos, canActivate: [authGuard, noBusinessGuard] },
+  { path: 'configuracion', component: Configuracion, canActivate: [noBusinessGuard] },
+  { path: 'admin', component: Admin, canActivate: [adminGuard] },
+  { path: 'checkout', component: Checkout, canActivate: [authGuard, checkoutGuard] },
 ];
