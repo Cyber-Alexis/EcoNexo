@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\miquelsimoz\\\\Documents\\\\GitHub\\\\EcoNexo\\\\EcoNexo\" -Force)",
+      "Bash(Select-Object Name, PSIsContainer)",
+      "Bash(npx ng *)",
+      "Bash(npm install *)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\miquelsimoz\\\\Documents\\\\GitHub\\\\EcoNexo\\\\EcoNexo\\\\frontend\\\\src\\\\app\" -Recurse -Filter \"*header*\" -File)"
+    ]
+  }
+}

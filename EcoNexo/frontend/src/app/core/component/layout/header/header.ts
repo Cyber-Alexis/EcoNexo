@@ -1,7 +1,7 @@
 import { Component, HostListener, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { filter, Subject, takeUntil } from 'rxjs';
 import { AuthService, AuthUser } from '../../../services/auth.service';
 import { CartService } from '../../../services/cart.service';
 import { environment } from '../../../../../environments/environment';
@@ -25,6 +25,7 @@ export class Header implements OnInit, OnDestroy {
   notificationCount = 0;
   cartCount = 0;
   currentUser: AuthUser | null = null;
+  currentLang = 'es';
 
   ngOnInit(): void {
     this.cartService.items$.subscribe(() => {
@@ -36,6 +37,21 @@ export class Header implements OnInit, OnDestroy {
     });
 
     this.loadNotificationState();
+
+    const saved = localStorage.getItem('econexo_lang') ?? this.getLangFromCookie();
+    this.currentLang = saved;
+    if (saved !== 'es') {
+      setTimeout(() => this.applyTranslation(saved), 600);
+    }
+
+    this.router.events.pipe(
+      filter(e => e instanceof NavigationEnd),
+      takeUntil(this.destroy$),
+    ).subscribe(() => {
+      if (this.currentLang !== 'es') {
+        setTimeout(() => this.applyTranslation(this.currentLang), 150);
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -113,6 +129,32 @@ export class Header implements OnInit, OnDestroy {
 
   get hasUnreadNotifications(): boolean {
     return this.notificationCount > 0;
+  }
+
+  translateTo(lang: string): void {
+    if (lang === this.currentLang) return;
+    this.currentLang = lang;
+    if (lang === 'es') {
+      localStorage.removeItem('econexo_lang');
+    } else {
+      localStorage.setItem('econexo_lang', lang);
+    }
+    this.applyTranslation(lang);
+  }
+
+  private applyTranslation(lang: string): void {
+    const select = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+    if (!select) {
+      setTimeout(() => this.applyTranslation(lang), 300);
+      return;
+    }
+    select.value = lang;
+    select.dispatchEvent(new Event('change'));
+  }
+
+  private getLangFromCookie(): string {
+    const match = document.cookie.match(/googtrans=\/[a-z-]+\/([a-z-]+)/);
+    return match ? match[1] : 'es';
   }
 
   private loadNotificationState(): void {

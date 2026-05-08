@@ -15,6 +15,20 @@
     <li><a routerLink="/about" routerLinkActive="active">Sobre Nosotros</a></li>
   </ul>
   <div class="nav-right">
+    <!-- Language selector -->
+    <div class="lang-selector notranslate" translate="no" (click)="$event.stopPropagation()">
+      <svg class="lang-globe" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M8 1.5C8 1.5 5.8 4.5 5.8 8C5.8 11.5 8 14.5 8 14.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M8 1.5C8 1.5 10.2 4.5 10.2 8C10.2 11.5 8 14.5 8 14.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M1.5 8H14.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M2.2 5.5H13.8M2.2 10.5H13.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      <button class="lang-btn notranslate" translate="no" [class.lang-btn--active]="currentLang === 'es'" (click)="translateTo('es')">ES</button>
+      <button class="lang-btn notranslate" translate="no" [class.lang-btn--active]="currentLang === 'ca'" (click)="translateTo('ca')">CA</button>
+      <button class="lang-btn notranslate" translate="no" [class.lang-btn--active]="currentLang === 'en'" (click)="translateTo('en')">ENG</button>
+    </div>
+
     @if (currentUser?.role !== 'business') {
       <button class="icon-btn cart-btn" (click)="openCart()" aria-label="Abrir carrito">
         <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
