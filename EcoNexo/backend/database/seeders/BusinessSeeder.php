@@ -45,7 +45,7 @@ class BusinessSeeder extends Seeder
                 'img_gallery' => [
                     'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=800&auto=format&fit=crop',
                     'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800&auto=format&fit=crop',
-                    'https://images.unsplash.com/photo-1585518419759-aedc8dbd1e5a?w=800&auto=format&fit=crop',
+                    'https://images.pexels.com/photos/4716795/pexels-photo-4716795.jpeg',
                 ],
                 'categories' => [
                     ['name' => 'Pan y Pastelería', 'description' => 'Pan artesano y productos de repostería'],
@@ -64,7 +64,7 @@ class BusinessSeeder extends Seeder
                 'status'      => 'active',
                 'img_main'    => 'https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=800&auto=format&fit=crop',
                 'img_gallery' => [
-                    'https://images.unsplash.com/photo-1595217707533-1d36f4f46117?w=800&auto=format&fit=crop',
+                    'https://images.pexels.com/photos/36789950/pexels-photo-36789950.jpeg',
                     'https://images.unsplash.com/photo-1474722883778-792e7990302f?w=800&auto=format&fit=crop',
                     'https://images.unsplash.com/photo-1547595628-c61a29f496f0?w=800&auto=format&fit=crop',
                 ],
@@ -83,11 +83,11 @@ class BusinessSeeder extends Seeder
                 'phone'       => '973456789',
                 'opening_hours' => 'Lun-Vie: 8:30-14:00, 17:00-20:00, Sáb: 8:30-14:00',
                 'status'      => 'active',
-                'img_main'    => 'https://images.unsplash.com/photo-1568835300971-f2f70d2c2ffe?w=800&auto=format&fit=crop',
+                'img_main'    => 'https://www.albesim.com/wp-content/uploads/2024/10/Fotos12.jpg',
                 'img_gallery' => [
                     'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=800&auto=format&fit=crop',
                     'https://images.unsplash.com/photo-1564859228273-274232fdb516?w=800&auto=format&fit=crop',
-                    'https://images.unsplash.com/photo-1560781290-7dc94c0f8f4f?w=800&auto=format&fit=crop',
+                    'https://images.unsplash.com/photo-1560781290-7dc94c0f8f4f?w=800&q=80',
                 ],
                 'categories' => [
                     ['name' => 'Carne y Embutidos', 'description' => 'Carne fresca y productos cárnicos'],
@@ -106,8 +106,8 @@ class BusinessSeeder extends Seeder
                 'status'      => 'active',
                 'img_main'    => 'https://images.unsplash.com/photo-1563241527-3004b7be0ffd?w=800&auto=format&fit=crop',
                 'img_gallery' => [
-                    'https://images.unsplash.com/photo-1577279607108-7b3e14675d94?w=800&auto=format&fit=crop',
-                    'https://images.unsplash.com/photo-1487530811015-780c99e72b10?w=800&auto=format&fit=crop',
+                    'https://images.pexels.com/photos/29466625/pexels-photo-29466625.jpeg',
+                    'https://images.pexels.com/photos/31118380/pexels-photo-31118380.jpeg',
                     'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=800&auto=format&fit=crop',
                 ],
                 'categories' => [
