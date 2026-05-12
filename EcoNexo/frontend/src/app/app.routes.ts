@@ -2,11 +2,10 @@ import { Routes } from '@angular/router';
 import { Login } from './pages/login/login';
 import { RegisterCliente } from './pages/register-cliente/register-cliente';
 import { RegisterNegocio } from './pages/register-negocio/register-negocio';
-import { BusinessDashboard } from './pages/business-dashboard/business-dashboard';
-import { MisProductos } from './pages/mis-productos/mis-productos';
-import { MisPedidosProductor } from './pages/mis-pedidos-productor/mis-pedidos-productor';
-import { EstadisticasProductor } from './pages/estadisticas-productor/estadisticas-productor';
-import { CalendarioProductor } from './pages/calendario-productor/calendario-productor';
+import { MisProductos } from './pages/pages_business/mis-productos/mis-productos';
+import { MisPedidosProductor } from './pages/pages_business/mis-pedidos-productor/mis-pedidos-productor';
+import { EstadisticasProductor } from './pages/pages_business/estadisticas-productor/estadisticas-productor';
+import { CalendarioProductor } from './pages/pages_business/calendario-productor/calendario-productor';
 import { MiNegocio } from './pages/pages_business/mi-negocio/mi-negocio';
 import { VistaNegocio } from './pages/pages_business/vista-negocio/vista-negocio';
 import { Home } from './pages/home/home';
@@ -34,21 +33,14 @@ export const routes: Routes = [
   { path: 'login', component: Login, canActivate: [guestGuard] },
   { path: 'forgot-password', component: ForgotPassword, canActivate: [guestGuard] },
   { path: 'register', redirectTo: 'register/cliente', pathMatch: 'full' },
-  { path: 'register/cliente', component: RegisterCliente },
-  { path: 'register/negocio', component: RegisterNegocio },
-  { path: 'mi-negocio', component: BusinessDashboard, canActivate: [businessGuard] },
-  { path: 'mis-productos', component: MisProductos, canActivate: [businessGuard] },
-  { path: 'mis-pedidos-productor', component: MisPedidosProductor, canActivate: [businessGuard] },
-  { path: 'estadisticas-productor', component: EstadisticasProductor, canActivate: [businessGuard] },
-  { path: 'calendario-productor', component: CalendarioProductor, canActivate: [businessGuard] },
-  { path: 'home', component: Home },
-  { path: 'negocios', component: Negocios },
-  { path: 'negocios/:id', component: NegocioDetalle },
-  { path: 'productos', component: Productos },
   { path: 'register/cliente', component: RegisterCliente, canActivate: [guestGuard] },
   { path: 'register/negocio', component: RegisterNegocio, canActivate: [guestGuard] },
   { path: 'mi-negocio', component: MiNegocio, canActivate: [businessGuard], canDeactivate: [canDeactivateMiNegocioGuard] },
   { path: 'vista-negocio', component: VistaNegocio, canActivate: [businessGuard] },
+  { path: 'mis-productos', component: MisProductos, canActivate: [businessGuard] },
+  { path: 'mis-pedidos-productor', component: MisPedidosProductor, canActivate: [businessGuard] },
+  { path: 'estadisticas-productor', component: EstadisticasProductor, canActivate: [businessGuard] },
+  { path: 'calendario-productor', component: CalendarioProductor, canActivate: [businessGuard] },
   { path: 'home', component: Home, canActivate: [noBusinessGuard] },
   { path: 'negocios', component: Negocios, canActivate: [noBusinessGuard] },
   { path: 'negocios/:id', component: NegocioDetalle, canActivate: [noBusinessGuard] },

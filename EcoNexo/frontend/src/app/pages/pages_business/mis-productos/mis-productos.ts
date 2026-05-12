@@ -5,8 +5,8 @@ import { RouterLink, Router, NavigationEnd } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, combineLatest, Subject } from 'rxjs';
 import { map, debounceTime, distinctUntilChanged, filter, takeUntil } from 'rxjs/operators';
-import { environment } from '../../../environments/environment';
-import { AuthService } from '../../core/services/auth.service';
+import { environment } from '../../../../environments/environment';
+import { AuthService } from '../../../core/services/auth.service';
 
 interface ProductImage {
   id: number;
