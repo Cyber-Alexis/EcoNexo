@@ -895,23 +895,38 @@
   }
 }
 
-/* Mobile small screens (iPhone SE, etc.) */
-@media (max-width: 425px) {
+/* Mobile small screens (iPhone SE, etc.) - Grid 2x2 */
+@media (max-width: 480px) {
   .tabs-actions {
     width: 100%;
-    gap: 0.4rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.6rem;
   }
 
   .tabs-actions .btn {
-    flex: 1 1 0;
-    min-width: 0;
-    padding: 0.65rem 0.5rem;
+    padding: 0.7rem 0.5rem;
     font-size: 0.8rem;
+    white-space: normal;
+    word-wrap: break-word;
+    text-align: center;
+    min-height: 44px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
   }
 
   .tabs-actions .btn svg {
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
+  /* Botón "Ver Perfil Público" ocupa las 2 columnas en la primera fila */
+  .tabs-actions .btn-secondary {
+    grid-column: 1 / -1;
   }
 
   /* Mobile small: 2 columns × 3 rows (compact) */

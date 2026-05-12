@@ -1,12 +1,11 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject, } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Subject, interval, takeUntil, startWith } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
-import { environment } from '../../../../environments/environment';
-
+import { environment } from '../../../../environments/environment';import { BusinessSidebar } from '../business-sidebar/business-sidebar';
 interface Kpis {
   total_revenue: number;
   completed_orders: number;
@@ -51,7 +50,7 @@ interface StatsData {
   selector: 'app-estadisticas-productor',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, BusinessSidebar],
   templateUrl: './estadisticas-productor.html',
   styleUrl: './estadisticas-productor.css',
 })
@@ -62,6 +61,17 @@ export class EstadisticasProductor implements OnInit, OnDestroy {
   private cdr         = inject(ChangeDetectorRef);
   private base        = environment.apiUrl;
   private destroy$    = new Subject<void>();
+
+  get businessHeaderName(): string {
+    return this.authService.getUser()?.business_name?.trim() || 'Mi Negocio';
+  }
+
+  onLogout(): void {
+    this.authService.logout().subscribe({
+      next: () => this.router.navigate(['/login']),
+      error: (err) => console.error('Logout error:', err)
+    });
+  }
 
   loading   = true;
   data: StatsData | null = null;
@@ -111,9 +121,5 @@ export class EstadisticasProductor implements OnInit, OnDestroy {
 
   isFilled(star: number, rating: number): boolean {
     return star <= Math.round(rating);
-  }
-
-  onLogout(): void {
-    this.authService.logout().subscribe({ complete: () => this.router.navigate(['/login']) });
   }
 }
