@@ -751,19 +751,30 @@
 /* ── States ──────────────────────────────────── */
 .loading-state,
 .not-found {
-  min-height: 40vh;
+  min-height: 60vh;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
   color: #6B7280;
   gap: 0.5rem;
+  padding: 3rem 1.5rem;
+}
+
+.not-found .container {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
 }
 
 .not-found h2 {
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   color: #172033;
-  margin-bottom: 1rem;
+  margin: 0;
+  font-weight: 700;
+  line-height: 1.3;
 }
 
 .btn-back {
@@ -771,14 +782,18 @@
   background: #2D6A4F;
   color: #fff;
   text-decoration: none;
-  padding: 0.65rem 1.5rem;
-  border-radius: 8px;
+  padding: 0.875rem 2rem;
+  border-radius: 10px;
   font-weight: 600;
-  transition: background 0.15s;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(45, 106, 79, 0.25);
 }
 
 .btn-back:hover {
   background: #1B4332;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(45, 106, 79, 0.35);
 }
 
 /* ── Responsive ──────────────────────────────── */
