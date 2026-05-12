@@ -20,10 +20,10 @@ export const routes: Routes = [
   // Business dashboard
   { path: 'mi-negocio', loadComponent: () => import('./pages/pages_business/mi-negocio/mi-negocio').then(m => m.MiNegocio), canActivate: [businessGuard], canDeactivate: [canDeactivateMiNegocioGuard] },
   { path: 'vista-negocio', loadComponent: () => import('./pages/pages_business/vista-negocio/vista-negocio').then(m => m.VistaNegocio), canActivate: [businessGuard] },
-  { path: 'mis-productos', loadComponent: () => import('./pages/mis-productos/mis-productos').then(m => m.MisProductos), canActivate: [businessGuard] },
-  { path: 'mis-pedidos-productor', loadComponent: () => import('./pages/mis-pedidos-productor/mis-pedidos-productor').then(m => m.MisPedidosProductor), canActivate: [businessGuard] },
-  { path: 'estadisticas-productor', loadComponent: () => import('./pages/estadisticas-productor/estadisticas-productor').then(m => m.EstadisticasProductor), canActivate: [businessGuard] },
-  { path: 'calendario-productor', loadComponent: () => import('./pages/calendario-productor/calendario-productor').then(m => m.CalendarioProductor), canActivate: [businessGuard] },
+  { path: 'mis-productos', loadComponent: () => import('./pages/pages_business/mis-productos/mis-productos').then(m => m.MisProductos), canActivate: [businessGuard] },
+  { path: 'mis-pedidos-productor', loadComponent: () => import('./pages/pages_business/mis-pedidos-productor/mis-pedidos-productor').then(m => m.MisPedidosProductor), canActivate: [businessGuard] },
+  { path: 'estadisticas-productor', loadComponent: () => import('./pages/pages_business/estadisticas-productor/estadisticas-productor').then(m => m.EstadisticasProductor), canActivate: [businessGuard] },
+  { path: 'calendario-productor', loadComponent: () => import('./pages/pages_business/calendario-productor/calendario-productor').then(m => m.CalendarioProductor), canActivate: [businessGuard] },
 
   // Public / Consumer
   { path: 'home', loadComponent: () => import('./pages/home/home').then(m => m.Home), canActivate: [noBusinessGuard] },

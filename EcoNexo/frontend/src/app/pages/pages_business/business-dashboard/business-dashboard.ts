@@ -4,9 +4,9 @@ import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Va
 import { Router, RouterLink } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { finalize, timeout } from 'rxjs/operators';
-import { ApiBusiness, ApiImage } from '../../core/models/business.model';
-import { AuthService } from '../../core/services/auth.service';
-import { BusinessService } from '../../core/services/business.service';
+import { ApiBusiness, ApiImage } from '../../../core/models/business.model';
+import { AuthService } from '../../../core/services/auth.service';
+import { BusinessService } from '../../../core/services/business.service';
 
 const BUSINESS_REQUEST_TIMEOUT_MS = 30_000;
 
