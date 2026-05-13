@@ -472,7 +472,7 @@
 .badge--red    { background: #fef2f2; color: #dc2626; }
 
 /* ── Mobile Responsive ───────────────────────────────────────── */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   /* Calendario y lista de pedidos en vertical */
   .cal-body {
     display: flex;
@@ -480,8 +480,8 @@
     gap: 1rem;
   }
 
-  .cal-main-left,
-  .cal-main-right {
+  .cal-left,
+  .cal-right {
     width: 100%;
   }
 }

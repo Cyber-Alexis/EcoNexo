@@ -40,6 +40,7 @@ const STATUS_NEXT: Record<string, string> = {
   pending:   'confirmed',
   confirmed: 'listo',
   listo:     'completed',
+  cancelled: 'pending',
 };
 
 @Component({
@@ -88,6 +89,7 @@ export class MisPedidosProductor implements OnInit, OnDestroy {
     { key: 'confirmed', label: 'En Proceso' },
     { key: 'listo',     label: 'Listos' },
     { key: 'completed', label: 'Completados' },
+    { key: 'cancelled', label: 'Cancelados' },
   ];
 
   get filteredOrders(): ProducerOrder[] {
