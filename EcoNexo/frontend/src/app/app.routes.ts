@@ -19,6 +19,7 @@ export const routes: Routes = [
 
   // Business dashboard
   { path: 'mi-negocio', loadComponent: () => import('./pages/pages_business/mi-negocio/mi-negocio').then(m => m.MiNegocio), canActivate: [businessGuard], canDeactivate: [canDeactivateMiNegocioGuard] },
+  { path: 'mi-negocio/configuracion', loadComponent: () => import('./pages/pages_business/configuracion/configuracion').then(m => m.ConfiguracionBusiness), canActivate: [businessGuard] },
   { path: 'vista-negocio', loadComponent: () => import('./pages/pages_business/vista-negocio/vista-negocio').then(m => m.VistaNegocio), canActivate: [businessGuard] },
   { path: 'mis-productos', loadComponent: () => import('./pages/pages_business/mis-productos/mis-productos').then(m => m.MisProductos), canActivate: [businessGuard] },
   { path: 'mis-pedidos-productor', loadComponent: () => import('./pages/pages_business/mis-pedidos-productor/mis-pedidos-productor').then(m => m.MisPedidosProductor), canActivate: [businessGuard] },
