@@ -25,18 +25,19 @@ class BusinessStatisticsController extends Controller
 
         $businessId = $business->id;
 
-        // ── KPI: Total revenue (all completed/confirmed/listo orders) ──────────
+        // ── KPI: Total revenue (only completed orders) ─────────────────────────
         $totalRevenue = Order::where('business_id', $businessId)
-            ->whereIn('status', ['completed', 'listo', 'confirmed'])
+            ->where('status', 'completed')
             ->sum('total_price');
 
         // ── KPI: Completed orders ──────────────────────────────────────────────
         $completedOrders = Order::where('business_id', $businessId)
-            ->whereIn('status', ['completed', 'listo', 'confirmed', 'pending'])
+            ->where('status', 'completed')
             ->count();
 
-        // ── KPI: Unique clients ────────────────────────────────────────────────
+        // ── KPI: Unique clients (only from completed orders) ───────────────────
         $uniqueClients = Order::where('business_id', $businessId)
+            ->where('status', 'completed')
             ->distinct('user_id')
             ->count('user_id');
 
@@ -44,9 +45,9 @@ class BusinessStatisticsController extends Controller
         $avgRating = BusinessReview::where('business_id', $businessId)->avg('rating') ?? 0;
         $totalReviews = BusinessReview::where('business_id', $businessId)->count();
 
-        // ── Monthly sales — last 7 months ──────────────────────────────────────
+        // ── Monthly sales — last 7 months (only completed orders) ──────────────
         $monthlySales = Order::where('business_id', $businessId)
-            ->whereIn('status', ['completed', 'listo', 'confirmed', 'pending'])
+            ->where('status', 'completed')
             ->where('created_at', '>=', now()->subMonths(6)->startOfMonth())
             ->select(
                 DB::raw('YEAR(created_at)  AS year'),
@@ -75,8 +76,8 @@ class BusinessStatisticsController extends Controller
             ];
         }
 
-        // ── Top selling products ───────────────────────────────────────────────
-        $topProducts = OrderItem::whereHas('order', fn($q) => $q->where('business_id', $businessId))
+        // ── Top selling products (only completed orders) ───────────────────────
+        $topProducts = OrderItem::whereHas('order', fn($q) => $q->where('business_id', $businessId)->where('status', 'completed'))
             ->select('product_id', DB::raw('SUM(quantity) AS units_sold'), DB::raw('SUM(unit_price * quantity) AS revenue'))
             ->groupBy('product_id')
             ->orderByDesc('units_sold')
@@ -88,10 +89,12 @@ class BusinessStatisticsController extends Controller
                 $now = now();
                 $recentUnits = OrderItem::where('product_id', $item->product_id)
                     ->whereHas('order', fn($q) => $q->where('business_id', $businessId)
+                        ->where('status', 'completed')
                         ->where('created_at', '>=', $now->copy()->subDays(30)))
                     ->sum('quantity');
                 $priorUnits = OrderItem::where('product_id', $item->product_id)
                     ->whereHas('order', fn($q) => $q->where('business_id', $businessId)
+                        ->where('status', 'completed')
                         ->whereBetween('created_at', [$now->copy()->subDays(60), $now->copy()->subDays(30)]))
                     ->sum('quantity');
 
@@ -106,11 +109,10 @@ class BusinessStatisticsController extends Controller
                 ];
             });
 
-        // ── Recent reviews ─────────────────────────────────────────────────────
+        // ── Recent reviews (all reviews) ───────────────────────────────────────
         $recentReviews = BusinessReview::where('business_id', $businessId)
             ->with('user:id,name')
             ->latest()
-            ->limit(3)
             ->get()
             ->map(fn($r) => [
                 'author'  => $r->user?->name ?? 'Cliente',
@@ -119,14 +121,14 @@ class BusinessStatisticsController extends Controller
                 'ago'     => $r->created_at->diffForHumans(),
             ]);
 
-        // ── Previous month comparison ──────────────────────────────────────────
+        // ── Previous month comparison (only completed orders) ──────────────────
         $thisMonth = Order::where('business_id', $businessId)
-            ->whereIn('status', ['completed', 'listo', 'confirmed', 'pending'])
+            ->where('status', 'completed')
             ->where('created_at', '>=', now()->startOfMonth())
             ->sum('total_price');
 
         $lastMonth = Order::where('business_id', $businessId)
-            ->whereIn('status', ['completed', 'listo', 'confirmed', 'pending'])
+            ->where('status', 'completed')
             ->whereBetween('created_at', [now()->subMonth()->startOfMonth(), now()->subMonth()->endOfMonth()])
             ->sum('total_price');
 
@@ -135,11 +137,11 @@ class BusinessStatisticsController extends Controller
             : ($thisMonth > 0 ? 100 : 0);
 
         $prevCompletedOrders = Order::where('business_id', $businessId)
-            ->whereIn('status', ['completed', 'listo', 'confirmed', 'pending'])
+            ->where('status', 'completed')
             ->whereBetween('created_at', [now()->subMonth()->startOfMonth(), now()->subMonth()->endOfMonth()])
             ->count();
         $thisCompletedOrders = Order::where('business_id', $businessId)
-            ->whereIn('status', ['completed', 'listo', 'confirmed', 'pending'])
+            ->where('status', 'completed')
             ->where('created_at', '>=', now()->startOfMonth())
             ->count();
         $ordersChange = $prevCompletedOrders > 0

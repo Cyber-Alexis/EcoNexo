@@ -631,8 +631,8 @@
   }
 
   .reviews-card {
-    overflow-y: visible;
-    max-height: none !important;
+    overflow-y: auto;
+    max-height: 400px !important;
   }
 }
 

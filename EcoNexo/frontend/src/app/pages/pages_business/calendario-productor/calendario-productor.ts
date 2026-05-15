@@ -86,6 +86,20 @@ export class CalendarioProductor implements OnInit, OnDestroy {
   viewMonth    = new Date().getMonth() + 1; // 1-based
   selectedDay: number | null = null;
   statusFilter = '';
+  filterDropdownOpen = false;
+
+  readonly filterOptions = [
+    { value: '', label: 'Todos' },
+    { value: 'pending', label: 'Pendiente' },
+    { value: 'confirmed', label: 'En Proceso' },
+    { value: 'listo', label: 'Listo' },
+    { value: 'completed', label: 'Completado' },
+    { value: 'cancelled', label: 'Cancelado' },
+  ];
+
+  get filterLabel(): string {
+    return this.filterOptions.find(o => o.value === this.statusFilter)?.label ?? 'Todos';
+  }
 
   readonly DAY_HEADERS = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do'];
 
@@ -152,7 +166,37 @@ export class CalendarioProductor implements OnInit, OnDestroy {
     if (!day) return;
     this.selectedDay = day;
     this.statusFilter = '';
+    this.filterDropdownOpen = false;
     this.cdr.markForCheck();
+  }
+
+  toggleFilterDropdown(): void {
+    this.filterDropdownOpen = !this.filterDropdownOpen;
+    this.cdr.markForCheck();
+  }
+
+  selectFilter(value: string): void {
+    this.statusFilter = value;
+    this.filterDropdownOpen = false;
+    this.cdr.markForCheck();
+  }
+
+  getVisibleOrdersForDay(day: number): CalendarOrder[] {
+    if (!this.data) return [];
+    return this.data.orders
+      .filter(o => o.day === day && (!this.statusFilter || o.status === this.statusFilter))
+      .slice(0, 2); // Mostrar máximo 2 pedidos como chips
+  }
+
+  chipClass(status: string): string {
+    const map: Record<string, string> = {
+      completed: 'order-chip chip-completed',
+      listo: 'order-chip chip-listo',
+      confirmed: 'order-chip chip-confirmed',
+      pending: 'order-chip chip-pending',
+      cancelled: 'order-chip chip-cancelado',
+    };
+    return map[status] ?? 'order-chip chip-pending';
   }
 
   prevMonth(): void {
