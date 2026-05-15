@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject,} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject, } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Subject, interval, switchMap, startWith, takeUntil } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
-import { environment } from '../../../../environments/environment';
+import { environment } from '../../../../environments/environment';import { BusinessSidebar } from '../business-sidebar/business-sidebar';
 
 export interface ProducerOrderItem {
   product_id: number;
@@ -41,16 +41,18 @@ const STATUS_NEXT: Record<string, string> = {
   pending:   'confirmed',
   confirmed: 'listo',
   listo:     'completed',
+  cancelled: 'pending',
 };
 
 @Component({
   selector: 'app-mis-pedidos-productor',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, BusinessSidebar],
   templateUrl: './mis-pedidos-productor.html',
   styleUrl: './mis-pedidos-productor.css',
 })
+
 export class MisPedidosProductor implements OnInit, OnDestroy {
   private http        = inject(HttpClient);
   private router      = inject(Router);
@@ -59,6 +61,17 @@ export class MisPedidosProductor implements OnInit, OnDestroy {
   private base        = environment.apiUrl;
 
   private destroy$ = new Subject<void>();
+
+  get businessHeaderName(): string {
+    return this.authService.getUser()?.business_name?.trim() || 'Mi Negocio';
+  }
+
+  onLogout(): void {
+    this.authService.logout().subscribe({
+      next: () => this.router.navigate(['/login']),
+      error: (err) => console.error('Logout error:', err)
+    });
+  }
 
   readonly statusLabels = STATUS_LABELS;
 
@@ -78,6 +91,7 @@ export class MisPedidosProductor implements OnInit, OnDestroy {
     { key: 'confirmed', label: 'En Proceso' },
     { key: 'listo',     label: 'Listos' },
     { key: 'completed', label: 'Completados' },
+    { key: 'cancelled', label: 'Cancelados' },
   ];
 
   get filteredOrders(): ProducerOrder[] {
@@ -181,9 +195,5 @@ export class MisPedidosProductor implements OnInit, OnDestroy {
   closeDetail(): void {
     this.detailOrder = null;
     this.cdr.markForCheck();
-  }
-
-  onLogout(): void {
-    this.authService.logout().subscribe({ complete: () => this.router.navigate(['/login']) });
   }
 }

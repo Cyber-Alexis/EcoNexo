@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject, } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
-import { environment } from '../../../../environments/environment';
+import { environment } from '../../../../environments/environment';import { BusinessSidebar } from '../business-sidebar/business-sidebar';
 
 interface CalendarOrder {
   id: number;
@@ -57,7 +57,7 @@ const STATUS_COLORS: Record<string, string> = {
   selector: 'app-calendario-productor',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, BusinessSidebar],
   templateUrl: './calendario-productor.html',
   styleUrl: './calendario-productor.css',
 })
@@ -69,6 +69,17 @@ export class CalendarioProductor implements OnInit, OnDestroy {
   private base        = environment.apiUrl;
   private destroy$    = new Subject<void>();
 
+  get businessHeaderName(): string {
+    return this.authService.getUser()?.business_name?.trim() || 'Mi Negocio';
+  }
+
+  onLogout(): void {
+    this.authService.logout().subscribe({
+      next: () => this.router.navigate(['/login']),
+      error: (err) => console.error('Logout error:', err)
+    });
+  }
+
   loading      = true;
   data: CalendarData | null = null;
   viewYear     = new Date().getFullYear();
@@ -76,7 +87,7 @@ export class CalendarioProductor implements OnInit, OnDestroy {
   selectedDay: number | null = null;
   statusFilter = '';
 
-  readonly DAY_HEADERS = ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa'];
+  readonly DAY_HEADERS = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do'];
 
   get monthLabel(): string {
     return `${MONTH_NAMES_ES[this.viewMonth - 1]} ${this.viewYear}`;
@@ -95,8 +106,10 @@ export class CalendarioProductor implements OnInit, OnDestroy {
 
   get calendarCells(): (number | null)[] {
     const firstDay = new Date(this.viewYear, this.viewMonth - 1, 1).getDay();
+    // Ajustar para que lunes sea 0 (domingo es 6)
+    const adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1;
     const totalDays = new Date(this.viewYear, this.viewMonth, 0).getDate();
-    const cells: (number | null)[] = Array(firstDay).fill(null);
+    const cells: (number | null)[] = Array(adjustedFirstDay).fill(null);
     for (let d = 1; d <= totalDays; d++) cells.push(d);
     while (cells.length % 7 !== 0) cells.push(null);
     return cells;

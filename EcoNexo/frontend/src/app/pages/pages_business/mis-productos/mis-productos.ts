@@ -6,7 +6,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, combineLatest, Subject } from 'rxjs';
 import { map, debounceTime, distinctUntilChanged, filter, takeUntil } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
-import { AuthService } from '../../../core/services/auth.service';
+import { AuthService } from '../../../core/services/auth.service';import { BusinessSidebar } from '../business-sidebar/business-sidebar';
 
 interface ProductImage {
   id: number;
@@ -34,10 +34,11 @@ interface BusinessProduct {
 @Component({
   selector: 'app-mis-productos',
   standalone: true,
-  imports: [CommonModule, AsyncPipe, FormsModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, AsyncPipe, FormsModule, ReactiveFormsModule, RouterLink, BusinessSidebar],
   templateUrl: './mis-productos.html',
   styleUrl: './mis-productos.css',
 })
+
 export class MisProductos implements OnInit, OnDestroy {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
@@ -46,6 +47,17 @@ export class MisProductos implements OnInit, OnDestroy {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly base = environment.apiUrl;
   private readonly destroy$ = new Subject<void>();
+
+  get businessHeaderName(): string {
+    return this.auth.getUser()?.business_name?.trim() || 'Mi Negocio';
+  }
+
+  onLogout(): void {
+    this.auth.logout().subscribe({
+      next: () => this.router.navigate(['/login']),
+      error: (err) => console.error('Logout error:', err)
+    });
+  }
 
   // Reactive state
   private readonly productsSubject = new BehaviorSubject<BusinessProduct[]>([]);
@@ -328,13 +340,6 @@ export class MisProductos implements OnInit, OnDestroy {
         this.cdr.markForCheck();
         setTimeout(() => { this.errorMessage = ''; this.cdr.markForCheck(); }, 4000);
       },
-    });
-  }
-
-  onLogout(): void {
-    this.auth.logout().subscribe({
-      next: () => this.router.navigate(['/login']),
-      error: () => this.router.navigate(['/login']),
     });
   }
 }
