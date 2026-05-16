@@ -36,7 +36,10 @@ class ProductController extends Controller
         $sortOrder = $request->get('sort_order', 'asc');
 
         $query = Product::with(['business', 'category', 'images'])
-            ->where('active', true);
+            ->where('active', true)
+            ->whereHas('business', function ($q) {
+                $q->where('is_visible', true);
+            });
 
         // Filter by category
         if ($category && $category !== 'Todas') {

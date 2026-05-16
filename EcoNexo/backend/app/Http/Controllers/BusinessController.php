@@ -27,6 +27,7 @@ class BusinessController extends Controller
     public function index()
     {
         $businesses = Business::where('status', 'active')
+            ->where('is_visible', true)
             ->withAvg('reviews', 'rating')
             ->withCount('reviews')
             ->with([
@@ -45,6 +46,11 @@ class BusinessController extends Controller
      */
     public function show(Business $business)
     {
+        // Si el negocio está oculto, retornar 404
+        if (!$business->is_visible) {
+            return response()->json(['message' => 'Negocio no encontrado.'], 404);
+        }
+
         $business->load([
             'user:id,name,last_name,email',
             'images' => fn ($q) => $q->orderBy('type', 'desc')->orderBy('position'),
@@ -164,6 +170,33 @@ class BusinessController extends Controller
             'message' => 'Información del negocio actualizada correctamente.',
             'business' => $business,
             'user' => $user->fresh(),
+        ]);
+    }
+
+    /**
+     * PATCH /api/mi-negocio/toggle-visibility
+     * Toggles the visibility of the business (is_visible).
+     */
+    public function toggleVisibility(Request $request)
+    {
+        $user = auth('api')->user();
+
+        if (!$user || $user->role !== 'business') {
+            return response()->json([
+                'message' => 'Solo los usuarios negocio pueden gestionar esta sección.',
+            ], 403);
+        }
+
+        $business = $this->resolveOwnedBusiness($user);
+        $newVisibility = !$business->is_visible;
+        $business->update(['is_visible' => $newVisibility]);
+        $business->refresh(); // Refrescar el modelo desde la base de datos
+
+        return response()->json([
+            'message' => $business->is_visible 
+                ? 'Negocio visible en la plataforma.' 
+                : 'Negocio oculto de la plataforma.',
+            'is_visible' => $business->is_visible,
         ]);
     }
 

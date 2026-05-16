@@ -53,6 +53,7 @@ export interface ApiBusiness {
   website: string | null;
   opening_hours: string | null;
   status: string;
+  is_visible?: boolean;
   reviews_avg_rating: number | null;
   reviews_count: number;
   images: ApiImage[];
@@ -73,6 +74,7 @@ export interface ApiBusinessListItem {
   website: string | null;
   opening_hours: string | null;
   status: string;
+  is_visible?: boolean;
   reviews_avg_rating: number | null;
   reviews_count: number;
   images: ApiImage[];

@@ -1,16 +1,35 @@
 <div class="dashboard-layout">
 
+  <!-- ─── Sidebar ─── -->
   <app-business-sidebar
     #sidebar
     [businessName]="businessName"
     (logout)="onLogout()"
   />
 
-  <main class="dashboard-main">
+  <!-- ─── Main wrapper ─── -->
+  <div class="main-wrapper">
 
-    <div class="page-header">
-      <h1 class="page-title">Configuración</h1>
-    </div>
+    <!-- ─── Topbar (always visible) ─── -->
+    <header class="topbar">
+      <span class="topbar-section-title">Configuración</span>
+      <div class="topbar-actions">
+        <button class="topbar-icon-btn" aria-label="Notificaciones">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button class="topbar-icon-btn topbar-hamburger" (click)="sidebar.toggle()" aria-label="Abrir menú">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="producer-main">
 
     <section class="card">
       <div class="card-header">
@@ -182,17 +201,55 @@
       </div>
 
       <div class="danger-body">
-        <p class="danger-desc">
-          Al eliminar tu cuenta se borrarán permanentemente todos tus datos, historial de pedidos y reseñas.
-          Esta acción <strong>no se puede deshacer</strong>.
-        </p>
-        <button type="button" class="btn-danger" (click)="showDeleteModal = true">
-          Eliminar mi cuenta
-        </button>
+        <!-- Business Visibility Toggle -->
+        <div class="danger-section">
+          <div class="danger-section-header">
+            <div>
+              <h3 class="danger-section-title">Visibilidad del Negocio</h3>
+              <p class="danger-section-desc">
+                Ocultar tu negocio lo hará invisible en la plataforma. No aparecerá en el listado de negocios ni sus productos en el catálogo.
+              </p>
+            </div>
+            <button
+              type="button"
+              class="toggle toggle--danger"
+              [class.toggle--on]="businessVisible"
+              (click)="onToggleVisibility()"
+              [attr.aria-checked]="businessVisible"
+              role="switch"
+            >
+              <span class="toggle-thumb"></span>
+            </button>
+          </div>
+          <p class="danger-status">
+            @if (businessVisible) {
+              <span class="status-visible">Tu negocio está visible en la plataforma</span>
+            } @else {
+              <span class="status-hidden">Tu negocio está oculto de la plataforma</span>
+            }
+          </p>
+        </div>
+
+        <div class="danger-divider"></div>
+
+        <!-- Delete Account -->
+        <div class="danger-section danger-section--horizontal">
+          <div>
+            <h3 class="danger-section-title">Eliminar Cuenta</h3>
+            <p class="danger-section-desc">
+              Al eliminar tu cuenta se borrarán permanentemente todos tus datos, historial de pedidos y reseñas.
+              Esta acción <strong>no se puede deshacer</strong>.
+            </p>
+          </div>
+          <button type="button" class="btn-danger" (click)="showDeleteModal = true">
+            Eliminar mi cuenta
+          </button>
+        </div>
       </div>
     </section>
 
-  </main>
+    </main>
+  </div>
 </div>
 
 <!-- Delete confirmation modal -->
@@ -213,9 +270,16 @@
         Esta acción no se puede deshacer. Se eliminarán permanentemente todos tus datos,
         historial de pedidos y reseñas.
       </p>
+      
+      @if (deleteError) {
+        <div class="modal-error">{{ deleteError }}</div>
+      }
+      
       <div class="modal-actions">
-        <button type="button" class="btn-cancel" (click)="showDeleteModal = false" [disabled]="deleting">Cancelar</button>
-        <button type="button" class="btn-danger" (click)="onDeleteAccount()" [disabled]="deleting">@if (deleting) { Eliminando... } @else { Sí, eliminar mi cuenta }</button>
+        <button type="button" class="btn-cancel" (click)="showDeleteModal = false; deleteError = ''" [disabled]="deleting">Cancelar</button>
+        <button type="button" class="btn-danger" (click)="onDeleteAccount()" [disabled]="deleting">
+          @if (deleting) { Eliminando... } @else { Sí, eliminar cuenta }
+        </button>
       </div>
     </div>
   </div>

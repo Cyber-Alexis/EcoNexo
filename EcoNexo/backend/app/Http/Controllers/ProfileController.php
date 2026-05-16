@@ -56,12 +56,62 @@ class ProfileController extends Controller
     {
         $user = auth('api')->user();
 
+        // 1. Eliminar avatar si existe
         $avatar = $user->avatar;
         if ($avatar) {
             Storage::disk('public')->delete($avatar->path);
             $avatar->delete();
         }
 
+        // 2. Si es un usuario de negocio, eliminar el negocio y sus recursos
+        if ($user->role === 'business') {
+            $business = $user->business;
+            if ($business) {
+                // Eliminar imágenes del negocio
+                foreach ($business->images as $image) {
+                    Storage::disk('public')->delete($image->path);
+                    $image->delete();
+                }
+
+                // Eliminar productos del negocio y sus recursos
+                foreach ($business->products as $product) {
+                    // Eliminar imágenes de productos
+                    foreach ($product->images as $image) {
+                        Storage::disk('public')->delete($image->path);
+                        $image->delete();
+                    }
+                    // Las reviews de productos se eliminarán en cascada
+                    $product->delete();
+                }
+
+                // Eliminar reseñas del negocio
+                $business->reviews()->delete();
+
+                // Eliminar órdenes del negocio
+                foreach ($business->orders as $order) {
+                    $order->items()->delete();
+                    $order->delete();
+                }
+
+                // Finalmente eliminar el negocio
+                $business->delete();
+            }
+        }
+
+        // 3. Eliminar reseñas del usuario (tanto de productos como de negocios)
+        $user->productReviews()->delete();
+        $user->businessReviews()->delete();
+
+        // 4. Eliminar órdenes del usuario (si es cliente)
+        foreach ($user->orders as $order) {
+            $order->items()->delete();
+            $order->delete();
+        }
+
+        // 5. Eliminar items del carrito
+        $user->cartItems()->delete();
+
+        // 6. Logout y eliminar usuario
         auth('api')->logout();
         $user->delete();
 

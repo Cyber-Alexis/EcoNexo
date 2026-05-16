@@ -1,8 +1,9 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { BusinessService } from '../../../core/services/business.service';
 import { BusinessSidebar } from '../business-sidebar/business-sidebar';
 
 function passwordsMatch(control: AbstractControl): ValidationErrors | null {
@@ -15,7 +16,7 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
 @Component({
   selector: 'app-configuracion-business',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, BusinessSidebar],
+  imports: [CommonModule, ReactiveFormsModule, BusinessSidebar],
   templateUrl: './configuracion.html',
   styleUrl: './configuracion.css',
 })
@@ -23,6 +24,9 @@ export class ConfiguracionBusiness implements OnInit {
   private router = inject(Router);
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
+  private businessService = inject(BusinessService);
+
+  @ViewChild('sidebar') sidebar!: BusinessSidebar;
 
   // Password form
   pwdSaving = false;
@@ -45,12 +49,28 @@ export class ConfiguracionBusiness implements OnInit {
   notifNewProducts = true;
   notifReviewResponses = true;
 
+  // Business visibility
+  businessVisible = true;
+  visibilityLoading = false;
+
   // Account deletion
   showDeleteModal = false;
   deleting = false;
+  deleteError = '';
 
   ngOnInit(): void {
     const user = this.authService.getUser();
+
+    // Load business visibility
+    this.businessService.getMine().subscribe({
+      next: (business) => {
+        this.businessVisible = business.is_visible ?? true;
+      },
+      error: () => {
+        // Si hay error, asumimos visible por defecto
+        this.businessVisible = true;
+      }
+    });
     if (user) {
       this.notifOrderUpdates    = user.notif_order_updates    ?? true;
       this.notifPromotions      = user.notif_promotions       ?? false;
@@ -116,12 +136,41 @@ export class ConfiguracionBusiness implements OnInit {
 
   onDeleteAccount(): void {
     this.deleting = true;
+    this.deleteError = '';
     this.authService.deleteAccount().subscribe({
-      next: () => this.router.navigate(['/login']),
-      error: () => {
-        this.deleting = false;
-        this.showDeleteModal = false;
+      next: () => {
+        // Usar setTimeout para evitar errores de detección de cambios
+        setTimeout(() => {
+          this.authService.setSessionNotice('Tu cuenta ha sido eliminada correctamente.');
+          this.router.navigate(['/login']);
+        }, 0);
       },
+      error: (err) => {
+        this.deleting = false;
+        this.deleteError = err?.error?.message ?? 'Error al eliminar la cuenta. Inténtalo de nuevo.';
+      },
+    });
+  }
+
+  onToggleVisibility(): void {
+    if (this.visibilityLoading) return;
+    this.visibilityLoading = true;
+
+    // Cambio optimista: actualizar UI inmediatamente
+    const previousState = this.businessVisible;
+    this.businessVisible = !this.businessVisible;
+
+    this.businessService.toggleVisibility().subscribe({
+      next: (response) => {
+        this.businessVisible = response.is_visible;
+        this.visibilityLoading = false;
+      },
+      error: (err) => {
+        // Revertir el cambio si hay error
+        this.businessVisible = previousState;
+        this.visibilityLoading = false;
+        alert(err?.error?.message ?? 'Error al cambiar la visibilidad del negocio. Inténtalo de nuevo.');
+      }
     });
   }
 

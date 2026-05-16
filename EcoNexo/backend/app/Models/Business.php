@@ -21,6 +21,11 @@ class Business extends Model
         'website',
         'opening_hours',
         'status',
+        'is_visible',
+    ];
+
+    protected $casts = [
+        'is_visible' => 'boolean',
     ];
 
     public function products()

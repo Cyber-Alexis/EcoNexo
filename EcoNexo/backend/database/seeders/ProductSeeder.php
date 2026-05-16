@@ -50,7 +50,7 @@ class ProductSeeder extends Seeder
                     [
                         'name' => 'Espinacas Baby',
                         'description' => 'Espinacas baby tiernas, perfectas para ensaladas y salteados.',
-                        'price' => 2.00, 'price_unit' => 'bolsa', 'stock' => 40, 'active' => true,
+                        'price' => 2.00, 'price_unit' => 'kg', 'stock' => 40, 'active' => true,
                         'img' => 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=800&auto=format&fit=crop',
                     ],
                 ],
@@ -128,13 +128,13 @@ class ProductSeeder extends Seeder
                     [
                         'name' => 'Garnatxa Negra Selecció',
                         'description' => 'Vi negre de Garnatxa del Priorat, criança de 12 mesos en bóta de roure.',
-                        'price' => 18.00, 'price_unit' => 'botella', 'stock' => 48, 'active' => true,
+                        'price' => 18.00, 'price_unit' => 'unidad', 'stock' => 48, 'active' => true,
                         'img' => 'https://admin.artevino.es/multimedia/images/image_926.jpg',
                     ],
                     [
                         'name' => 'Tempranillo Jove',
                         'description' => 'Vi negre jove de Tempranillo, fruitat i de fàcil beguda.',
-                        'price' => 10.00, 'price_unit' => 'botella', 'stock' => 60, 'active' => true,
+                        'price' => 10.00, 'price_unit' => 'unidad', 'stock' => 60, 'active' => true,
                         'img' => 'https://images.pexels.com/photos/20874532/pexels-photo-20874532.jpeg',
                     ],
                 ],
@@ -142,13 +142,13 @@ class ProductSeeder extends Seeder
                     [
                         'name' => 'Macabeu Blanc Jove',
                         'description' => 'Vi blanc jove de Macabeu, fresc i aromàtic, perfecte per als aperitius.',
-                        'price' => 12.00, 'price_unit' => 'botella', 'stock' => 36, 'active' => true,
+                        'price' => 12.00, 'price_unit' => 'unidad', 'stock' => 36, 'active' => true,
                         'img' => 'https://m.media-amazon.com/images/I/61Cbb0k+gcL.jpg',
                     ],
                     [
                         'name' => 'Rosat de Garnatxa',
                         'description' => 'Vi rosat lleuger de Garnatxa, color salmó i pa llarg en boca.',
-                        'price' => 11.00, 'price_unit' => 'botella', 'stock' => 30, 'active' => true,
+                        'price' => 11.00, 'price_unit' => 'unidad', 'stock' => 30, 'active' => true,
                         'img' => 'https://images.pexels.com/photos/10045953/pexels-photo-10045953.jpeg',
                     ],
                 ],
@@ -156,7 +156,7 @@ class ProductSeeder extends Seeder
                     [
                         'name' => 'Cava Brut Nature',
                         'description' => 'Cava espumós elaborat pel mètode tradicional, sec i elegaant.',
-                        'price' => 9.50, 'price_unit' => 'botella', 'stock' => 50, 'active' => true,
+                        'price' => 9.50, 'price_unit' => 'unidad', 'stock' => 50, 'active' => true,
                         'img' => 'https://images.pexels.com/photos/29463857/pexels-photo-29463857.jpeg',
                     ],
                 ],
@@ -208,13 +208,13 @@ class ProductSeeder extends Seeder
                     [
                         'name' => 'Ram de Roses Roges',
                         'description' => 'Ram de 12 roses roges fresques de temporada, collides avui.',
-                        'price' => 18.00, 'price_unit' => 'ramo', 'stock' => 20, 'active' => true,
+                        'price' => 18.00, 'price_unit' => 'unidad', 'stock' => 20, 'active' => true,
                         'img' => 'https://images.pexels.com/photos/18566002/pexels-photo-18566002.jpeg',
                     ],
                     [
                         'name' => 'Bouquet de Primavera',
                         'description' => 'Bouquet de temporada amb espècies variades: tulipes, freèsies i gipsòfiles.',
-                        'price' => 22.00, 'price_unit' => 'ramo', 'stock' => 15, 'active' => true,
+                        'price' => 22.00, 'price_unit' => 'unidad', 'stock' => 15, 'active' => true,
                         'img' => 'https://www.viserchi.com/1327-large_default/bouquet-primaveraverano-.jpg',
                     ],
                 ],

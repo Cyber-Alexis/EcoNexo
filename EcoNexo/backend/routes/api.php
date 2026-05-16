@@ -53,6 +53,7 @@ Route::middleware(['auth:api', \App\Http\Middleware\EnsureActiveApiUser::class, 
     Route::get('/mi-negocio',         [BusinessController::class, 'mine']);
     Route::put('/mi-negocio',         [BusinessController::class, 'updateMine']);
     Route::post('/mi-negocio',        [BusinessController::class, 'updateMine']);
+    Route::patch('/mi-negocio/toggle-visibility', [BusinessController::class, 'toggleVisibility']);
     Route::post('/mi-negocio/imagenes', [BusinessController::class, 'uploadImages']);
     Route::delete('/mi-negocio/imagenes/{imageId}', [BusinessController::class, 'deleteImage']);
 

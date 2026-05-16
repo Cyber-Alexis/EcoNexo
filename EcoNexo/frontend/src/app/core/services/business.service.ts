@@ -60,4 +60,8 @@ export class BusinessService {
   deleteImage(imageId: number): Observable<BusinessApiResponse> {
     return this.http.delete<BusinessApiResponse>(`${this.base}/mi-negocio/imagenes/${imageId}`);
   }
+
+  toggleVisibility(): Observable<{ message: string; is_visible: boolean }> {
+    return this.http.patch<{ message: string; is_visible: boolean }>(`${this.base}/mi-negocio/toggle-visibility`, {});
+  }
 }
