@@ -38,23 +38,21 @@
       </div>
     </div>
 
-    @if (loading) {
+    @if (loading()) {
       <div class="loading-card">Cargando calendario...</div>
     } @else {
 
     <!-- Stats cards -->
-    @if (data) {
-      <div class="stats-row">
-        <div class="stat-card">
-          <span class="stat-label">Pedidos del Mes</span>
-          <span class="stat-value">{{ data.monthly_stats.orders_count }}</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-label">Ingresos del Mes</span>
-          <span class="stat-value">€{{ data.monthly_stats.total_revenue.toFixed(2) }}</span>
-        </div>
+    <div class="stats-row">
+      <div class="stat-card">
+        <span class="stat-label">Pedidos del Mes</span>
+        <span class="stat-value">{{ monthlyStats().orders_count }}</span>
       </div>
-    }
+      <div class="stat-card">
+        <span class="stat-label">Ingresos del Mes</span>
+        <span class="stat-value">€{{ monthlyStats().total_revenue.toFixed(2) }}</span>
+      </div>
+    </div>
 
     <!-- Calendar + Side panel -->
     <div class="cal-layout">
@@ -68,7 +66,7 @@
                 <polyline points="15 18 9 12 15 6"/>
               </svg>
             </button>
-            <h2 class="cal-month-title">{{ monthLabel }}</h2>
+            <h2 class="cal-month-title">{{ monthLabel() }}</h2>
             <button class="cal-nav-btn" (click)="nextMonth()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="9 18 15 12 9 6"/>
@@ -79,20 +77,20 @@
           <!-- Status filter -->
           <div class="cal-filter-wrap">
             <button class="cal-filter-btn" (click)="toggleFilterDropdown()">
-              {{ filterLabel }}
+              {{ filterLabel() }}
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="6 9 12 15 18 9"/>
               </svg>
             </button>
-            @if (filterDropdownOpen) {
+            @if (filterDropdownOpen()) {
               <div class="cal-filter-dropdown">
                 @for (opt of filterOptions; track opt.value) {
                   <button
                     class="cal-filter-option"
-                    [class.selected]="statusFilter === opt.value"
+                    [class.selected]="statusFilter() === opt.value"
                     (click)="selectFilter(opt.value)"
                   >
-                    @if (statusFilter === opt.value) {
+                    @if (statusFilter() === opt.value) {
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <polyline points="20 6 9 17 4 12"/>
                       </svg>
@@ -114,12 +112,12 @@
 
         <!-- Day grid -->
         <div class="cal-grid">
-          @for (row of calendarRows; track $index) {
+          @for (row of calendarRows(); track $index) {
             @for (cell of row; track $index) {
               <div
                 class="cal-cell"
                 [class.cal-cell-empty]="cell === null"
-                [class.cal-cell-selected]="selectedDay === cell && cell !== null"
+                [class.cal-cell-selected]="selectedDay() === cell && cell !== null"
                 [class.cal-cell-today]="cell !== null && isToday(cell)"
                 (click)="selectDay(cell)"
               >
@@ -133,7 +131,7 @@
                   </div>
                   @if (dayData && dayData.count > 0) {
                     @for (order of getVisibleOrdersForDay(cell); track order.id) {
-                      <span [class]="chipClass(order.status)">{{ order.client_name }}</span>
+                      <span [class]="chipClass(order.status)">{{ order.code }}</span>
                     }
                   }
                 }
@@ -153,16 +151,16 @@
 
       <!-- Right: Side panel -->
       <div class="cal-side-panel">
-        @if (selectedDay === null) {
+        @if (selectedDay() === null) {
           <p class="cal-side-empty-title">Selecciona un día</p>
           <p class="cal-side-hint">Haz clic en un día para ver los pedidos</p>
         } @else {
-          <h3 class="cal-side-day-title">Día {{ selectedDay }}</h3>
-          @if (filteredOrders.length === 0) {
+          <h3 class="cal-side-day-title">Día {{ selectedDay() }}</h3>
+          @if (selectedDayOrders().length === 0) {
             <p class="cal-side-hint">No hay pedidos este día.</p>
           }
-          @for (order of filteredOrders; track order.id) {
-            <div class="cal-side-order">
+          @for (order of selectedDayOrders(); track order.id) {
+            <div class="cal-side-order" (click)="openDetail(order)">
               <div class="cal-side-order-head">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="cal-side-icon">
                   <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
@@ -170,8 +168,8 @@
                   <path d="M16 10a4 4 0 01-8 0"/>
                 </svg>
                 <div>
-                  <div class="cal-side-business">{{ order.client_name }}</div>
-                  <div class="cal-side-code">{{ order.code }} • {{ order.time }}</div>
+                  <div class="cal-side-business">{{ order.client_name || 'Cliente' }}</div>
+                  <div class="cal-side-code">{{ order.code }}</div>
                 </div>
               </div>
               <div class="cal-side-order-foot">
@@ -190,3 +188,77 @@
 
   </div>
 </div>
+
+<!-- ─── Detail modal ─── -->
+@if (detailOrder()) {
+  <div class="modal-overlay" (click)="closeDetail()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-head">
+        <div>
+          <h3 class="modal-title">Detalle del Pedido</h3>
+          <span class="modal-code">{{ detailOrder()!.code }}</span>
+        </div>
+        <div class="modal-head-right">
+          <span class="status-badge" [class]="'status-' + detailOrder()!.status">
+            {{ statusLabel(detailOrder()!.status) }}
+          </span>
+          <button class="close-btn" (click)="closeDetail()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <h4 class="modal-business">{{ detailOrder()!.client_name || 'Cliente' }}</h4>
+
+      <hr class="modal-divider"/>
+
+      <div class="modal-section-label">Artículos:</div>
+      <div class="modal-items">
+        @if (loadingDetail()) {
+          <div class="modal-item-row">
+            <span class="modal-item-name" style="color: #9ca3af;">Cargando detalles...</span>
+          </div>
+        } @else if (detailOrder()!.items && detailOrder()!.items.length > 0) {
+          @for (item of detailOrder()!.items; track item.product_id) {
+            <div class="modal-item-row">
+              <span class="modal-item-name">{{ item.quantity }}x {{ item.product_name }}</span>
+              <span class="modal-item-price">{{ item.subtotal.toFixed(2) }}€</span>
+            </div>
+          }
+        } @else {
+          <div class="modal-item-row">
+            <span class="modal-item-name">{{ detailOrder()!.items_count }} artículo(s)</span>
+          </div>
+        }
+      </div>
+
+      <hr class="modal-divider"/>
+
+      <div class="modal-total-row">
+        <span class="modal-total-label">Total</span>
+        <span class="modal-total-value">{{ detailOrder()!.total_price.toFixed(2) }}€</span>
+      </div>
+
+      @if (detailOrder()!.business_address) {
+        <div class="modal-meta-block">
+          <span class="modal-meta-label">Dirección de entrega:</span>
+          <span class="modal-meta-value">{{ detailOrder()!.business_address }}</span>
+        </div>
+      }
+
+      <div class="modal-meta-block">
+        <span class="modal-meta-label">Fecha:</span>
+        <span class="modal-meta-value">{{ detailOrder()!.created_at | date:'yyyy-MM-dd' }}</span>
+      </div>
+
+      @if (detailOrder()!.payment_method) {
+        <div class="modal-meta-block">
+          <span class="modal-meta-label">Método de pago:</span>
+          <span class="modal-meta-value">{{ detailOrder()!.payment_method }}</span>
+        </div>
+      }
+    </div>
+  </div>
+}

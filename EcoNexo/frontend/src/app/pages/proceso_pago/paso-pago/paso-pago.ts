@@ -1,11 +1,12 @@
-import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AbstractControl, ReactiveFormsModule, FormBuilder, ValidationErrors, Validators } from '@angular/forms';
 
 export interface PaymentData {
-  cardNumber: string;
-  cardExpiry: string;
-  cardCvv: string;
+  paymentMethod: 'card' | 'cash';
+  cardNumber?: string;
+  cardExpiry?: string;
+  cardCvv?: string;
 }
 
 // Valida que el número de tarjeta tenga exactamente 16 dígitos (ignora espacios)
@@ -50,7 +51,8 @@ function expiryValidator(control: AbstractControl): ValidationErrors | null {
   templateUrl: './paso-pago.html',
   styleUrl: './paso-pago.css',
 })
-export class PasoPago {
+export class PasoPago implements OnInit {
+  @Input() deliveryMethod: 'pickup' | 'delivery' = 'pickup';
   @Input() total = 0;
   @Input() submitting = false;
   @Input() submitError = '';
@@ -59,11 +61,58 @@ export class PasoPago {
 
   private fb = inject(FormBuilder);
 
+  selectedPaymentMethod: 'card' | 'cash' = 'card';
+
   form = this.fb.group({
     cardNumber: ['', [Validators.required, cardNumberValidator]],
     cardExpiry: ['', [Validators.required, expiryValidator]],
     cardCvv:    ['', [Validators.required, Validators.pattern(/^\d{3}$/)]],
   });
+
+  ngOnInit(): void {
+    // Si es entrega a domicilio, solo permitir tarjeta
+    if (this.deliveryMethod === 'delivery') {
+      this.selectedPaymentMethod = 'card';
+    }
+    this.updateCardValidators();
+  }
+
+  get showCashOption(): boolean {
+    return this.deliveryMethod === 'pickup';
+  }
+
+  selectPaymentMethod(method: 'card' | 'cash'): void {
+    this.selectedPaymentMethod = method;
+    this.updateCardValidators();
+  }
+
+  private updateCardValidators(): void {
+    const cardNumber = this.form.get('cardNumber');
+    const cardExpiry = this.form.get('cardExpiry');
+    const cardCvv = this.form.get('cardCvv');
+
+    if (this.selectedPaymentMethod === 'card') {
+      // Hacer campos obligatorios
+      cardNumber?.setValidators([Validators.required, cardNumberValidator]);
+      cardExpiry?.setValidators([Validators.required, expiryValidator]);
+      cardCvv?.setValidators([Validators.required, Validators.pattern(/^\d{3}$/)]);
+    } else {
+      // Quitar validaciones
+      cardNumber?.clearValidators();
+      cardExpiry?.clearValidators();
+      cardCvv?.clearValidators();
+      // Limpiar valores
+      this.form.patchValue({
+        cardNumber: '',
+        cardExpiry: '',
+        cardCvv: ''
+      });
+    }
+
+    cardNumber?.updateValueAndValidity();
+    cardExpiry?.updateValueAndValidity();
+    cardCvv?.updateValueAndValidity();
+  }
 
   isFieldInvalid(field: string): boolean {
     const ctrl = this.form.get(field);
@@ -124,10 +173,20 @@ export class PasoPago {
   }
 
   onConfirmar(): void {
-    if (this.form.invalid) {
+    if (this.selectedPaymentMethod === 'card' && this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
-    this.confirm.emit(this.form.value as PaymentData);
+
+    const paymentData: PaymentData = {
+      paymentMethod: this.selectedPaymentMethod,
+      ...(this.selectedPaymentMethod === 'card' ? {
+        cardNumber: this.form.value.cardNumber ?? undefined,
+        cardExpiry: this.form.value.cardExpiry ?? undefined,
+        cardCvv: this.form.value.cardCvv ?? undefined,
+      } : {})
+    };
+
+    this.confirm.emit(paymentData);
   }
 }

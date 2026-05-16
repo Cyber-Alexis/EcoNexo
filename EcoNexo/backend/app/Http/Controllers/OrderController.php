@@ -19,6 +19,7 @@ class OrderController extends Controller
             'business_id'     => 'required|integer|exists:businesses,id',
             'payment_method'  => 'required|string|max:50',
             'delivery_method' => 'required|string|in:pickup,delivery',
+            'pickup_date'     => 'nullable|date',
             'notes'           => 'nullable|string|max:500',
             'items'           => 'required|array|min:1',
             'items.*.product_id' => 'required|integer|exists:products,id',
@@ -36,6 +37,8 @@ class OrderController extends Controller
                 'total_price'    => $total,
                 'status'         => 'pending',
                 'payment_method' => $validated['payment_method'],
+                'delivery_method'=> $validated['delivery_method'],
+                'pickup_date'    => $validated['pickup_date'] ?? null,
             ]);
 
             foreach ($validated['items'] as $item) {
@@ -165,7 +168,7 @@ class OrderController extends Controller
         $orders = Order::where('business_id', $business->id)
             ->whereYear('created_at',  $year)
             ->whereMonth('created_at', $month)
-            ->with(['user:id,name,email', 'items'])
+            ->with(['user:id,name,email', 'items.product:id,name,price,price_unit'])
             ->orderBy('created_at')
             ->get();
 
@@ -181,14 +184,29 @@ class OrderController extends Controller
         }
 
         $ordersList = $orders->map(fn($order) => [
-            'id'          => $order->id,
-            'code'        => 'ORD-' . str_pad($order->id, 3, '0', STR_PAD_LEFT),
-            'day'         => (int) $order->created_at->format('j'),
-            'time'        => $order->created_at->format('H:i'),
-            'status'      => $order->status,
-            'client_name' => $order->user?->name,
-            'items_count' => $order->items->count(),
-            'total_price' => (float) $order->total_price,
+            'id'             => $order->id,
+            'code'           => 'ORD-' . str_pad($order->id, 3, '0', STR_PAD_LEFT),
+            'day'            => (int) $order->created_at->format('j'),
+            'time'           => $order->created_at->format('H:i'),
+            'status'         => $order->status,
+            'business_name'  => $business->name,
+            'business_address' => trim(($business->address ?? '') . ', ' . ($business->city ?? ''), ', '),
+            'client_name'    => $order->user?->name,
+            'items_count'    => $order->items->count(),
+            'total_price'    => (float) $order->total_price,
+            'payment_method' => $order->payment_method,
+            'pickup_date'    => $order->pickup_date,
+            'created_at'     => $order->created_at,
+            'business_id'    => $order->business_id,
+            'items'          => $order->items->map(fn($item) => [
+                'product_id'   => $item->product_id,
+                'product_name' => $item->product?->name,
+                'price'        => $item->product?->price,
+                'price_unit'   => $item->product?->price_unit,
+                'unit_price'   => $item->unit_price,
+                'quantity'     => $item->quantity,
+                'subtotal'     => round($item->unit_price * $item->quantity, 2),
+            ]),
         ])->values();
 
         return response()->json([

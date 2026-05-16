@@ -212,6 +212,28 @@
   border-color: #9ca3af;
 }
 
+/* Cash payment info */
+.cash-payment-info {
+  margin-top: 0.5rem;
+}
+
+.info-box {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  align-items: flex-start;
+}
+
+.info-text {
+  font-size: 0.875rem;
+  color: #166534;
+  line-height: 1.5;
+  margin: 0;
+}
+
 /* ─── Responsive ─── */
 @media (max-width: 600px) {
   .step-card {

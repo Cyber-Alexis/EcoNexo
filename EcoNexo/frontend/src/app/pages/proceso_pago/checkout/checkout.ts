@@ -136,8 +136,9 @@ export class Checkout implements OnInit, OnDestroy {
         concatMap((group) =>
           this.orderService.createOrder({
             business_id: group.businessId,
-            payment_method: 'card',
+            payment_method: data.paymentMethod,
             delivery_method: delivery.method,
+            pickup_date: delivery.date || undefined,
             notes,
             items: group.items.map((i) => ({
               product_id: i.productId,

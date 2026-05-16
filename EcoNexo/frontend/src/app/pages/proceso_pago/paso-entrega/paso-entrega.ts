@@ -9,6 +9,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { CartGroup } from '../../../core/services/cart.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 export interface DeliveryData {
   method: 'pickup' | 'delivery';
@@ -60,6 +61,7 @@ export class PasoEntrega implements OnInit {
   @Output() deliveryChange = new EventEmitter<DeliveryData>();
 
   private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
 
   readonly minDateObj = this.createStartOfDayFromOffset(1);
   readonly maxDateObj = this.createStartOfDayFromOffset(30);
@@ -79,6 +81,8 @@ export class PasoEntrega implements OnInit {
   });
 
   ngOnInit(): void {
+    const user = this.authService.getUser();
+
     if (this.initialData) {
       this.form.patchValue(
         {
@@ -87,6 +91,16 @@ export class PasoEntrega implements OnInit {
           address: this.initialData.address ?? '',
           city: this.initialData.city ?? '',
           postalCode: this.initialData.postalCode ?? '',
+        },
+        { emitEvent: false },
+      );
+    } else if (user) {
+      // Autocompletar dirección con datos del usuario si existen
+      this.form.patchValue(
+        {
+          address: user.address || '',
+          city: user.city || '',
+          postalCode: user.postal_code || '',
         },
         { emitEvent: false },
       );

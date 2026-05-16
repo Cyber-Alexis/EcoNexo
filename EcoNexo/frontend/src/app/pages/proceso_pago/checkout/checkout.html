@@ -57,6 +57,7 @@
       }
       @if (step === 3) {
         <app-paso-pago
+          [deliveryMethod]="state.delivery?.method ?? 'pickup'"
           [total]="total"
           [submitting]="submitting"
           [submitError]="submitError"

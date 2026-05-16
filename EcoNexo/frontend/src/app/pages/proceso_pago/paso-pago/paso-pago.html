@@ -7,10 +7,42 @@
     <h2>Método de Pago</h2>
   </div>
 
-  <!-- Card option (only one) -->
-  <div class="payment-option selected">
+  <!-- Opción de pago en físico (solo si es pickup) -->
+  @if (showCashOption) {
+    <div 
+      class="payment-option" 
+      [class.selected]="selectedPaymentMethod === 'cash'"
+      (click)="selectPaymentMethod('cash')"
+      style="cursor: pointer;"
+    >
+      <div class="payment-radio">
+        <div class="radio-circle" [class.active]="selectedPaymentMethod === 'cash'">
+          <div class="radio-dot"></div>
+        </div>
+      </div>
+      <div class="payment-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20">
+          <rect x="2" y="7" width="20" height="10" rx="2" stroke-width="1.8"/>
+          <circle cx="12" cy="12" r="2" fill="currentColor"/>
+          <path d="M6 10v4M18 10v4"/>
+        </svg>
+      </div>
+      <div class="payment-info">
+        <span class="payment-title">Pago en físico</span>
+        <span class="payment-desc">Paga en efectivo al recoger tu pedido</span>
+      </div>
+    </div>
+  }
+
+  <!-- Opción de tarjeta -->
+  <div 
+    class="payment-option" 
+    [class.selected]="selectedPaymentMethod === 'card'"
+    (click)="selectPaymentMethod('card')"
+    style="cursor: pointer;"
+  >
     <div class="payment-radio">
-      <div class="radio-circle active">
+      <div class="radio-circle" [class.active]="selectedPaymentMethod === 'card'">
         <div class="radio-dot"></div>
       </div>
     </div>
@@ -26,7 +58,9 @@
     </div>
   </div>
 
-  <form [formGroup]="form" (ngSubmit)="onConfirmar()" novalidate class="card-form">
+  <!-- Formulario de tarjeta (solo si se selecciona card) -->
+  @if (selectedPaymentMethod === 'card') {
+    <form [formGroup]="form" (ngSubmit)="onConfirmar()" novalidate class="card-form">
     <div class="form-group">
       <label class="form-label">Número de tarjeta</label>
       <input
@@ -90,4 +124,32 @@
       <p class="submit-error">{{ submitError }}</p>
     }
   </form>
+  }
+
+  <!-- Mensaje y botones cuando se selecciona pago en físico -->
+  @if (selectedPaymentMethod === 'cash') {
+    <div class="cash-payment-info">
+      <div class="info-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20" style="min-width: 20px; color: #10b981;">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 16v-4M12 8h.01"/>
+        </svg>
+        <p class="info-text">
+          El pago se realizará en efectivo en el local al momento de recoger tu pedido. 
+          Asegúrate de llevar el importe exacto o cambio si es necesario.
+        </p>
+      </div>
+    </div>
+
+    <div class="step-actions step-actions--between" style="margin-top: 1.5rem;">
+      <button class="btn-secondary" type="button" (click)="back.emit()" [disabled]="submitting">Atrás</button>
+      <button class="btn-primary" type="button" (click)="onConfirmar()" [disabled]="submitting">
+        @if (submitting) { Procesando… } @else { Confirmar Pedido ({{ total.toFixed(2) }}€) }
+      </button>
+    </div>
+
+    @if (submitError) {
+      <p class="submit-error">{{ submitError }}</p>
+    }
+  }
 </div>

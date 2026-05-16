@@ -11,7 +11,7 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'business_id', 'total_price', 'status', 'payment_method', 'pickup_date',
+        'user_id', 'business_id', 'total_price', 'status', 'payment_method', 'delivery_method', 'pickup_date',
     ];
 
     protected $casts = [

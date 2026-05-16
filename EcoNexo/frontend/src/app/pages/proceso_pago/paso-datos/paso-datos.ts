@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { AuthService } from '../../../core/services/auth.service';
 
 export interface ContactData {
   name: string;
@@ -24,6 +25,7 @@ export class PasoDatos implements OnInit {
   @Output() next = new EventEmitter<ContactData>();
 
   private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
 
   form = this.fb.group({
     name:  ['', [Validators.required, Validators.minLength(3)]],
@@ -33,8 +35,19 @@ export class PasoDatos implements OnInit {
   });
 
   ngOnInit(): void {
+    const user = this.authService.getUser();
+    
+    // Si hay datos iniciales, usarlos; si no, usar los del usuario
     if (this.initialData) {
       this.form.patchValue(this.initialData);
+    } else if (user) {
+      // Autocompletar con los datos del usuario
+      const fullName = [user.name, user.last_name].filter(Boolean).join(' ').trim();
+      this.form.patchValue({
+        name: fullName || '',
+        email: user.email || '',
+        phone: user.phone || '',
+      });
     }
   }
 

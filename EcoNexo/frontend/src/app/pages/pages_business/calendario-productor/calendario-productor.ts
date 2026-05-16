@@ -1,35 +1,13 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject, } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
-import { environment } from '../../../../environments/environment';import { BusinessSidebar } from '../business-sidebar/business-sidebar';
-
-interface CalendarOrder {
-  id: number;
-  code: string;
-  day: number;
-  time: string;
-  status: string;
-  client_name: string;
-  items_count: number;
-  total_price: number;
-}
-
-interface DayData {
-  count: number;
-  total: number;
-}
-
-interface CalendarData {
-  year: number;
-  month: number;
-  days: Record<string, DayData>;
-  monthly_stats: { orders_count: number; total_revenue: number };
-  orders: CalendarOrder[];
-}
+import { OrderService, CalendarOrder } from '../../../core/services/order.service';
+import { environment } from '../../../../environments/environment';
+import { BusinessSidebar } from '../business-sidebar/business-sidebar';
 
 const MONTH_NAMES_ES = [
   'Enero','Febrero','Marzo','Abril','Mayo','Junio',
@@ -65,6 +43,7 @@ export class CalendarioProductor implements OnInit, OnDestroy {
   private http        = inject(HttpClient);
   private router      = inject(Router);
   private authService = inject(AuthService);
+  private orderService = inject(OrderService);
   private cdr         = inject(ChangeDetectorRef);
   private base        = environment.apiUrl;
   private destroy$    = new Subject<void>();
@@ -80,13 +59,16 @@ export class CalendarioProductor implements OnInit, OnDestroy {
     });
   }
 
-  loading      = true;
-  data: CalendarData | null = null;
-  viewYear     = new Date().getFullYear();
-  viewMonth    = new Date().getMonth() + 1; // 1-based
-  selectedDay: number | null = null;
-  statusFilter = '';
-  filterDropdownOpen = false;
+  // ─── Signals ─────────────────────────────────────────────
+  readonly orders = signal<CalendarOrder[]>([]);
+  readonly loading = signal(true);
+  readonly viewYear = signal(new Date().getFullYear());
+  readonly viewMonth = signal(new Date().getMonth() + 1); // 1-based
+  readonly selectedDay = signal<number | null>(null);
+  readonly statusFilter = signal('');
+  readonly filterDropdownOpen = signal(false);
+  readonly detailOrder = signal<CalendarOrder | null>(null);
+  readonly loadingDetail = signal(false);
 
   readonly filterOptions = [
     { value: '', label: 'Todos' },
@@ -97,94 +79,136 @@ export class CalendarioProductor implements OnInit, OnDestroy {
     { value: 'cancelled', label: 'Cancelado' },
   ];
 
-  get filterLabel(): string {
-    return this.filterOptions.find(o => o.value === this.statusFilter)?.label ?? 'Todos';
-  }
+  readonly filterLabel = computed(() => 
+    this.filterOptions.find(o => o.value === this.statusFilter())?.label ?? 'Todos'
+  );
 
   readonly DAY_HEADERS = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do'];
 
-  get monthLabel(): string {
-    return `${MONTH_NAMES_ES[this.viewMonth - 1]} ${this.viewYear}`;
-  }
+  readonly monthLabel = computed(() =>
+    `${MONTH_NAMES_ES[this.viewMonth() - 1]} ${this.viewYear()}`
+  );
 
-  get selectedDayLabel(): string | null {
-    if (!this.selectedDay) return null;
-    const d = new Date(this.viewYear, this.viewMonth - 1, this.selectedDay);
-    return `${DAY_NAMES_ES[d.getDay()]}, ${this.selectedDay} ${MONTH_NAMES_ES[this.viewMonth - 1]}`;
-  }
+  readonly selectedDayLabel = computed(() => {
+    const day = this.selectedDay();
+    if (!day) return null;
+    const d = new Date(this.viewYear(), this.viewMonth() - 1, day);
+    return `${DAY_NAMES_ES[d.getDay()]}, ${day} ${MONTH_NAMES_ES[this.viewMonth() - 1]}`;
+  });
 
-  get selectedOrdersCount(): number {
-    if (!this.data || !this.selectedDay) return 0;
-    return this.data.days[String(this.selectedDay)]?.count ?? 0;
-  }
+  readonly selectedOrdersCount = computed(() => {
+    const day = this.selectedDay();
+    if (!day) return 0;
+    return this.getOrdersForDay(day).length;
+  });
 
-  get calendarCells(): (number | null)[] {
-    const firstDay = new Date(this.viewYear, this.viewMonth - 1, 1).getDay();
-    // Ajustar para que lunes sea 0 (domingo es 6)
+  readonly calendarCells = computed(() => {
+    const firstDay = new Date(this.viewYear(), this.viewMonth() - 1, 1).getDay();
     const adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1;
-    const totalDays = new Date(this.viewYear, this.viewMonth, 0).getDate();
+    const totalDays = new Date(this.viewYear(), this.viewMonth(), 0).getDate();
     const cells: (number | null)[] = Array(adjustedFirstDay).fill(null);
     for (let d = 1; d <= totalDays; d++) cells.push(d);
-    while (cells.length % 7 !== 0) cells.push(null);
     return cells;
-  }
+  });
 
-  get calendarRows(): (number | null)[][] {
-    const cells = this.calendarCells;
+  readonly calendarRows = computed(() => {
+    const cells = this.calendarCells();
     const rows: (number | null)[][] = [];
     for (let i = 0; i < cells.length; i += 7) {
       rows.push(cells.slice(i, i + 7));
     }
     return rows;
+  });
+
+  readonly selectedDayOrders = computed(() => {
+    const day = this.selectedDay();
+    if (!day) return [];
+    return this.getOrdersForDay(day).filter(o => {
+      const filter = this.statusFilter();
+      return !filter || o.status === filter;
+    });
+  });
+
+  // ─── Computed: órdenes del mes actual ────────────────────
+  readonly ordersForCurrentMonth = computed(() => {
+    const y = this.viewYear();
+    const m = this.viewMonth();
+    return this.orders().filter(o => {
+      // Usar pickup_date si existe, sino created_at
+      const dateStr = o.pickup_date || o.created_at;
+      if (!dateStr) return false;
+      const d = new Date(dateStr);
+      return d.getFullYear() === y && d.getMonth() + 1 === m;
+    });
+  });
+
+  // ─── Stats ───────────────────────────────────────────────
+  readonly monthlyStats = computed(() => {
+    const monthOrders = this.ordersForCurrentMonth();
+    return {
+      orders_count: monthOrders.length,
+      total_revenue: monthOrders.reduce((sum, o) => sum + o.total_price, 0),
+    };
+  });
+
+  // ─── Methods ─────────────────────────────────────────────
+  getOrdersForDay(day: number): CalendarOrder[] {
+    return this.ordersForCurrentMonth().filter(o => {
+      // Usar pickup_date si existe, sino created_at
+      const dateStr = o.pickup_date || o.created_at;
+      if (!dateStr) return false;
+      const d = new Date(dateStr);
+      return d.getDate() === day;
+    });
   }
 
-  get filteredOrders(): CalendarOrder[] {
-    if (!this.data || !this.selectedDay) return [];
-    return this.data.orders.filter(
-      o => o.day === this.selectedDay && (!this.statusFilter || o.status === this.statusFilter)
-    );
-  }
-
-  getDayData(day: number): DayData | null {
-    return this.data?.days[String(day)] ?? null;
+  getDayData(day: number): { count: number; total: number } | null {
+    const orders = this.getOrdersForDay(day);
+    const filter = this.statusFilter();
+    
+    // Aplicar filtro de estado si está activo
+    const filteredOrders = filter ? orders.filter(o => o.status === filter) : orders;
+    
+    if (filteredOrders.length === 0) return null;
+    return {
+      count: filteredOrders.length,
+      total: filteredOrders.reduce((sum, o) => sum + o.total_price, 0),
+    };
   }
 
   isToday(day: number): boolean {
     const now = new Date();
     return (
-      now.getFullYear() === this.viewYear &&
-      now.getMonth() + 1 === this.viewMonth &&
+      now.getFullYear() === this.viewYear() &&
+      now.getMonth() + 1 === this.viewMonth() &&
       now.getDate() === day
     );
   }
 
   isSelected(day: number): boolean {
-    return this.selectedDay === day;
+    return this.selectedDay() === day;
   }
 
   selectDay(day: number | null): void {
     if (!day) return;
-    this.selectedDay = day;
-    this.statusFilter = '';
-    this.filterDropdownOpen = false;
-    this.cdr.markForCheck();
+    this.selectedDay.set(day);
+    this.filterDropdownOpen.set(false);
   }
 
   toggleFilterDropdown(): void {
-    this.filterDropdownOpen = !this.filterDropdownOpen;
-    this.cdr.markForCheck();
+    this.filterDropdownOpen.update(v => !v);
   }
 
   selectFilter(value: string): void {
-    this.statusFilter = value;
-    this.filterDropdownOpen = false;
-    this.cdr.markForCheck();
+    this.statusFilter.set(value);
+    this.filterDropdownOpen.set(false);
   }
 
   getVisibleOrdersForDay(day: number): CalendarOrder[] {
-    if (!this.data) return [];
-    return this.data.orders
-      .filter(o => o.day === day && (!this.statusFilter || o.status === this.statusFilter))
+    const orders = this.getOrdersForDay(day);
+    const filter = this.statusFilter();
+    return orders
+      .filter(o => !filter || o.status === filter)
       .slice(0, 2); // Mostrar máximo 2 pedidos como chips
   }
 
@@ -200,21 +224,67 @@ export class CalendarioProductor implements OnInit, OnDestroy {
   }
 
   prevMonth(): void {
-    if (this.viewMonth === 1) { this.viewYear--; this.viewMonth = 12; }
-    else this.viewMonth--;
-    this.selectedDay = null;
-    this.loadData();
+    if (this.viewMonth() === 1) {
+      this.viewYear.update(y => y - 1);
+      this.viewMonth.set(12);
+    } else {
+      this.viewMonth.update(m => m - 1);
+    }
+    this.selectedDay.set(null);
+    this.filterDropdownOpen.set(false);
   }
 
   nextMonth(): void {
-    if (this.viewMonth === 12) { this.viewYear++; this.viewMonth = 1; }
-    else this.viewMonth++;
-    this.selectedDay = null;
-    this.loadData();
+    if (this.viewMonth() === 12) {
+      this.viewYear.update(y => y + 1);
+      this.viewMonth.set(1);
+    } else {
+      this.viewMonth.update(m => m + 1);
+    }
+    this.selectedDay.set(null);
+    this.filterDropdownOpen.set(false);
   }
 
   statusLabel(s: string): string { return STATUS_LABELS[s] ?? s; }
   statusColor(s: string): string { return STATUS_COLORS[s] ?? ''; }
+
+  openDetail(order: CalendarOrder): void {
+    // Si la orden ya tiene items, mostrar directamente
+    if (order.items && order.items.length > 0) {
+      this.detailOrder.set(order);
+      return;
+    }
+
+    // Si no tiene items, cargar los detalles completos de la orden
+    this.loadingDetail.set(true);
+
+    this.http
+      .get<CalendarOrder>(`${this.base}/orders/${order.id}`)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (fullOrder) => {
+          // Combinar los datos del calendario con los detalles completos
+          this.detailOrder.set({
+            ...order,
+            items: fullOrder.items || [],
+            business_address: fullOrder.business_address || order.business_address,
+            payment_method: fullOrder.payment_method || order.payment_method,
+            created_at: fullOrder.created_at || order.created_at,
+          });
+          this.loadingDetail.set(false);
+        },
+        error: (err) => {
+          console.error('Error loading order details:', err);
+          // Mostrar el modal aunque falle, con la info básica disponible
+          this.detailOrder.set(order);
+          this.loadingDetail.set(false);
+        },
+      });
+  }
+
+  closeDetail(): void {
+    this.detailOrder.set(null);
+  }
 
   logout(): void {
     this.authService.logout();
@@ -222,36 +292,31 @@ export class CalendarioProductor implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.loadData();
-  }
-
-  private loadData(): void {
-    this.loading = true;
-    this.cdr.markForCheck();
-    this.http
-      .get<CalendarData>(`${this.base}/calendario-pedidos?year=${this.viewYear}&month=${this.viewMonth}`)
+    // Suscribirse al Observable de órdenes
+    this.orderService.businessOrders$
       .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: data => {
-          this.data = data;
-          // Auto-select today if viewing the current month
-          if (!this.selectedDay) {
-            const now = new Date();
-            if (now.getFullYear() === this.viewYear && now.getMonth() + 1 === this.viewMonth) {
-              this.selectedDay = now.getDate();
-            }
+      .subscribe(orders => {
+        this.orders.set(orders);
+        this.loading.set(false);
+        
+        // Auto-select today if viewing the current month
+        const now = new Date();
+        if (now.getFullYear() === this.viewYear() && now.getMonth() + 1 === this.viewMonth()) {
+          if (this.selectedDay() === null) {
+            this.selectedDay.set(now.getDate());
           }
-          this.loading = false;
-          this.cdr.markForCheck();
-        },
-        error: () => {
-          this.loading = false;
-          this.cdr.markForCheck();
-        },
+        }
+        
+        this.cdr.markForCheck();
       });
+
+    // Iniciar polling automático cada 30 segundos
+    this.orderService.startPolling(30000);
   }
 
   ngOnDestroy(): void {
+    // Detener polling al destruir el componente
+    this.orderService.stopPolling();
     this.destroy$.next();
     this.destroy$.complete();
   }
