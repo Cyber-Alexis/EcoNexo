@@ -1,7 +1,8 @@
-import { Component, HostListener, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, computed, HostListener, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService, AuthUser } from '../../../services/auth.service';
 import { CartService } from '../../../services/cart.service';
 import { environment } from '../../../../../environments/environment';
@@ -23,16 +24,26 @@ export class Header implements OnInit, OnDestroy {
   dropdownOpen = false;
   mobileMenuOpen = false;
   notificationCount = 0;
-  cartCount = 0;
+  
+  // 🔄 Reactividad con Signals: Convierte el Observable items$ a Signal
+  private readonly cartItems = toSignal(this.cartService.items$, { initialValue: [] });
+  
+  // Computed signal: Se actualiza automáticamente cuando cartItems cambia
+  readonly cartCount = computed(() => 
+    this.cartItems().reduce((sum, item) => sum + item.quantity, 0)
+  );
+  
   currentUser: AuthUser | null = null;
 
   ngOnInit(): void {
-    this.cartService.items$.subscribe(() => {
-      this.cartCount = this.cartService.totalCount;
-    });
-
     this.authService.user$.pipe(takeUntil(this.destroy$)).subscribe(user => {
+      const previousUser = this.currentUser;
       this.currentUser = user;
+      
+      // Refrescar carrito cuando el usuario inicia sesión (no cuando cierra sesión)
+      if (user && !previousUser) {
+        this.cartService.refreshFromServer();
+      }
     });
 
     this.loadNotificationState();

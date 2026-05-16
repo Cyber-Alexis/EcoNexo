@@ -40,8 +40,8 @@ export class NegocioDetalle implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private base        = environment.apiUrl;
 
-  // Polling disabled for better stability (business details don't change frequently)
-  private readonly POLLING_INTERVAL = 0; // Desactivado
+  // Polling activado: 45 segundos (productos y reviews pueden cambiar)
+  private readonly POLLING_INTERVAL = 45000;
   private pollingSubscription?: Subscription;
   private businessId: string = '';
 

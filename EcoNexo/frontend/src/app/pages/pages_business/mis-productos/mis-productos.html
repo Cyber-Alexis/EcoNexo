@@ -128,7 +128,7 @@
                     </div>
                   </td>
                   <td>{{ product.category?.name ?? '—' }}</td>
-                  <td class="price-cell">€{{ product.price | number:'1.2-2' }}</td>
+                  <td class="price-cell">€{{ product.price | number:'1.2-2' }}/{{ product.price_unit ?? 'unidad' }}</td>
                   <td [class.stock-low]="product.stock <= 5 && product.stock > 0" [class.stock-zero]="product.stock === 0">
                     {{ product.stock }} uds.
                   </td>
@@ -207,6 +207,17 @@
           <label class="image-upload-label" for="productImage">
             @if (imagePreview) {
               <img [src]="imagePreview" alt="Preview" class="image-preview" />
+              <button
+                type="button"
+                class="image-delete-btn"
+                (click)="onRemoveImagePreview()"
+                aria-label="Eliminar imagen"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
             } @else {
               <svg viewBox="0 0 24 24" fill="none" width="32" height="32" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round">
                 <rect x="3" y="3" width="18" height="18" rx="2"/>
@@ -272,6 +283,13 @@
             }
           </div>
         </div>
+
+        <label class="field-label" for="prodPriceUnit">Unidad de medida</label>
+        <select id="prodPriceUnit" class="field-input" formControlName="price_unit">
+          @for (unit of priceUnitOptions; track unit.value) {
+            <option [value]="unit.value">{{ unit.label }}</option>
+          }
+        </select>
 
         <label class="field-label" for="prodCat">Categoría</label>
         <select id="prodCat" class="field-input" formControlName="category">

@@ -22,8 +22,8 @@
           <line x1="3" y1="6" x2="21" y2="6" stroke="#374151" stroke-width="1.6" stroke-linecap="round"/>
           <path d="M16 10a4 4 0 0 1-8 0" stroke="#374151" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        @if (cartCount > 0) {
-          <span class="cart-badge">{{ cartCount }}</span>
+        @if (cartCount() > 0) {
+          <span class="cart-badge">{{ cartCount() }}</span>
         }
       </button>
     }

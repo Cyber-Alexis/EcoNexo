@@ -6,12 +6,16 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, combineLatest, Subject } from 'rxjs';
 import { map, debounceTime, distinctUntilChanged, filter, takeUntil } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
-import { AuthService } from '../../../core/services/auth.service';import { BusinessSidebar } from '../business-sidebar/business-sidebar';
+import { AuthService } from '../../../core/services/auth.service';
+import { getProductImageUrl } from '../../../core/utils/image.utils';
+import { BusinessSidebar } from '../business-sidebar/business-sidebar';
 
 interface ProductImage {
   id: number;
   path: string;
+  url: string;
   type: string | null;
+  position?: number;
 }
 
 interface ProductCategory {
@@ -112,6 +116,11 @@ export class MisProductos implements OnInit, OnDestroy {
   selectedImageFile: File | null = null;
   imagePreview: string | null = null;
 
+  readonly priceUnitOptions = [
+    { value: 'unidad', label: 'Unidad' },
+    { value: 'kg', label: 'Kilogramo (kg)' },
+  ];
+
   readonly categoryOptions = [
     'Verduras',
     'Frutas',
@@ -157,7 +166,7 @@ export class MisProductos implements OnInit, OnDestroy {
   }
 
   productImage(images: ProductImage[]): string {
-    return images?.[0]?.path ?? '';
+    return getProductImageUrl(images);
   }
 
   getStatusLabel(p: BusinessProduct): string {
@@ -220,7 +229,9 @@ export class MisProductos implements OnInit, OnDestroy {
     this.modalMode = 'edit';
     this.editingProductId = product.id;
     this.selectedImageFile = null;
-    this.imagePreview = this.productImage(product.images) || null;
+    // Solo establecer preview si hay imágenes reales (no placeholder)
+    const firstImage = product.images?.[0];
+    this.imagePreview = firstImage ? (firstImage.url || firstImage.path) : null;
     this.modalError = '';
     this.form.patchValue({
       name:        product.name,
@@ -246,8 +257,15 @@ export class MisProductos implements OnInit, OnDestroy {
     const reader = new FileReader();
     reader.onload = (e) => {
       this.imagePreview = e.target?.result as string;
+      this.cdr.markForCheck();
     };
     reader.readAsDataURL(file);
+  }
+
+  onRemoveImagePreview(): void {
+    this.imagePreview = null;
+    this.selectedImageFile = null;
+    this.cdr.markForCheck();
   }
 
   onSaveProduct(): void {

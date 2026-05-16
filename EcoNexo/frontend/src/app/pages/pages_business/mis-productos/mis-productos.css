@@ -626,6 +626,7 @@
   display: flex;
   justify-content: center;
   margin-bottom: 1.2rem;
+  position: relative;
 }
 
 .image-upload-label {
@@ -639,6 +640,7 @@
   cursor: pointer;
   overflow: hidden;
   transition: border-color 0.15s;
+  position: relative;
 }
 
 .image-upload-label:hover {
@@ -653,6 +655,41 @@
 
 .image-input-hidden {
   display: none;
+}
+
+/* Image delete button */
+.image-delete-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  color: #dc2626;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s, background 0.15s, transform 0.15s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+}
+
+.image-upload-label:hover .image-delete-btn {
+  opacity: 1;
+}
+
+.image-delete-btn:hover:not(:disabled) {
+  background: #fee2e2;
+  transform: scale(1.1);
+}
+
+.image-delete-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Form fields */

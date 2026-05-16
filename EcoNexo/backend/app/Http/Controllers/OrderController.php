@@ -119,22 +119,29 @@ class OrderController extends Controller
 
         $orders = Order::where('business_id', $business->id)
             ->with([
-                'user:id,name,email',
+                'user:id,name,email,address,city,postal_code',
                 'items.product:id,name,price,price_unit',
             ])
             ->latest()
             ->get()
-            ->map(function ($order) {
+            ->map(function ($order) use ($business) {
                 return [
                     'id'             => $order->id,
                     'code'           => 'ORD-' . str_pad($order->id, 3, '0', STR_PAD_LEFT),
                     'status'         => $order->status,
+                    'business_id'    => $business->id,
+                    'business_name'  => $business->name,
+                    'business_address' => $business->address,
                     'total_price'    => $order->total_price,
                     'payment_method' => $order->payment_method,
+                    'delivery_method' => $order->delivery_method,
                     'pickup_date'    => $order->pickup_date,
                     'created_at'     => $order->created_at,
                     'client_name'    => $order->user?->name,
                     'client_email'   => $order->user?->email,
+                    'user_address'   => $order->user?->address,
+                    'user_city'      => $order->user?->city,
+                    'user_postal_code' => $order->user?->postal_code,
                     'items_count'    => $order->items->count(),
                     'items'          => $order->items->map(fn($item) => [
                         'product_id'   => $item->product_id,
@@ -168,7 +175,7 @@ class OrderController extends Controller
         $orders = Order::where('business_id', $business->id)
             ->whereYear('created_at',  $year)
             ->whereMonth('created_at', $month)
-            ->with(['user:id,name,email', 'items.product:id,name,price,price_unit'])
+            ->with(['user:id,name,email,address,city,postal_code', 'items.product:id,name,price,price_unit'])
             ->orderBy('created_at')
             ->get();
 
@@ -195,9 +202,13 @@ class OrderController extends Controller
             'items_count'    => $order->items->count(),
             'total_price'    => (float) $order->total_price,
             'payment_method' => $order->payment_method,
+            'delivery_method'=> $order->delivery_method,
             'pickup_date'    => $order->pickup_date,
             'created_at'     => $order->created_at,
             'business_id'    => $order->business_id,
+            'user_address'   => $order->user?->address,
+            'user_city'      => $order->user?->city,
+            'user_postal_code' => $order->user?->postal_code,
             'items'          => $order->items->map(fn($item) => [
                 'product_id'   => $item->product_id,
                 'product_name' => $item->product?->name,

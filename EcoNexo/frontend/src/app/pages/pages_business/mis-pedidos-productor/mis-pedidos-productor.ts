@@ -21,10 +21,14 @@ export interface ProducerOrder {
   status: string;
   total_price: number;
   payment_method: string;
+  delivery_method: string;
   pickup_date: string | null;
   created_at: string;
   client_name: string;
   client_email: string;
+  user_address: string | null;
+  user_city: string | null;
+  user_postal_code: string | null;
   items_count: number;
   items: ProducerOrderItem[];
 }
@@ -41,6 +45,7 @@ const STATUS_NEXT: Record<string, string> = {
   pending:   'confirmed',
   confirmed: 'listo',
   listo:     'completed',
+  completed: 'pending',
   cancelled: 'pending',
 };
 
@@ -121,6 +126,14 @@ export class MisPedidosProductor implements OnInit, OnDestroy {
   nextStatusLabel(status: string): string {
     const next = STATUS_NEXT[status];
     return next ? STATUS_LABELS[next] : '';
+  }
+
+  deliveryMethodLabel(method: string): string {
+    const labels: Record<string, string> = {
+      'pickup': 'Recogida en tienda',
+      'delivery': 'Entrega a domicilio'
+    };
+    return labels[method] ?? method;
   }
 
   ngOnInit(): void {

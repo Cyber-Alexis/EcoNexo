@@ -5,6 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { BusinessService } from '../../core/services/business.service';
 import { ApiBusinessListItem } from '../../core/models/business.model';
 import { getMainImageUrl } from '../../core/utils/image.utils';
+import { BehaviorSubject, Subject, interval } from 'rxjs';
+import { takeUntil, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-negocios',
@@ -19,8 +21,15 @@ export class Negocios implements OnInit, OnDestroy {
   loading = true;
   error = false;
 
+  // Reactive state with BehaviorSubject
+  private businessesSubject = new BehaviorSubject<ApiBusinessListItem[]>([]);
+  private destroy$ = new Subject<void>();
+
   businesses: ApiBusinessListItem[] = [];
   filteredBusinesses: ApiBusinessListItem[] = [];
+  
+  // Polling configuration (90 segundos para negocios)
+  private readonly POLLING_INTERVAL = 90000;
 
   constructor(
     private businessService: BusinessService,
@@ -30,33 +39,46 @@ export class Negocios implements OnInit, OnDestroy {
   ngOnInit() {
     // Initial load - get all businesses at once
     this.loadBusinesses();
+    
+    // Suscribirse al BehaviorSubject para actualizaciones reactivas
+    this.businessesSubject.pipe(takeUntil(this.destroy$)).subscribe(businesses => {
+      this.businesses = businesses;
+      this.applyFilters();
+    });
+    
+    // Iniciar polling automático cada 90 segundos
+    interval(this.POLLING_INTERVAL).pipe(
+      takeUntil(this.destroy$),
+      switchMap(() => this.businessService.getAll())
+    ).subscribe({
+      next: (data) => {
+        this.businessesSubject.next(data);
+      },
+      error: (err) => console.error('Polling error:', err)
+    });
   }
   
   ngOnDestroy(): void {
-    // Clean up if needed
+    this.destroy$.next();
+    this.destroy$.complete();
   }
   
   private loadBusinesses(): void {
     this.businessService.getAll().subscribe({
       next: (data) => {
-        this.businesses = data;
+        // Actualizar BehaviorSubject (esto dispara la reactividad)
+        this.businessesSubject.next(data);
         this.loading = false;
-        this.applyFilters();
       },
       error: (err) => {
         console.error('Error loading businesses:', err);
         this.error = true;
-        this.businesses = [];
+        this.businessesSubject.next([]);
         this.filteredBusinesses = [];
         this.loading = false;
         this.syncView();
       },
     });
-  }
-  
-  private updateBusinessesData(data: ApiBusinessListItem[]): void {
-    this.businesses = data;
-    this.applyFilters();
   }
 
   get categories(): string[] {

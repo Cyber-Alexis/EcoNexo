@@ -249,7 +249,7 @@
       }
 
       <div class="modal-meta-block">
-        <span class="modal-meta-label">Fecha:</span>
+        <span class="modal-meta-label">Fecha realizada:</span>
         <span class="modal-meta-value">{{ detailOrder()!.created_at | date:'yyyy-MM-dd' }}</span>
       </div>
 
@@ -257,6 +257,22 @@
         <div class="modal-meta-block">
           <span class="modal-meta-label">Método de pago:</span>
           <span class="modal-meta-value">{{ detailOrder()!.payment_method }}</span>
+        </div>
+      }
+
+      @if (detailOrder()!.delivery_method) {
+        <div class="modal-meta-block">
+          <span class="modal-meta-label">Método de recogida:</span>
+          <span class="modal-meta-value">{{ deliveryMethodLabel(detailOrder()!.delivery_method) }}</span>
+        </div>
+      }
+
+      @if (detailOrder()!.delivery_method === 'delivery' && (detailOrder()!.user_address || detailOrder()!.user_city)) {
+        <div class="modal-meta-block">
+          <span class="modal-meta-label">Dirección del cliente:</span>
+          <span class="modal-meta-value">
+            {{ detailOrder()!.user_address }}{{ detailOrder()!.user_city ? ', ' + detailOrder()!.user_city : '' }}{{ detailOrder()!.user_postal_code ? ' (' + detailOrder()!.user_postal_code + ')' : '' }}
+          </span>
         </div>
       }
     </div>

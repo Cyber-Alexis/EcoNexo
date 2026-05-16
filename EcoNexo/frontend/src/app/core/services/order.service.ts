@@ -53,6 +53,9 @@ export interface CalendarOrder {
   items: OrderItem[];
   business_id: number;
   pickup_date: string | null;
+  user_address: string | null;
+  user_city: string | null;
+  user_postal_code: string | null;
 }
 
 @Injectable({ providedIn: 'root' })

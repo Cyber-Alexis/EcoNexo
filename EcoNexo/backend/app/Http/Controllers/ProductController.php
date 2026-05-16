@@ -145,7 +145,7 @@ class ProductController extends Controller
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('products', 'public');
             $product->images()->create([
-                'path' => Storage::url($path),
+                'path' => $path,
                 'type' => 'main',
             ]);
         }
@@ -212,7 +212,7 @@ class ProductController extends Controller
             }
             $path = $request->file('image')->store('products', 'public');
             $product->images()->create([
-                'path' => Storage::url($path),
+                'path' => $path,
                 'type' => 'main',
             ]);
         }

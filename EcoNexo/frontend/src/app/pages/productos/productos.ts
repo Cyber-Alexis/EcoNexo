@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CartService } from '../../core/services/cart.service';
 import { ProductService, ApiProductWithBusiness, PaginatedResponse } from '../../core/services/product.service';
+import { getProductImageUrl } from '../../core/utils/image.utils';
+import { BehaviorSubject, Subject, interval } from 'rxjs';
+import { takeUntil, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-productos',
@@ -14,6 +17,10 @@ export class Productos implements OnInit, OnDestroy {
   searchQuery = '';
   selectedFilter = 'Todas';
   selectedSort = 'name-asc';
+  
+  // Reactive state with BehaviorSubject
+  private allProductsSubject = new BehaviorSubject<ApiProductWithBusiness[]>([]);
+  private destroy$ = new Subject<void>();
   
   // All products cache (loaded once)
   allProducts: ApiProductWithBusiness[] = [];
@@ -32,6 +39,9 @@ export class Productos implements OnInit, OnDestroy {
   
   // Categories from API
   availableCategories: string[] = ['Todas'];
+  
+  // Polling configuration (60 segundos para productos)
+  private readonly POLLING_INTERVAL = 60000;
 
   constructor(
     private cartService: CartService,
@@ -46,12 +56,33 @@ export class Productos implements OnInit, OnDestroy {
     // Initial load - get ALL products at once for better UX
     this.loadAllProducts();
     
-    // Polling disabled by default for better pagination stability
-    // If you need real-time updates, set POLLING_INTERVAL to 30000 (30 seconds)
+    // Suscribirse al BehaviorSubject para actualizaciones reactivas
+    this.allProductsSubject.pipe(takeUntil(this.destroy$)).subscribe(products => {
+      this.allProducts = products;
+      this.applyFiltersAndPagination();
+    });
+    
+    // Iniciar polling automático cada 60 segundos
+    interval(this.POLLING_INTERVAL).pipe(
+      takeUntil(this.destroy$),
+      switchMap(() => this.productService.getAll({ per_page: 1000 }))
+    ).subscribe({
+      next: (response) => {
+        this.allProductsSubject.next(response.data);
+        // Actualizar cantidades para nuevos productos
+        response.data.forEach(p => {
+          if (!this.productQty.has(p.id)) {
+            this.productQty.set(p.id, 1);
+          }
+        });
+      },
+      error: (err) => console.error('Polling error:', err)
+    });
   }
   
   ngOnDestroy(): void {
-    // Clean up if needed
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadCategories(): void {
@@ -72,20 +103,20 @@ export class Productos implements OnInit, OnDestroy {
     // Load ALL products in a single request (no pagination on backend)
     this.productService.getAll({ per_page: 1000 }).subscribe({
       next: (response: PaginatedResponse<ApiProductWithBusiness>) => {
-        this.allProducts = response.data;
+        // Actualizar BehaviorSubject (esto dispara la reactividad)
+        this.allProductsSubject.next(response.data);
         
         // Initialize quantities for all products
-        this.allProducts.forEach(p => {
+        response.data.forEach(p => {
           if (!this.productQty.has(p.id)) {
             this.productQty.set(p.id, 1);
           }
         });
         this.loading = false;
-        this.applyFiltersAndPagination();
       },
       error: (err) => {
         console.error('Error loading products:', err);
-        this.allProducts = [];
+        this.allProductsSubject.next([]);
         this.products = [];
         this.filteredProducts = [];
         this.totalProducts = 0;
@@ -253,7 +284,7 @@ export class Productos implements OnInit, OnDestroy {
   }
 
   getProductImage(product: ApiProductWithBusiness): string {
-    return product.images?.[0]?.path ?? 'https://placehold.co/300x300?text=Sin+imagen';
+    return getProductImageUrl(product.images);
   }
 
   getDisplayPriceUnit(product: { price_unit?: string | null; category?: { name: string } | null }): string {

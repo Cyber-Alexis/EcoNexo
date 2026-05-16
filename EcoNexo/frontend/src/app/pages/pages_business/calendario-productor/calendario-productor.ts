@@ -145,9 +145,10 @@ export class CalendarioProductor implements OnInit, OnDestroy {
   // ─── Stats ───────────────────────────────────────────────
   readonly monthlyStats = computed(() => {
     const monthOrders = this.ordersForCurrentMonth();
+    const completedOrders = monthOrders.filter(o => o.status === 'completed');
     return {
       orders_count: monthOrders.length,
-      total_revenue: monthOrders.reduce((sum, o) => sum + o.total_price, 0),
+      total_revenue: completedOrders.reduce((sum, o) => sum + o.total_price, 0),
     };
   });
 
@@ -248,7 +249,25 @@ export class CalendarioProductor implements OnInit, OnDestroy {
   statusLabel(s: string): string { return STATUS_LABELS[s] ?? s; }
   statusColor(s: string): string { return STATUS_COLORS[s] ?? ''; }
 
+  deliveryMethodLabel(method: string): string {
+    const labels: Record<string, string> = {
+      'pickup': 'Recogida en tienda',
+      'delivery': 'Entrega a domicilio'
+    };
+    return labels[method] ?? method;
+  }
+
   openDetail(order: CalendarOrder): void {
+    // DEBUG: Ver qué datos tiene la orden
+    console.log('📦 Order data:', {
+      id: order.id,
+      delivery_method: order.delivery_method,
+      user_address: order.user_address,
+      user_city: order.user_city,
+      user_postal_code: order.user_postal_code,
+      hasItems: order.items && order.items.length > 0
+    });
+
     // Si la orden ya tiene items, mostrar directamente
     if (order.items && order.items.length > 0) {
       this.detailOrder.set(order);
@@ -269,7 +288,11 @@ export class CalendarioProductor implements OnInit, OnDestroy {
             items: fullOrder.items || [],
             business_address: fullOrder.business_address || order.business_address,
             payment_method: fullOrder.payment_method || order.payment_method,
+            delivery_method: fullOrder.delivery_method || order.delivery_method,
             created_at: fullOrder.created_at || order.created_at,
+            user_address: fullOrder.user_address || order.user_address,
+            user_city: fullOrder.user_city || order.user_city,
+            user_postal_code: fullOrder.user_postal_code || order.user_postal_code,
           });
           this.loadingDetail.set(false);
         },
