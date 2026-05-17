@@ -60,7 +60,7 @@
 
   <!-- Formulario de tarjeta (solo si se selecciona card) -->
   @if (selectedPaymentMethod === 'card') {
-    <form [formGroup]="form" (ngSubmit)="onConfirmar()" novalidate class="card-form">
+    <form [formGroup]="form" (ngSubmit)="onConfirmar()" novalidate class="card-form notranslate">
     <div class="form-group">
       <label class="form-label">Número de tarjeta</label>
       <input

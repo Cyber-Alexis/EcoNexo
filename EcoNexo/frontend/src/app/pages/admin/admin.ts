@@ -5,22 +5,9 @@ import { Router } from '@angular/router';
 import { Subscription, interval } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { AuthService, AuthUser } from '../../core/services/auth.service';
-import {
-  AdminGeneralSettings,
-  AdminMaintenanceSettings,
-  AdminOverviewCard,
-  AdminNotificationSettings,
-  AdminRecentActivityItem,
-  AdminService,
-  AdminSettings,
-  AdminStatistics,
-  AdminSystemStatusItem,
-  AdminAnalytics,
-  AnalyticsCategoryItem,
-  AnalyticsMonthlySale,
-  AnalyticsDailyTraffic,
-  User
-} from '../../services/admin.service';
+import { AdminGeneralSettings, AdminMaintenanceSettings, AdminOverviewCard, AdminNotificationSettings, AdminRecentActivityItem, AdminService, AdminSettings, AdminStatistics, AdminSystemStatusItem, AdminAnalytics, AnalyticsCategoryItem, AnalyticsMonthlySale, AnalyticsDailyTraffic, User } from '../../services/admin.service';
+
+declare const google: any;
 
 interface UserForm {
   name: string;
@@ -46,6 +33,7 @@ export class Admin implements OnInit {
   activeSection = 'dashboard';
   currentUser: AuthUser | null = null;
   isMobileMenuOpen = false;
+  currentLanguage = 'es';
 
   // Users data
   users: User[] = [];
@@ -86,6 +74,17 @@ export class Admin implements OnInit {
   editingUserId: number | null = null;
   formData: UserForm = this.initForm();
   private refreshSubscription?: Subscription;
+
+  // Getter for section title (prevents title accumulation bug)
+  get sectionTitle(): string {
+    const titles: Record<string, string> = {
+      'dashboard': 'Panel de Administración',
+      'usuarios': 'Administración de Usuarios',
+      'analisis': 'Análisis y Control',
+      'configuracion': 'Configuración del Sistema'
+    };
+    return titles[this.activeSection] || 'Panel de Administración';
+  }
 
   constructor(
     private adminService: AdminService,
@@ -462,6 +461,30 @@ export class Admin implements OnInit {
 
   closeMobileMenu(): void {
     this.isMobileMenuOpen = false;
+  }
+
+  changeLanguage(lang: string): void {
+    if (this.currentLanguage === lang) return;
+    
+    this.currentLanguage = lang;
+
+    const changeGoogleLanguage = () => {
+      try {
+        const selectElement = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+        if (selectElement) {
+          selectElement.value = lang;
+          selectElement.dispatchEvent(new Event('change'));
+        }
+      } catch (error) {
+        console.error('Error al cambiar idioma:', error);
+      }
+    };
+
+    if (typeof google !== 'undefined' && google.translate) {
+      changeGoogleLanguage();
+    } else {
+      setTimeout(changeGoogleLanguage, 500);
+    }
   }
 
   goToPage(page: number): void {

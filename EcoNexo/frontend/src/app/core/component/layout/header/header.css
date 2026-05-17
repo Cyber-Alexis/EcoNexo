@@ -39,6 +39,44 @@
 .icon-btn:hover { background: #f3f4f6; }
 .icon-btn svg { width: 20px; height: 20px; display: block; }
 
+/* ─── Language Selector ─── */
+.language-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: #f3f4f6;
+  border-radius: 8px;
+  padding: 0.2rem;
+}
+
+.lang-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  transition: all 0.2s;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.lang-btn:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.lang-btn--active {
+  background: #2D6A4F;
+  color: #ffffff;
+}
+
+.lang-btn--active:hover {
+  background: #1f5a41;
+}
+
 /* Unified button styles for login and register */
 .login-link,
 .register-btn-nav {
@@ -429,6 +467,17 @@
   .user-name {
     max-width: 120px;
   }
+
+  /* Language selector on tablet */
+  .language-selector {
+    gap: 0.2rem;
+    padding: 0.15rem;
+  }
+
+  .lang-btn {
+    padding: 0.3rem 0.55rem;
+    font-size: 0.7rem;
+  }
 }
 
 /* ─── Responsive: Mobile (≤ 600px) ─── */
@@ -490,6 +539,18 @@
   .mobile-menu-item {
     padding: 0.75rem 1rem;
     font-size: 0.9rem;
+  }
+
+  /* Language selector on mobile - más compacto */
+  .language-selector {
+    gap: 0.15rem;
+    padding: 0.15rem;
+    background: #f9fafb;
+  }
+
+  .lang-btn {
+    padding: 0.3rem 0.45rem;
+    font-size: 0.65rem;
   }
 }
 

@@ -13,7 +13,33 @@
     <!-- ─── Topbar ─── -->
     <header class="topbar">
       <span class="topbar-section-title">Vista Previa del Perfil Público</span>
+      
       <div class="topbar-actions">
+        <!-- Language Selector -->
+        <div class="language-selector notranslate">
+          <button 
+            class="lang-btn" 
+            [class.lang-btn--active]="currentLanguage === 'es'"
+            (click)="changeLanguage('es')"
+            title="Español">
+            ES
+          </button>
+          <button 
+            class="lang-btn" 
+            [class.lang-btn--active]="currentLanguage === 'ca'"
+            (click)="changeLanguage('ca')"
+            title="Català">
+            CA
+          </button>
+          <button 
+            class="lang-btn" 
+            [class.lang-btn--active]="currentLanguage === 'en'"
+            (click)="changeLanguage('en')"
+            title="English">
+            ENG
+          </button>
+        </div>
+        
         <button class="topbar-icon-btn" aria-label="Notificaciones">
           <svg viewBox="0 0 24 24" fill="none">
             <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -186,13 +212,13 @@
                 <img [src]="productImage(p.images)" [alt]="p.name" class="product-thumb" />
                 <div class="product-info">
                   <h4 class="product-name">{{ p.name }}</h4>
-                  <p class="product-price">
+                  <p class="product-price notranslate">
                     {{ p.price | number:'1.2-2' }}€<span class="price-unit">/{{ getDisplayPriceUnit(p) }}</span>
                   </p>
                   <div class="product-stock-row">
-                    <p class="product-stock">Stock: {{ p.stock }}</p>
+                    <p class="product-stock notranslate">Stock: {{ p.stock }}</p>
                     <div class="product-footer">
-                      <div class="qty-ctrl">
+                      <div class="qty-ctrl notranslate">
                         <button type="button" class="qty-btn qty-btn-minus" (click)="decrementQty(p.id)" aria-label="Reducir">−</button>
                         <span class="qty-val">{{ getQty(p.id) }}</span>
                         <button type="button" class="qty-btn qty-btn-plus" (click)="incrementQty(p.id)" aria-label="Aumentar">+</button>

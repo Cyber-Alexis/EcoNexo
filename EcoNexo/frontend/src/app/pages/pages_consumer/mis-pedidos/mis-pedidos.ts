@@ -22,6 +22,9 @@ import { OrderService } from '../../../core/services/order.service';
 import { environment } from '../../../../environments/environment';
 import { ConsumerSidebar } from '../consumer-sidebar/consumer-sidebar';
 
+// Declaración global para Google Translate
+declare const google: any;
+
 export interface OrderItem {
   product_id: number;
   product_name: string;
@@ -242,6 +245,30 @@ export class MisPedidos implements OnInit, OnDestroy {
   @HostListener('window:resize')
   onResize(): void {
     this.viewportWidth.set(window.innerWidth);
+  }
+
+  // Language translation
+  currentLanguage = 'es';
+
+  changeLanguage(lang: string): void {
+    if (this.currentLanguage === lang) return;
+    this.currentLanguage = lang;
+    const changeGoogleLanguage = () => {
+      try {
+        const selectElement = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+        if (selectElement) {
+          selectElement.value = lang;
+          selectElement.dispatchEvent(new Event('change'));
+        }
+      } catch (error) {
+        console.error('Error al cambiar idioma:', error);
+      }
+    };
+    if (typeof google !== 'undefined' && google.translate) {
+      changeGoogleLanguage();
+    } else {
+      setTimeout(changeGoogleLanguage, 500);
+    }
   }
 
   @HostListener('document:click', ['$event'])

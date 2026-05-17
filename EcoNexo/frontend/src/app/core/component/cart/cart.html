@@ -13,7 +13,7 @@
       </svg>
       Carrito de Compras
       @if (totalCount > 0) {
-        <span class="cart-header-badge">{{ totalCount }}</span>
+        <span class="cart-header-badge notranslate">{{ totalCount }}</span>
       }
     </div>
     <button class="cart-close-btn" (click)="close()" aria-label="Cerrar carrito">
@@ -47,15 +47,15 @@
               <img [src]="item.img" [alt]="item.name" class="cart-item-img"/>
               <div class="cart-item-info">
                 <p class="cart-item-name">{{ item.name }}</p>
-                <p class="cart-item-price-unit">{{ item.price.toFixed(2) }}€/{{ item.priceUnit }}</p>
-                <div class="qty-ctrl">
+                <p class="cart-item-price-unit notranslate">{{ item.price.toFixed(2) }}€/{{ item.priceUnit }}</p>
+                <div class="qty-ctrl notranslate">
                   <button class="qty-btn" (click)="decrement(item)" aria-label="Reducir cantidad">−</button>
                   <span class="qty-value">{{ item.quantity }}</span>
                   <button class="qty-btn" (click)="increment(item)" aria-label="Aumentar cantidad">+</button>
                 </div>
               </div>
               <div class="cart-item-right">
-                <span class="cart-item-total">{{ (item.price * item.quantity).toFixed(2) }}€</span>
+                <span class="cart-item-total notranslate">{{ (item.price * item.quantity).toFixed(2) }}€</span>
                 <button class="cart-item-delete" (click)="remove(item)" aria-label="Eliminar producto">
                   <svg viewBox="0 0 24 24" fill="none" width="15" height="15">
                     <polyline points="3 6 5 6 21 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -77,7 +77,7 @@
     <div class="cart-footer">
       <div class="cart-subtotal-row">
         <span class="cart-subtotal-label">Subtotal</span>
-        <span class="cart-subtotal-amount">{{ subtotal.toFixed(2) }}€</span>
+        <span class="cart-subtotal-amount notranslate">{{ subtotal.toFixed(2) }}€</span>
       </div>
       <div class="cart-footer-actions">
         <button class="cart-vaciar-btn" (click)="clear()">Vaciar</button>

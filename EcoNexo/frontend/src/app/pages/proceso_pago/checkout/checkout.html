@@ -83,14 +83,14 @@
                 <div class="summary-item">
                   <div class="summary-item-info">
                     <span class="summary-item-name">{{ item.quantity }}x {{ item.name }}</span>
-                    <span class="summary-item-unit">{{ item.price.toFixed(2) }}€/{{ item.priceUnit }}</span>
+                    <span class="summary-item-unit notranslate">{{ item.price.toFixed(2) }}€/{{ item.priceUnit }}</span>
                   </div>
-                  <span class="summary-item-price">{{ (item.price * item.quantity).toFixed(2) }}€</span>
+                  <span class="summary-item-price notranslate">{{ (item.price * item.quantity).toFixed(2) }}€</span>
                 </div>
               }
               <div class="summary-subtotal">
                 <span>Subtotal</span>
-                <span>{{ groupSubtotal(group) }}€</span>
+                <span class="notranslate">{{ groupSubtotal(group) }}€</span>
               </div>
             </div>
           }

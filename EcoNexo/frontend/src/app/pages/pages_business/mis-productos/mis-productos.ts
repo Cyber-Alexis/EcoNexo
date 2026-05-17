@@ -10,6 +10,9 @@ import { AuthService } from '../../../core/services/auth.service';
 import { getProductImageUrl } from '../../../core/utils/image.utils';
 import { BusinessSidebar } from '../business-sidebar/business-sidebar';
 
+// Declaración global para Google Translate
+declare const google: any;
+
 interface ProductImage {
   id: number;
   path: string;
@@ -143,6 +146,30 @@ export class MisProductos implements OnInit, OnDestroy {
     category:    ['', [Validators.required]],
     active:      [true],
   });
+
+  // Language translation
+  currentLanguage = 'es';
+
+  changeLanguage(lang: string): void {
+    if (this.currentLanguage === lang) return;
+    this.currentLanguage = lang;
+    const changeGoogleLanguage = () => {
+      try {
+        const selectElement = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+        if (selectElement) {
+          selectElement.value = lang;
+          selectElement.dispatchEvent(new Event('change'));
+        }
+      } catch (error) {
+        console.error('Error al cambiar idioma:', error);
+      }
+    };
+    if (typeof google !== 'undefined' && google.translate) {
+      changeGoogleLanguage();
+    } else {
+      setTimeout(changeGoogleLanguage, 500);
+    }
+  }
 
   ngOnInit(): void {
     this.loadProducts();

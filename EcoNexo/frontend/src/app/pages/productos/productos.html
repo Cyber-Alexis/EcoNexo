@@ -12,7 +12,7 @@
   <div class="container">
     <section class="catalog-shell">
       <div class="toolbar-panel">
-        <label class="search-input-wrapper" aria-label="Buscar productos o negocios">
+        <label class="search-input-wrapper notranslate" aria-label="Buscar productos o negocios">
           <svg class="search-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
             <circle cx="8.5" cy="8.5" r="5.5" stroke="#9CA3AF" stroke-width="1.5" />
             <path d="M13 13L17 17" stroke="#9CA3AF" stroke-width="1.5" stroke-linecap="round" />
@@ -27,7 +27,7 @@
         </label>
 
         <div class="filters-cluster">
-          <label class="select-shell category-filter" aria-label="Filtrar por categoría">
+          <label class="select-shell category-filter notranslate" aria-label="Filtrar por categoría">
             <select
               class="toolbar-select"
               [(ngModel)]="selectedFilter"
@@ -83,10 +83,10 @@
 
                 <h3 class="product-name">{{ p.name }}</h3>
                 <p class="product-desc">{{ p.description ?? 'Sin descripción' }}</p>
-                <p class="product-price">{{ p.price | number:'1.2-2' }}€ <span class="price-unit">/ {{ getDisplayPriceUnit(p) }}</span></p>
+                <p class="product-price notranslate">{{ p.price | number:'1.2-2' }}€ <span class="price-unit">/ {{ getDisplayPriceUnit(p) }}</span></p>
 
                 <div class="product-footer">
-                  <div class="quantity-control">
+                  <div class="quantity-control notranslate">
                     <button type="button" class="qty-btn-card" (click)="decrementQty(p.id)" aria-label="Reducir cantidad">−</button>
                     <span class="quantity-input">{{ getQty(p.id) }}</span>
                     <button type="button" class="qty-btn-card" (click)="incrementQty(p.id)" aria-label="Aumentar cantidad">+</button>

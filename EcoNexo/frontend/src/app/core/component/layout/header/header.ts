@@ -7,6 +7,9 @@ import { AuthService, AuthUser } from '../../../services/auth.service';
 import { CartService } from '../../../services/cart.service';
 import { environment } from '../../../../../environments/environment';
 
+// Declaración global para Google Translate
+declare const google: any;
+
 @Component({
   selector: 'app-header',
   standalone: true,
@@ -24,6 +27,7 @@ export class Header implements OnInit, OnDestroy {
   dropdownOpen = false;
   mobileMenuOpen = false;
   notificationCount = 0;
+  currentLanguage = 'es'; // Idioma actual: es, ca, en
   
   // 🔄 Reactividad con Signals: Convierte el Observable items$ a Signal
   private readonly cartItems = toSignal(this.cartService.items$, { initialValue: [] });
@@ -188,6 +192,33 @@ export class Header implements OnInit, OnDestroy {
     this.authService.logout().subscribe({
       complete: () => this.router.navigate(['/login']),
     });
+  }
+
+  changeLanguage(lang: string): void {
+    if (this.currentLanguage === lang) return;
+    
+    this.currentLanguage = lang;
+    
+    // Esperar a que Google Translate esté disponible
+    const changeGoogleLanguage = () => {
+      try {
+        const selectElement = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+        if (selectElement) {
+          selectElement.value = lang;
+          selectElement.dispatchEvent(new Event('change'));
+        }
+      } catch (error) {
+        console.error('Error al cambiar idioma:', error);
+      }
+    };
+    
+    // Intentar cambiar el idioma
+    if (typeof google !== 'undefined' && google.translate) {
+      changeGoogleLanguage();
+    } else {
+      // Si no está listo, esperar un poco
+      setTimeout(changeGoogleLanguage, 500);
+    }
   }
 
   @HostListener('document:click', ['$event'])

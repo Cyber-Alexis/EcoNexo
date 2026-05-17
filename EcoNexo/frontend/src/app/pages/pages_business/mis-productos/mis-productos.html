@@ -13,7 +13,33 @@
     <!-- ─── Topbar (always visible) ─── -->
     <header class="topbar">
       <span class="topbar-section-title">Gestión de Productos</span>
+      
       <div class="topbar-actions">
+        <!-- Language Selector -->
+        <div class="language-selector notranslate">
+          <button 
+            class="lang-btn" 
+            [class.lang-btn--active]="currentLanguage === 'es'"
+            (click)="changeLanguage('es')"
+            title="Español">
+            ES
+          </button>
+          <button 
+            class="lang-btn" 
+            [class.lang-btn--active]="currentLanguage === 'ca'"
+            (click)="changeLanguage('ca')"
+            title="Català">
+            CA
+          </button>
+          <button 
+            class="lang-btn" 
+            [class.lang-btn--active]="currentLanguage === 'en'"
+            (click)="changeLanguage('en')"
+            title="English">
+            ENG
+          </button>
+        </div>
+        
         <button class="topbar-icon-btn" aria-label="Notificaciones">
           <svg viewBox="0 0 24 24" fill="none">
             <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -128,8 +154,8 @@
                     </div>
                   </td>
                   <td>{{ product.category?.name ?? '—' }}</td>
-                  <td class="price-cell">€{{ product.price | number:'1.2-2' }}/{{ product.price_unit ?? 'unidad' }}</td>
-                  <td [class.stock-low]="product.stock <= 5 && product.stock > 0" [class.stock-zero]="product.stock === 0">
+                  <td class="price-cell notranslate">€{{ product.price | number:'1.2-2' }}/{{ product.price_unit ?? 'unidad' }}</td>
+                  <td [class.stock-low]="product.stock <= 5 && product.stock > 0" [class.stock-zero]="product.stock === 0" class="notranslate">
                     {{ product.stock }} uds.
                   </td>
                   <td>
@@ -201,7 +227,7 @@
         <div class="alert alert-error modal-alert">{{ modalError }}</div>
       }
 
-      <form [formGroup]="form" (ngSubmit)="onSaveProduct()" class="modal-form">
+      <form [formGroup]="form" (ngSubmit)="onSaveProduct()" class="modal-form notranslate">
         <!-- Image upload -->
         <div class="image-upload-wrap">
           <label class="image-upload-label" for="productImage">
