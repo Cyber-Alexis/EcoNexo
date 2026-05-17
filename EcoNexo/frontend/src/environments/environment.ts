@@ -1,4 +1,3 @@
-// URL base del backend Laravel (ajustar en producción)
 export const environment = {
   production: false,
   // Detectar si estamos en Docker o desarrollo local
