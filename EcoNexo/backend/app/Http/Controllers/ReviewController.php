@@ -83,6 +83,7 @@ class ReviewController extends Controller
         $orders = Order::with(['items.product', 'business'])
             ->where('user_id', $user->id)
             ->whereIn('status', ['completed', 'entregado'])
+            ->where('review_skipped', false) // Excluir pedidos omitidos
             ->get();
 
         $pendingProducts = collect();
@@ -276,5 +277,44 @@ class ReviewController extends Controller
         $review->delete();
 
         return response()->json(['message' => 'Reseña eliminada.']);
+    }
+
+    /**
+     * POST /api/resenas/negocio/omitir
+     * Mark an order's business review as skipped
+     */
+    public function skipBusiness(Request $request)
+    {
+        $data = $request->validate([
+            'order_id' => 'required|exists:orders,id',
+        ]);
+
+        $user = auth('api')->user();
+
+        // Verify the user owns this order
+        $order = Order::where('id', $data['order_id'])
+            ->where('user_id', $user->id)
+            ->whereIn('status', ['completed', 'entregado'])
+            ->firstOrFail();
+
+        // Check if already skipped
+        if ($order->review_skipped) {
+            return response()->json(['message' => 'Ya has omitido esta reseña.'], 422);
+        }
+
+        // Check if already reviewed
+        $hasReview = BusinessReview::where('user_id', $user->id)
+            ->where('order_id', $order->id)
+            ->exists();
+
+        if ($hasReview) {
+            return response()->json(['message' => 'Ya has reseñado este pedido.'], 422);
+        }
+
+        // Mark as skipped
+        $order->review_skipped = true;
+        $order->save();
+
+        return response()->json(['message' => 'Reseña omitida correctamente.'], 200);
     }
 }

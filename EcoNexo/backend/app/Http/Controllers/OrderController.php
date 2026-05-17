@@ -91,6 +91,7 @@ class OrderController extends Controller
                     'business_name'  => $order->business?->name,
                     'business_address' => trim(($order->business?->address ?? '') . ', ' . ($order->business?->city ?? ''), ', '),
                     'user_address'   => $order->user?->address,
+                    'review_skipped' => $order->review_skipped,
                     'items_count'    => $order->items->count(),
                     'items'          => $order->items->map(fn($item) => [
                         'product_id'   => $item->product_id,

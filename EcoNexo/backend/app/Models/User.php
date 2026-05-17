@@ -42,6 +42,14 @@ class User extends Authenticatable implements JWTSubject
         'notif_review_responses'  => 'boolean',
     ];
 
+    protected $appends = ['avatar_url'];
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        $avatar = $this->avatar;
+        return $avatar ? \Illuminate\Support\Facades\Storage::disk('public')->url($avatar->path) : null;
+    }
+
     public function businesses()
     {
         return $this->hasMany(Business::class);

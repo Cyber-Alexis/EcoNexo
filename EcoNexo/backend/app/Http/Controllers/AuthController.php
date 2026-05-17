@@ -236,7 +236,7 @@ class AuthController extends Controller
             'postal_code' => $user->postal_code,
             'business_id' => $business?->id,
             'business_name' => $business?->name,
-            'avatar_url' => $avatar?->path,
+            'avatar_url' => $avatar ? \Illuminate\Support\Facades\Storage::disk('public')->url($avatar->path) : null,
         ];
     }
 }

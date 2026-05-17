@@ -45,6 +45,7 @@ export interface Order {
   business_id: number;
   business_name: string;
   business_address: string;
+  review_skipped: boolean;
   items_count: number;
   items: OrderItem[];
 }
@@ -310,6 +311,10 @@ export class MisPedidos implements OnInit, OnDestroy {
 
   hasReviewed(order: Order): boolean {
     return this.reviewedOrderIds().has(order.id);
+  }
+
+  isSkipped(order: Order): boolean {
+    return order.review_skipped === true;
   }
 
   openReview(order: Order): void {

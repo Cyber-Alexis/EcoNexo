@@ -85,6 +85,7 @@ Route::middleware(['auth:api', \App\Http\Middleware\EnsureActiveApiUser::class, 
     Route::get('/resenas/pendientes',             [ReviewController::class, 'pending']);
     Route::post('/resenas/producto',              [ReviewController::class, 'storeProduct']);
     Route::post('/resenas/negocio',               [ReviewController::class, 'storeBusiness']);
+    Route::post('/resenas/negocio/omitir',        [ReviewController::class, 'skipBusiness']);
     Route::put('/resenas/producto/{id}',          [ReviewController::class, 'updateProduct']);
     Route::put('/resenas/negocio/{id}',           [ReviewController::class, 'updateBusiness']);
     Route::delete('/resenas/producto/{id}',       [ReviewController::class, 'destroyProduct']);

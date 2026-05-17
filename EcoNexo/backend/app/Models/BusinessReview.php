@@ -10,7 +10,7 @@ class BusinessReview extends Model
     use HasFactory;
 
     protected $fillable = [
-        'business_id', 'user_id', 'order_id', 'rating', 'comment',
+        'business_id', 'user_id', 'order_id', 'rating', 'comment', 'skipped_at',
     ];
 
     public function business()

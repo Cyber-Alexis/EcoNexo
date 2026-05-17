@@ -56,6 +56,7 @@ export interface CalendarOrder {
   user_address: string | null;
   user_city: string | null;
   user_postal_code: string | null;
+  review_skipped: boolean;
 }
 
 @Injectable({ providedIn: 'root' })

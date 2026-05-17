@@ -456,6 +456,15 @@
   font-weight: 500;
 }
 
+.action-skipped {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  color: #9A3412;
+  font-weight: 500;
+}
+
 /* ─── Review modal ─── */
 .review-modal-error {
   padding: 0.5rem 0.85rem;

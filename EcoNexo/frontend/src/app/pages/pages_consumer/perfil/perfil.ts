@@ -1,7 +1,8 @@
-import { Component, inject, OnInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, ElementRef, ViewChild, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { ConsumerSidebar } from '../consumer-sidebar/consumer-sidebar';
 
@@ -12,10 +13,13 @@ import { ConsumerSidebar } from '../consumer-sidebar/consumer-sidebar';
   templateUrl: './perfil.html',
   styleUrl: './perfil.css',
 })
-export class Perfil implements OnInit {
+export class Perfil implements OnInit, OnDestroy {
   private router = inject(Router);
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
+  private cdr = inject(ChangeDetectorRef);
+  private ngZone = inject(NgZone);
+  private destroy$ = new Subject<void>();
 
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
@@ -38,21 +42,38 @@ export class Perfil implements OnInit {
   });
 
   ngOnInit(): void {
-    const user = this.authService.getUser();
-    if (user) {
-      this.userName = user.name;
-      this.form.patchValue({
-        name: user.name,
-        email: user.email,
-        phone: user.phone ?? '',
-        address: user.address ?? '',
-        city: user.city ?? '',
-        postal_code: user.postal_code ?? '',
+    // Suscribirse al observable user$ para reactividad
+    this.authService.user$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(user => {
+        if (user) {
+          this.ngZone.run(() => {
+            this.userName = user.name;
+            
+            // Solo actualizar el formulario si NO ha sido modificado por el usuario
+            // Esto evita sobrescribir lo que el usuario está escribiendo
+            if (this.form.pristine) {
+              this.form.patchValue({
+                name: user.name,
+                email: user.email,
+                phone: user.phone ?? '',
+                address: user.address ?? '',
+                city: user.city ?? '',
+                postal_code: user.postal_code ?? '',
+              }, { emitEvent: false });
+            }
+            
+            // Siempre actualizar el avatar (no interfiere con la edición)
+            this.profileImageUrl = user.avatar_url ?? null;
+            this.cdr.detectChanges();
+          });
+        }
       });
-      if (user.avatar_url) {
-        this.profileImageUrl = user.avatar_url;
-      }
-    }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   onChangeFoto(): void {
@@ -64,9 +85,9 @@ export class Perfil implements OnInit {
     const file = input.files?.[0];
     if (!file) return;
 
-    const allowed = ['image/jpeg', 'image/png'];
+    const allowed = ['image/jpeg', 'image/png', 'image/webp'];
     if (!allowed.includes(file.type)) {
-      this.savingError = 'Solo se permiten imágenes JPG o PNG.';
+      this.savingError = 'Solo se permiten imágenes JPG, PNG o WebP.';
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
@@ -77,43 +98,26 @@ export class Perfil implements OnInit {
     this.savingError = '';
     this.uploading = true;
 
-    // 1. Compress to ~200px JPEG immediately → updates header & persists in localStorage
-    this.compressImage(file).then(dataUrl => {
-      this.profileImageUrl = dataUrl;
-      this.authService.patchUser({ avatar_url: dataUrl });
-
-      // 2. Upload original to backend in background
-      this.authService.uploadAvatar(file).subscribe({
-        next: (res) => {
+    // Subir directamente al backend
+    this.authService.uploadAvatar(file).subscribe({
+      next: (res) => {
+        this.ngZone.run(() => {
           this.profileImageUrl = res.avatar_url;
-          // patchUser already called inside uploadAvatar tap → replaces data: URL with real URL
           this.uploading = false;
-        },
-        error: () => {
+          this.cdr.detectChanges();
+        });
+      },
+      error: (err) => {
+        this.ngZone.run(() => {
           this.uploading = false;
-          // Compressed data: URL is already stored in header & localStorage, nothing extra needed
-        },
-      });
+          this.savingError = err?.error?.message || 'Error al subir la imagen.';
+          this.cdr.detectChanges();
+        });
+      },
     });
-  }
 
-  private compressImage(file: File): Promise<string> {
-    return new Promise(resolve => {
-      const img = new Image();
-      const objectUrl = URL.createObjectURL(file);
-      img.onload = () => {
-        const maxSize = 200;
-        const ratio = Math.min(maxSize / img.width, maxSize / img.height, 1);
-        const canvas = document.createElement('canvas');
-        canvas.width = Math.round(img.width * ratio);
-        canvas.height = Math.round(img.height * ratio);
-        const ctx = canvas.getContext('2d')!;
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        URL.revokeObjectURL(objectUrl);
-        resolve(canvas.toDataURL('image/jpeg', 0.82));
-      };
-      img.src = objectUrl;
-    });
+    // Resetear el input para permitir subir la misma imagen nuevamente
+    input.value = '';
   }
 
   onGuardar(): void {
@@ -129,17 +133,31 @@ export class Perfil implements OnInit {
       postal_code: raw.postal_code || undefined,
     };
 
-    // Optimistic update: persist locally right away so it feels instant
-    this.authService.patchUser(payload);
-    this.saveSuccess = true;
-    this.saveError = '';
-    setTimeout(() => (this.saveSuccess = false), 3000);
-
-    // Sync to backend in background (401 interceptor redirects to login if session expired)
     this.saving = true;
+    this.saveSuccess = false;
+    this.saveError = '';
+
     this.authService.updateProfile(payload).subscribe({
-      next: () => { this.saving = false; },
-      error: () => { this.saving = false; },
+      next: (res) => {
+        this.ngZone.run(() => {
+          this.saving = false;
+          this.saveSuccess = true;
+          this.saveError = '';
+          // Marcar formulario como pristine para permitir futuras actualizaciones
+          this.form.markAsPristine();
+          // El estado se actualiza automáticamente vía user$ subscription
+          setTimeout(() => (this.saveSuccess = false), 3000);
+          this.cdr.detectChanges();
+        });
+      },
+      error: (err) => {
+        this.ngZone.run(() => {
+          this.saving = false;
+          this.saveSuccess = false;
+          this.saveError = err?.error?.message || 'Error al guardar los cambios.';
+          this.cdr.detectChanges();
+        });
+      },
     });
   }
 

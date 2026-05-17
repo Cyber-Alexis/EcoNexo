@@ -124,17 +124,19 @@ class ProfileController extends Controller
     public function uploadAvatar(Request $request)
     {
         $request->validate([
-            'avatar' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
         $user = auth('api')->user();
 
+        // Eliminar avatar anterior
         $oldAvatar = $user->avatar;
         if ($oldAvatar) {
             Storage::disk('public')->delete($oldAvatar->path);
             $oldAvatar->delete();
         }
 
+        // Guardar nuevo avatar
         $path = $request->file('avatar')->store('avatars', 'public');
 
         $user->images()->create([
@@ -142,11 +144,13 @@ class ProfileController extends Controller
             'type' => 'avatar',
         ]);
 
-        $avatarUrl = Storage::disk('public')->url($path);
+        // Refrescar usuario para obtener la relación avatar actualizada
+        $user = $user->fresh();
+        $avatarUrl = $user->avatar_url;
 
         return response()->json([
             'avatar_url' => $avatarUrl,
-            'user'       => array_merge($user->toArray(), ['avatar_url' => $avatarUrl]),
+            'user'       => $user,
         ]);
     }
 

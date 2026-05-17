@@ -284,12 +284,27 @@ export class MisResenas implements OnInit {
 
   // ── Skip pending review ───────────────────────────────
   skipReview(item: PendingReview): void {
-    // Remove from pending list without creating a review
+    // Only allow skipping business reviews
+    if (item.type !== 'business') {
+      return;
+    }
+
+    // Optimistically remove from pending list
     this.allPending.update(list => list.filter(p =>
-      !(p.type === item.type && p.order_id === item.order_id &&
-        (item.type === 'product' ? p.product_id === item.product_id : p.business_id === item.business_id))
+      !(p.type === item.type && p.order_id === item.order_id)
     ));
     this.cdr.markForCheck();
+
+    // Send to backend to persist the skip
+    this.http.post(`${this.base}/resenas/negocio/omitir`, {
+      order_id: item.order_id,
+    }).subscribe({
+      error: () => {
+        // Rollback: add back to pending list if backend fails
+        this.allPending.update(list => [...list, item]);
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   onLogout(): void {

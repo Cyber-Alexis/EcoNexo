@@ -11,12 +11,13 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'business_id', 'total_price', 'status', 'payment_method', 'delivery_method', 'pickup_date',
+        'user_id', 'business_id', 'total_price', 'status', 'payment_method', 'delivery_method', 'pickup_date', 'review_skipped',
     ];
 
     protected $casts = [
         'total_price' => 'float',
         'pickup_date' => 'datetime',
+        'review_skipped' => 'boolean',
     ];
 
     public function user()

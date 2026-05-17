@@ -324,16 +324,6 @@
   flex-wrap: wrap;
 }
 
-.pending-actions button {
-  flex: 1;
-  justify-content: center;
-}
-
-.pending-actions .btn-danger {
-  padding: 0.25rem 1rem;
-  font-size: 0.75rem;
-}
-
 /* ─── Empty state ─── */
 .empty-state {
   display: flex;
@@ -360,14 +350,14 @@
   border-radius: 10px;
   font-size: 0.875rem;
   font-weight: 600;
+  line-height: 1.4;
+  box-sizing: border-box;
   cursor: pointer;
   transition: background 0.15s;
 }
 
 .btn-primary:hover:not(:disabled) { background: #245a42; }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-
-.btn-sm { padding: 0.45rem 1rem; font-size: 0.82rem; align-self: flex-start; }
 
 .btn-danger {
   display: inline-flex;
@@ -380,11 +370,15 @@
   border-radius: 10px;
   font-size: 0.875rem;
   font-weight: 600;
+  line-height: 1.4;
+  box-sizing: border-box;
   cursor: pointer;
   transition: background 0.15s;
 }
 .btn-danger:hover:not(:disabled) { background: #b91c1c; }
 .btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-sm { padding: 0.45rem 1rem; font-size: 0.82rem; align-self: flex-start; }
 
 .btn-cancel {
   background: none;
