@@ -10,7 +10,7 @@ class BusinessReview extends Model
     use HasFactory;
 
     protected $fillable = [
-        'business_id', 'user_id', 'rating', 'comment',
+        'business_id', 'user_id', 'order_id', 'rating', 'comment',
     ];
 
     public function business()
@@ -21,5 +21,10 @@ class BusinessReview extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
     }
 }

@@ -42,4 +42,7 @@ export const routes: Routes = [
 
   // Checkout
   { path: 'checkout', loadComponent: () => import('./pages/proceso_pago/checkout/checkout').then(m => m.Checkout), canActivate: [authGuard, checkoutGuard] },
+
+  // 404 - Must be last
+  { path: '**', loadComponent: () => import('./pages/not-found/not-found').then(m => m.NotFound) },
 ];

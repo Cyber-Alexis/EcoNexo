@@ -1,14 +1,14 @@
 import { Component, inject, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { ConsumerSidebar } from '../consumer-sidebar/consumer-sidebar';
 
 @Component({
   selector: 'app-perfil',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, RouterLinkActive, ConsumerSidebar],
+  imports: [CommonModule, ReactiveFormsModule, ConsumerSidebar],
   templateUrl: './perfil.html',
   styleUrl: './perfil.css',
 })

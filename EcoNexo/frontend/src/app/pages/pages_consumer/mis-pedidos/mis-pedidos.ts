@@ -92,7 +92,8 @@ export class MisPedidos implements OnInit, OnDestroy {
   readonly reviewComment   = signal('');
   readonly reviewSaving    = signal(false);
   readonly reviewError     = signal('');
-  readonly reviewedBizIds  = signal<Set<number>>(new Set());
+  /** Set of order IDs that have been reviewed */
+  readonly reviewedOrderIds = signal<Set<number>>(new Set());
 
   readonly reviewLabel = computed(() => {
     const n = this.reviewRating();
@@ -193,7 +194,10 @@ export class MisPedidos implements OnInit, OnDestroy {
       pendientes: mo.filter(o =>
         !['completed', 'cancelled'].includes(o.status)
       ).length,
-      gasto: mo.filter(o => o.status === 'completed').reduce((s, o) => s + o.total_price, 0),
+      gasto: mo.filter(o => 
+        o.payment_method === 'card' || 
+        (o.payment_method === 'cash' && o.status === 'completed')
+      ).reduce((s, o) => s + o.total_price, 0),
     };
   });
 
@@ -259,7 +263,7 @@ export class MisPedidos implements OnInit, OnDestroy {
         this.ngZone.run(() => {
           this.orders.set(orders as Order[]);
           this.loading.set(false);
-          this.loadReviewedBizIds();
+          this.loadReviewedOrderIds();
           this.cdr.markForCheck();
         });
       });
@@ -275,16 +279,16 @@ export class MisPedidos implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private loadReviewedBizIds(): void {
+  private loadReviewedOrderIds(): void {
     this.http.get<{ reviews: any[] }>(`${this.base}/resenas`).subscribe({
       next: (res) => {
         this.ngZone.run(() => {
           const ids = new Set<number>(
             res.reviews
-              .filter((r: any) => r.type === 'business' && r.business_id)
-              .map((r: any) => r.business_id as number)
+              .filter((r: any) => r.type === 'business' && r.order_id)
+              .map((r: any) => r.order_id as number)
           );
-          this.reviewedBizIds.set(ids);
+          this.reviewedOrderIds.set(ids);
           this.cdr.markForCheck();
         });
       },
@@ -305,7 +309,7 @@ export class MisPedidos implements OnInit, OnDestroy {
   }
 
   hasReviewed(order: Order): boolean {
-    return this.reviewedBizIds().has(order.business_id);
+    return this.reviewedOrderIds().has(order.id);
   }
 
   openReview(order: Order): void {
@@ -331,16 +335,17 @@ export class MisPedidos implements OnInit, OnDestroy {
 
     this.http.post(`${this.base}/resenas/negocio`, {
       business_id: order.business_id,
+      order_id:    order.id,
       rating:      this.reviewRating(),
       comment:     this.reviewComment() || null,
     }).subscribe({
       next: () => {
         this.reviewSaving.set(false);
         this.reviewingOrder.set(null);
-        // mark this business as reviewed so button disappears
-        const ids = new Set(this.reviewedBizIds());
-        ids.add(order.business_id);
-        this.reviewedBizIds.set(ids);
+        // mark this order as reviewed so button disappears
+        const ids = new Set(this.reviewedOrderIds());
+        ids.add(order.id);
+        this.reviewedOrderIds.set(ids);
       },
       error: (err) => {
         this.reviewSaving.set(false);

@@ -73,6 +73,7 @@ class OrderController extends Controller
             ->with([
                 'business:id,name,address,city',
                 'items.product:id,name,price,price_unit,business_id',
+                'user:id,address,city,postal_code',
             ])
             ->latest()
             ->get()
@@ -83,11 +84,13 @@ class OrderController extends Controller
                     'status'         => $order->status,
                     'total_price'    => $order->total_price,
                     'payment_method' => $order->payment_method,
+                    'delivery_method'=> $order->delivery_method,
                     'pickup_date'    => $order->pickup_date,
                     'created_at'     => $order->created_at,
                     'business_id'    => $order->business_id,
                     'business_name'  => $order->business?->name,
                     'business_address' => trim(($order->business?->address ?? '') . ', ' . ($order->business?->city ?? ''), ', '),
+                    'user_address'   => $order->user?->address,
                     'items_count'    => $order->items->count(),
                     'items'          => $order->items->map(fn($item) => [
                         'product_id'   => $item->product_id,

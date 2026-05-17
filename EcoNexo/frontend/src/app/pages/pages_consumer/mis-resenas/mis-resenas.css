@@ -318,6 +318,22 @@
   color: #9ca3af;
 }
 
+.pending-actions {
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.pending-actions button {
+  flex: 1;
+  justify-content: center;
+}
+
+.pending-actions .btn-danger {
+  padding: 0.25rem 1rem;
+  font-size: 0.75rem;
+}
+
 /* ─── Empty state ─── */
 .empty-state {
   display: flex;
@@ -356,6 +372,7 @@
 .btn-danger {
   display: inline-flex;
   align-items: center;
+  gap: 0.5rem;
   padding: 0.65rem 1.4rem;
   background: #dc2626;
   color: #fff;

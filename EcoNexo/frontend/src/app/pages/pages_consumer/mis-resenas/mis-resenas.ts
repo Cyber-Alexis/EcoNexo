@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, NgZone, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../core/services/auth.service';
 import { environment } from '../../../../environments/environment';
@@ -31,7 +31,7 @@ export interface PendingReview {
 @Component({
   selector: 'app-mis-resenas',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, RouterLinkActive, ConsumerSidebar],
+  imports: [CommonModule, ReactiveFormsModule, ConsumerSidebar],
   templateUrl: './mis-resenas.html',
   styleUrl: './mis-resenas.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -50,7 +50,9 @@ export class MisResenas implements OnInit {
   activeTab    = signal<'written' | 'pending'>('written');
 
   reviews   = signal<Review[]>([]);
-  pending   = signal<PendingReview[]>([]);
+  allPending = signal<PendingReview[]>([]);
+  // Filtrar solo reseñas de negocios (productos deshabilitados)
+  pending = computed(() => this.allPending().filter(p => p.type === 'business'));
   loading   = signal(true);
   readonly avgRating = computed(() => {
     const r = this.reviews();
@@ -105,7 +107,7 @@ export class MisResenas implements OnInit {
 
     this.http.get<{ pending: PendingReview[] }>(`${this.base}/resenas/pendientes`).subscribe({
       next: (res) => this.ngZone.run(() => {
-        this.pending.set(res.pending);
+        this.allPending.set(res.pending);
         this.cdr.markForCheck();
       }),
     });
@@ -242,7 +244,7 @@ export class MisResenas implements OnInit {
         : { business_id: item.business_id, business_name: item.business_name }),
     };
     this.reviews.update(list => [optimistic, ...list]);
-    this.pending.update(list => list.filter(p =>
+    this.allPending.update(list => list.filter(p =>
       !(p.type === item.type && p.order_id === item.order_id &&
         (item.type === 'product' ? p.product_id === item.product_id : p.business_id === item.business_id))
     ));
@@ -271,13 +273,23 @@ export class MisResenas implements OnInit {
       error: (err) => {
         // Rollback
         this.reviews.update(list => list.filter(rev => rev.id !== tempId));
-        this.pending.update(list => [...list, item]);
+        this.allPending.update(list => [...list, item]);
         this.creatingReview.set(item);
         this.createError.set(err?.error?.message ?? 'Error al enviar la reseña.');
         this.activeTab.set('pending');
         this.cdr.markForCheck();
       },
     });
+  }
+
+  // ── Skip pending review ───────────────────────────────
+  skipReview(item: PendingReview): void {
+    // Remove from pending list without creating a review
+    this.allPending.update(list => list.filter(p =>
+      !(p.type === item.type && p.order_id === item.order_id &&
+        (item.type === 'product' ? p.product_id === item.product_id : p.business_id === item.business_id))
+    ));
+    this.cdr.markForCheck();
   }
 
   onLogout(): void {

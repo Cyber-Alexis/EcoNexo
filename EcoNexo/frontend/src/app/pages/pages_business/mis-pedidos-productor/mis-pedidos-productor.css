@@ -309,7 +309,7 @@
 }
 .status-pending   { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
 .status-confirmed { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
-.status-listo     { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.status-listo     { background: #f0fdfa; color: #0d9488; border: 1px solid #99f6e4; }
 .status-completed { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
 .status-cancelled { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
 

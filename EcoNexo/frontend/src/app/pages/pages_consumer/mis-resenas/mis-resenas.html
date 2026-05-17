@@ -165,7 +165,10 @@
                 </span>
               </div>
               <p class="pending-label">Aún no has valorado esto</p>
-              <button class="btn-primary btn-sm" (click)="openCreate(item)">Escribir reseña</button>
+              <div class="pending-actions">
+                <button class="btn-primary btn-sm" (click)="openCreate(item)">Escribir reseña</button>
+                <button class="btn-danger btn-sm" (click)="skipReview(item)">Omitir</button>
+              </div>
             </div>
           }
         </div>

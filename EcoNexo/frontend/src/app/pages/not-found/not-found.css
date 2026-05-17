@@ -1,0 +1,205 @@
+.not-found-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f8fffe 0%, #edf7f5 100%);
+  padding: 2rem;
+}
+
+.not-found-content {
+  max-width: 600px;
+  text-align: center;
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Icon & Error Code */
+.icon-wrapper {
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.not-found-icon {
+  width: 120px;
+  height: 120px;
+  color: #2D6A4F;
+  margin: 0 auto 1rem;
+  opacity: 0.9;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.error-code {
+  font-size: 6rem;
+  font-weight: 800;
+  color: #2D6A4F;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #2D6A4F 0%, #52B788 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1rem;
+}
+
+/* Title & Message */
+.not-found-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1b4332;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+.not-found-message {
+  font-size: 1.125rem;
+  color: #6c757d;
+  line-height: 1.6;
+  margin-bottom: 2.5rem;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Actions */
+.not-found-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+
+.btn-primary,
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.btn-primary {
+  background: #2D6A4F;
+  color: white;
+  box-shadow: 0 4px 12px rgba(45, 106, 79, 0.2);
+}
+
+.btn-primary:hover {
+  background: #1b4332;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(45, 106, 79, 0.3);
+}
+
+.btn-primary svg {
+  width: 20px;
+  height: 20px;
+}
+
+.btn-secondary {
+  background: white;
+  color: #2D6A4F;
+  border-color: #2D6A4F;
+}
+
+.btn-secondary:hover {
+  background: #f8fffe;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(45, 106, 79, 0.15);
+}
+
+.btn-secondary svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Help Links */
+.help-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  font-size: 0.95rem;
+  color: #6c757d;
+}
+
+.help-links a {
+  color: #2D6A4F;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.help-links a:hover {
+  color: #1b4332;
+  text-decoration: underline;
+}
+
+.help-links span:not(.help-links a) {
+  color: #d1d5db;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .not-found-container {
+    padding: 1.5rem;
+  }
+
+  .error-code {
+    font-size: 4rem;
+  }
+
+  .not-found-icon {
+    width: 80px;
+    height: 80px;
+  }
+
+  .not-found-title {
+    font-size: 1.5rem;
+  }
+
+  .not-found-message {
+    font-size: 1rem;
+  }
+
+  .not-found-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .help-links {
+    font-size: 0.875rem;
+  }
+}

@@ -43,6 +43,7 @@ class ReviewController extends Controller
                 'comment'      => $r->comment,
                 'created_at'   => $r->created_at,
                 'business_id'  => $r->business_id,
+                'order_id'     => $r->order_id,
                 'business_name'=> $r->business?->name,
             ]);
 
@@ -73,8 +74,10 @@ class ReviewController extends Controller
             ->pluck('product_id')
             ->toArray();
 
-        $reviewedBusinessIds = BusinessReview::where('user_id', $user->id)
-            ->pluck('business_id')
+        // Get order IDs that have already been reviewed
+        $reviewedOrderIds = BusinessReview::where('user_id', $user->id)
+            ->whereNotNull('order_id')
+            ->pluck('order_id')
             ->toArray();
 
         $orders = Order::with(['items.product', 'business'])
@@ -101,9 +104,8 @@ class ReviewController extends Controller
                 }
             }
 
-            // Pending business review
-            if ($order->business && !in_array($order->business_id, $reviewedBusinessIds)) {
-                $reviewedBusinessIds[] = $order->business_id;
+            // Pending business review: check if THIS order has been reviewed
+            if ($order->business && !in_array($order->id, $reviewedOrderIds)) {
                 $pendingBusinesses->push([
                     'type'          => 'business',
                     'business_id'   => $order->business_id,
@@ -169,6 +171,7 @@ class ReviewController extends Controller
     {
         $data = $request->validate([
             'business_id' => 'required|exists:businesses,id',
+            'order_id'    => 'nullable|exists:orders,id',
             'rating'      => 'required|integer|min:1|max:5',
             'comment'     => 'nullable|string|max:1000',
         ]);
@@ -185,17 +188,31 @@ class ReviewController extends Controller
             return response()->json(['message' => 'Solo puedes reseñar negocios en los que hayas completado un pedido.'], 403);
         }
 
-        $existing = BusinessReview::where('user_id', $user->id)
-            ->where('business_id', $data['business_id'])
-            ->first();
+        // Check if this specific order has already been reviewed (if order_id provided)
+        if (!empty($data['order_id'])) {
+            $existing = BusinessReview::where('user_id', $user->id)
+                ->where('order_id', $data['order_id'])
+                ->first();
 
-        if ($existing) {
-            return response()->json(['message' => 'Ya has reseñado este negocio.'], 422);
+            if ($existing) {
+                return response()->json(['message' => 'Ya has reseñado este pedido.'], 422);
+            }
+        } else {
+            // Legacy check: if no order_id, check by business_id only
+            $existing = BusinessReview::where('user_id', $user->id)
+                ->where('business_id', $data['business_id'])
+                ->whereNull('order_id')
+                ->first();
+
+            if ($existing) {
+                return response()->json(['message' => 'Ya has reseñado este negocio.'], 422);
+            }
         }
 
         $review = BusinessReview::create([
             'user_id'     => $user->id,
             'business_id' => $data['business_id'],
+            'order_id'    => $data['order_id'] ?? null,
             'rating'      => $data['rating'],
             'comment'     => $data['comment'] ?? null,
         ]);

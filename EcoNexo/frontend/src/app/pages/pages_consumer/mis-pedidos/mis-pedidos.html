@@ -130,9 +130,9 @@
                   <div class="order-meta">
                     {{ order.code }} · {{ order.items_count }} artículo{{ order.items_count !== 1 ? 's' : '' }} · {{ (order.pickup_date || order.created_at) | date:'yyyy-MM-dd' }}
                   </div>
-                  @if (order.business_address) {
+                  <!-- @if (order.business_address) {
                     <div class="order-address">{{ order.business_address }}</div>
-                  }
+                  } -->
                 </div>
 
                 <div class="order-right">

@@ -269,38 +269,43 @@
 
 /* ─── Status badges ─── */
 .status-badge {
-  display: inline-block;
-  padding: 0.2rem 0.65rem;
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
   border-radius: 999px;
   font-size: 0.75rem;
   font-weight: 600;
   white-space: nowrap;
 }
 
-.status-completed, .status-entregado {
-  background: #2D6A4F;
-  color: #fff;
-}
-
-.status-listo {
-  background: #0d9488;
-  color: #fff;
+.status-pending, .status-preparando {
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
 }
 
 .status-confirmed, .status-en_camino {
-  background: #3B82F6;
-  color: #fff;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
 }
 
-.status-pending, .status-preparando {
-  background: #fef3c7;
-  color: #92400e;
+.status-listo {
+  background: #f0fdfa;
+  color: #0d9488;
+  border: 1px solid #99f6e4;
+}
+
+.status-completed, .status-entregado {
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
 }
 
 .status-cancelled, .status-cancelado {
-  background: #fef3c7;
-  color: #92400e;
-  border: 1px solid #fcd34d;
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
 }
 
 /* ─── Empty ─── */
@@ -798,7 +803,7 @@
 .chip-listo     { background: #0d9488; color: #fff; }
 .chip-confirmed, .chip-encamino { background: #3B82F6; color: #fff; }
 .chip-pending, .chip-preparando { background: #fef3c7; color: #92400e; }
-.chip-cancelado { background: #d6d3d1; color: #57534e; }
+.chip-cancelado { background: #dc2626; color: #fff; }
 
 /* ── Legend ── */
 .cal-legend {
@@ -837,9 +842,9 @@
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 1.25rem;
+  min-height: 300px;
+  max-height: calc(100vh - 380px);
   overflow-y: auto;
-  display: flex;
-  flex-direction: column;
 }
 
 .cal-side-empty-title {
