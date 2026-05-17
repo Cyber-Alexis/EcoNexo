@@ -4,5 +4,5 @@ export const environment = {
   // Detectar si estamos en Docker o desarrollo local
   apiUrl: typeof window !== 'undefined' && window.location.hostname === 'localhost' 
     ? 'http://localhost:8000/api'  // Desarrollo local
-    : 'http://backend:80/api'       // Docker
+    : '/api'
 };

@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { ConsumerSidebar } from '../consumer-sidebar/consumer-sidebar';
 
 @Component({
   selector: 'app-perfil',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, RouterLinkActive, ConsumerSidebar],
   templateUrl: './perfil.html',
   styleUrl: './perfil.css',
 })
@@ -18,6 +19,7 @@ export class Perfil implements OnInit {
 
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
+  userName = '';
   profileImageUrl: string | null = null;
   uploading = false;
   saving = false;
@@ -38,6 +40,7 @@ export class Perfil implements OnInit {
   ngOnInit(): void {
     const user = this.authService.getUser();
     if (user) {
+      this.userName = user.name;
       this.form.patchValue({
         name: user.name,
         email: user.email,

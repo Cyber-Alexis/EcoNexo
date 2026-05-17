@@ -1,65 +1,33 @@
 <div class="dashboard-layout">
 
   <!-- ─── Sidebar ─── -->
-  <aside class="sidebar">
-    <a routerLink="/home" class="sidebar-brand">
-      <div class="sidebar-logo">
-        <svg viewBox="0 0 32 32" fill="none">
-          <rect width="32" height="32" rx="8" fill="#2D6A4F"/>
-          <path d="M16 6 C8 10, 6 20, 16 26 C26 20, 24 10, 16 6Z" fill="white" opacity="0.9"/>
-          <path d="M16 14 L16 26" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
+  <app-consumer-sidebar
+    #sidebar
+    [userName]="userName"
+    (logout)="onLogout()"
+  />
+
+  <!-- ─── Main wrapper ─── -->
+  <div class="main-wrapper">
+
+    <!-- ─── Topbar (always visible) ─── -->
+    <header class="topbar">
+      <span class="topbar-section-title">Mis Pedidos</span>
+      <div class="topbar-actions">
+        <button class="topbar-icon-btn" aria-label="Notificaciones">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button class="topbar-icon-btn topbar-hamburger" (click)="sidebar.toggle()" aria-label="Abrir menú">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
       </div>
-      <span class="sidebar-brand-name">EcoNexo</span>
-    </a>
-    <nav class="sidebar-nav">
-      <a routerLink="/home" class="nav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-          <rect x="3" y="3" width="7" height="7" rx="1"/>
-          <rect x="14" y="3" width="7" height="7" rx="1"/>
-          <rect x="3" y="14" width="7" height="7" rx="1"/>
-          <rect x="14" y="14" width="7" height="7" rx="1"/>
-        </svg>
-        Panel Principal
-      </a>
-      <a routerLink="/perfil" class="nav-item" routerLinkActive="active">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-          <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-          <circle cx="12" cy="7" r="4"/>
-        </svg>
-        Mi Perfil
-      </a>
-      <a routerLink="/mis-pedidos" class="nav-item" routerLinkActive="active">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
-          <line x1="3" y1="6" x2="21" y2="6"/>
-          <path d="M16 10a4 4 0 01-8 0"/>
-        </svg>
-        Mis Pedidos
-      </a>
-      <a routerLink="/mis-resenas" class="nav-item" routerLinkActive="active">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-        </svg>
-        Mis Reseñas
-      </a>
-      <a routerLink="/configuracion" class="nav-item" routerLinkActive="active">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
-        </svg>
-        Configuración
-      </a>
-    </nav>
-    <button class="sidebar-logout" (click)="onLogout()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
-        <polyline points="16 17 21 12 16 7"/>
-        <line x1="21" y1="12" x2="9" y2="12"/>
-      </svg>
-      Cerrar Sesión
-    </button>
-  </aside>
+    </header>
 
   <!-- ─── Main ─── -->
   <main class="dashboard-main">
@@ -160,7 +128,7 @@
                     </span>
                   </div>
                   <div class="order-meta">
-                    {{ order.code }} · {{ order.items_count }} artículo{{ order.items_count !== 1 ? 's' : '' }} · {{ order.created_at | date:'yyyy-MM-dd' }}
+                    {{ order.code }} · {{ order.items_count }} artículo{{ order.items_count !== 1 ? 's' : '' }} · {{ (order.pickup_date || order.created_at) | date:'yyyy-MM-dd' }}
                   </div>
                   @if (order.business_address) {
                     <div class="order-address">{{ order.business_address }}</div>
@@ -302,7 +270,7 @@
                       <span class="cal-count-badge">{{ cell.orders.length }}</span>
                     }
                   </div>
-                  @for (order of cell.orders; track order.id) {
+                  @for (order of getVisibleOrdersForDay(cell.day); track order.id) {
                     <span [class]="chipClass(order.status)">{{ order.business_name }}</span>
                   }
                 }
@@ -312,10 +280,10 @@
 
           <!-- Legend -->
           <div class="cal-legend">
-            <span class="legend-item"><span class="legend-dot dot-entregado"></span>Entregado</span>
-            <span class="legend-item"><span class="legend-dot dot-encamino"></span>En Camino</span>
-            <span class="legend-item"><span class="legend-dot dot-preparando"></span>Preparando</span>
-            <span class="legend-item"><span class="legend-dot dot-cancelado"></span>Cancelado</span>
+            <span class="legend-item"><span class="legend-dot dot-completed"></span>Completado</span>
+            <span class="legend-item"><span class="legend-dot dot-listo"></span>Listo</span>
+            <span class="legend-item"><span class="legend-dot dot-confirmed"></span>En Proceso</span>
+            <span class="legend-item"><span class="legend-dot dot-pending"></span>Pendiente</span>
           </div>
         </div>
 
@@ -355,6 +323,8 @@
     }
 
   </main>
+
+  </div> <!-- Close main-wrapper -->
 </div>
 
 <!-- ─── Detail modal ─── -->
@@ -399,22 +369,36 @@
         <span class="modal-total-value">{{ detailOrder()!.total_price.toFixed(2) }}€</span>
       </div>
 
-      @if (detailOrder()!.business_address) {
-        <div class="modal-meta-block">
-          <span class="modal-meta-label">Dirección de entrega:</span>
-          <span class="modal-meta-value">{{ detailOrder()!.business_address }}</span>
-        </div>
-      }
-
       <div class="modal-meta-block">
-        <span class="modal-meta-label">Fecha:</span>
-        <span class="modal-meta-value">{{ detailOrder()!.created_at | date:'yyyy-MM-dd' }}</span>
+        <span class="modal-meta-label">Fecha de recogida:</span>
+        <span class="modal-meta-value">{{ (detailOrder()!.pickup_date || detailOrder()!.created_at) | date:'yyyy-MM-dd' }}</span>
       </div>
 
       @if (detailOrder()!.payment_method) {
         <div class="modal-meta-block">
           <span class="modal-meta-label">Método de pago:</span>
           <span class="modal-meta-value">{{ detailOrder()!.payment_method }}</span>
+        </div>
+      }
+
+      @if (detailOrder()!.delivery_method) {
+        <div class="modal-meta-block">
+          <span class="modal-meta-label">Método de recogida:</span>
+          <span class="modal-meta-value">{{ deliveryMethodLabel(detailOrder()!.delivery_method) }}</span>
+        </div>
+      }
+
+      @if (detailOrder()!.delivery_method === 'delivery' && detailOrder()!.user_address) {
+        <div class="modal-meta-block">
+          <span class="modal-meta-label">Dirección de entrega:</span>
+          <span class="modal-meta-value">{{ detailOrder()!.user_address }}</span>
+        </div>
+      }
+
+      @if (detailOrder()!.delivery_method === 'pickup' && detailOrder()!.business_address) {
+        <div class="modal-meta-block">
+          <span class="modal-meta-label">Dirección de recogida:</span>
+          <span class="modal-meta-value">{{ detailOrder()!.business_address }}</span>
         </div>
       }
     </div>

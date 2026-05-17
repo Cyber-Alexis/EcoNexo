@@ -8,14 +8,19 @@ import {
   inject,
   signal,
   OnInit,
+  OnDestroy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/auth.service';
 import { CartService } from '../../../core/services/cart.service';
+import { OrderService } from '../../../core/services/order.service';
 import { environment } from '../../../../environments/environment';
+import { ConsumerSidebar } from '../consumer-sidebar/consumer-sidebar';
 
 export interface OrderItem {
   product_id: number;
@@ -35,6 +40,8 @@ export interface Order {
   payment_method: string;
   pickup_date: string | null;
   created_at: string;
+  delivery_method: string;
+  user_address: string;
   business_id: number;
   business_name: string;
   business_address: string;
@@ -43,32 +50,33 @@ export interface Order {
 }
 
 const STATUS_LABELS: Record<string, string> = {
-  pending:     'Pendiente',
-  confirmed:   'Confirmado',
-  preparando:  'Preparando',
-  en_camino:   'En Camino',
-  completed:   'Completado',
-  entregado:   'Entregado',
-  cancelled:   'Cancelado',
-  cancelado:   'Cancelado',
+  pending:   'Pendiente',
+  confirmed: 'En Proceso',
+  listo:     'Listo',
+  completed: 'Completado',
+  cancelled: 'Cancelado',
 };
 
 @Component({
   selector: 'app-mis-pedidos',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, FormsModule, ConsumerSidebar],
   templateUrl: './mis-pedidos.html',
   styleUrl: './mis-pedidos.css',
 })
-export class MisPedidos implements OnInit {
+export class MisPedidos implements OnInit, OnDestroy {
   private http        = inject(HttpClient);
   private router      = inject(Router);
   private authService = inject(AuthService);
   private cartService = inject(CartService);
+  private orderService = inject(OrderService);
   private ngZone      = inject(NgZone);
   private cdr         = inject(ChangeDetectorRef);
   private base = environment.apiUrl;
+  private destroy$ = new Subject<void>();
+
+  userName = '';
 
   // ── Signals ──────────────────────────────────────────────
   readonly orders        = signal<Order[]>([]);
@@ -140,6 +148,7 @@ export class MisPedidos implements OnInit {
   readonly selectedDay   = signal<number | null>(null);
   readonly calFilter     = signal('');
   readonly calFilterOpen = signal(false);
+  readonly viewportWidth = signal(typeof window !== 'undefined' ? window.innerWidth : 1920);
 
   private readonly MONTHS = [
     'Enero','Febrero','Marzo','Abril','Mayo','Junio',
@@ -147,33 +156,44 @@ export class MisPedidos implements OnInit {
   ];
 
   readonly calFilterOptions = [
-    { value: '',           label: 'Todos' },
-    { value: 'preparando', label: 'Preparando' },
-    { value: 'en_camino',  label: 'En Camino' },
-    { value: 'entregado',  label: 'Entregado' },
+    { value: '',          label: 'Todos' },
+    { value: 'pending',   label: 'Pendiente' },
+    { value: 'confirmed', label: 'En Proceso' },
+    { value: 'listo',     label: 'Listo' },
+    { value: 'completed', label: 'Completado' },
+    { value: 'cancelled', label: 'Cancelado' },
   ];
 
   readonly monthName = computed(() =>
-    `${this.MONTHS[this.calMonth()]} De ${this.calYear()}`
+    `${this.MONTHS[this.calMonth()]} ${this.calYear()}`
   );
 
   readonly calFilterLabel = computed(() =>
     this.calFilterOptions.find(o => o.value === this.calFilter())?.label ?? 'Todos'
   );
 
+  readonly maxVisibleOrders = computed(() => {
+    const w = this.viewportWidth();
+    if (w >= 1024) return 3;  // Desktop: celdas grandes
+    if (w >= 768)  return 3;  // Tablet: celdas grandes
+    if (w >= 480)  return 2;  // Mobile: celdas medianas
+    return 1;                 // Small mobile: celdas pequeñas
+  });
+
   readonly statsForMonth = computed(() => {
     const y = this.calYear(), m = this.calMonth();
     const mo = this.orders().filter(o => {
-      const d = new Date(o.created_at);
+      if (!o.pickup_date) return false;
+      const d = new Date(o.pickup_date);
       return d.getFullYear() === y && d.getMonth() === m;
     });
     return {
       total:      mo.length,
-      entregados: mo.filter(o => ['entregado', 'completed'].includes(o.status)).length,
+      entregados: mo.filter(o => o.status === 'completed').length,
       pendientes: mo.filter(o =>
-        !['entregado', 'completed', 'cancelled', 'cancelado'].includes(o.status)
+        !['completed', 'cancelled'].includes(o.status)
       ).length,
-      gasto: mo.reduce((s, o) => s + o.total_price, 0),
+      gasto: mo.filter(o => o.status === 'completed').reduce((s, o) => s + o.total_price, 0),
     };
   });
 
@@ -189,7 +209,8 @@ export class MisPedidos implements OnInit {
       cells.push({
         day: d,
         orders: this.orders().filter(o => {
-          const dt = new Date(o.created_at);
+          if (!o.pickup_date) return false;
+          const dt = new Date(o.pickup_date);
           return dt.getFullYear() === y && dt.getMonth() === m && dt.getDate() === d
             && (!f || o.status === f);
         }),
@@ -204,13 +225,19 @@ export class MisPedidos implements OnInit {
     if (day === null) return [];
     const y = this.calYear(), m = this.calMonth(), f = this.calFilter();
     return this.orders().filter(o => {
-      const dt = new Date(o.created_at);
+      if (!o.pickup_date) return false;
+      const dt = new Date(o.pickup_date);
       return dt.getFullYear() === y && dt.getMonth() === m && dt.getDate() === day
         && (!f || o.status === f);
     });
   });
 
   // ─────────────────────────────────────────────────────────
+
+  @HostListener('window:resize')
+  onResize(): void {
+    this.viewportWidth.set(window.innerWidth);
+  }
 
   @HostListener('document:click', ['$event'])
   onDocClick(e: Event): void {
@@ -220,22 +247,32 @@ export class MisPedidos implements OnInit {
   }
 
   ngOnInit(): void {
-    this.http.get<Order[]>(`${this.base}/orders`).subscribe({
-      next: (orders) => {
+    const user = this.authService.getUser();
+    if (user) {
+      this.userName = user.name;
+    }
+
+    // Suscribirse al Observable de órdenes del consumidor
+    this.orderService.consumerOrders$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(orders => {
         this.ngZone.run(() => {
-          this.orders.set(orders);
+          this.orders.set(orders as Order[]);
           this.loading.set(false);
           this.loadReviewedBizIds();
           this.cdr.markForCheck();
         });
-      },
-      error: () => {
-        this.ngZone.run(() => {
-          this.loading.set(false);
-          this.cdr.markForCheck();
-        });
-      },
-    });
+      });
+
+    // Iniciar polling automático cada 30 segundos
+    this.orderService.startConsumerPolling(30000);
+  }
+
+  ngOnDestroy(): void {
+    // Detener polling al destruir el componente
+    this.orderService.stopConsumerPolling();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private loadReviewedBizIds(): void {
@@ -264,7 +301,7 @@ export class MisPedidos implements OnInit {
   }
 
   isDelivered(order: Order): boolean {
-    return ['completed', 'entregado'].includes(order.status);
+    return order.status === 'completed';
   }
 
   hasReviewed(order: Order): boolean {
@@ -376,14 +413,34 @@ export class MisPedidos implements OnInit {
       && t.getDate() === day;
   }
 
+  getVisibleOrdersForDay(day: number | null): Order[] {
+    if (day === null) return [];
+    const cell = this.calendarDays().find(c => c.day === day);
+    if (!cell) return [];
+    const maxOrders = this.maxVisibleOrders();
+    return cell.orders.slice(0, maxOrders); // Límite adaptativo según tamaño de celda
+  }
+
+  deliveryMethodLabel(method: string): string {
+    const labels: Record<string, string> = {
+      'pickup': 'Recogida en tienda',
+      'delivery': 'Entrega a domicilio'
+    };
+    return labels[method] ?? method;
+  }
+
   chipClass(status: string): string {
     const m: Record<string, string> = {
-      entregado: 'chip-entregado', completed: 'chip-entregado',
-      en_camino: 'chip-encamino',
-      preparando: 'chip-preparando', confirmed: 'chip-preparando',
-      pending:   'chip-pending',
-      cancelled: 'chip-cancelado', cancelado: 'chip-cancelado',
+      completed:  'chip-completed',
+      entregado:  'chip-completed',
+      listo:      'chip-listo',
+      confirmed:  'chip-confirmed',
+      en_camino:  'chip-confirmed',
+      preparando: 'chip-pending',
+      pending:    'chip-pending',
+      cancelled:  'chip-cancelado',
+      cancelado:  'chip-cancelado',
     };
-    return `order-chip ${m[status] ?? 'chip-preparando'}`;
+    return `order-chip ${m[status] ?? 'chip-pending'}`;
   }
 }

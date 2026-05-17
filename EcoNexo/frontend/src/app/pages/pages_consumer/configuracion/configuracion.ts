@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { ConsumerSidebar } from '../consumer-sidebar/consumer-sidebar';
 
 function passwordsMatch(control: AbstractControl): ValidationErrors | null {
   const parent = control.parent;
@@ -14,7 +15,7 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
 @Component({
   selector: 'app-configuracion',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, RouterLinkActive, ConsumerSidebar],
   templateUrl: './configuracion.html',
   styleUrl: './configuracion.css',
 })
@@ -22,6 +23,8 @@ export class Configuracion implements OnInit {
   private router = inject(Router);
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
+
+  userName = '';
 
   // Password form
   pwdSaving = false;
@@ -50,6 +53,9 @@ export class Configuracion implements OnInit {
 
   ngOnInit(): void {
     const user = this.authService.getUser();
+    if (user) {
+      this.userName = user.name;
+    }
     if (user) {
       this.notifOrderUpdates    = user.notif_order_updates    ?? true;
       this.notifPromotions      = user.notif_promotions       ?? false;

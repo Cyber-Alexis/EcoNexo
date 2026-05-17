@@ -5,6 +5,7 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../core/services/auth.service';
 import { environment } from '../../../../environments/environment';
+import { ConsumerSidebar } from '../consumer-sidebar/consumer-sidebar';
 
 export interface Review {
   id: number;
@@ -30,7 +31,7 @@ export interface PendingReview {
 @Component({
   selector: 'app-mis-resenas',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, RouterLinkActive, ConsumerSidebar],
   templateUrl: './mis-resenas.html',
   styleUrl: './mis-resenas.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -43,6 +44,8 @@ export class MisResenas implements OnInit {
   private ngZone     = inject(NgZone);
   private cdr        = inject(ChangeDetectorRef);
   private base = environment.apiUrl;
+
+  userName = '';
 
   activeTab    = signal<'written' | 'pending'>('written');
 
@@ -78,6 +81,10 @@ export class MisResenas implements OnInit {
   deleteLoading  = signal(false);
 
   ngOnInit(): void {
+    const user = this.authService.getUser();
+    if (user) {
+      this.userName = user.name;
+    }
     this.load();
   }
 
