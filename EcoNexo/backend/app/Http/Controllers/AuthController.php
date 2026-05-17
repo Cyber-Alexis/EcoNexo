@@ -60,6 +60,8 @@ class AuthController extends Controller
             'last_name' => 'required|string|max:255',
             'email'     => 'required|email|max:255|unique:users',
             'password'  => 'required|string|min:6',
+        ], [
+            'email.unique' => 'El correo electrónico ya está en uso.',
         ]);
 
         $user = User::create([
@@ -87,6 +89,8 @@ class AuthController extends Controller
             'email'         => 'required|email|max:255|unique:users',
             'password'      => 'required|string|min:6',
             'business_name' => 'required|string|max:255',
+        ], [
+            'email.unique' => 'El correo electrónico ya está en uso.',
         ]);
 
         $user = User::create([
