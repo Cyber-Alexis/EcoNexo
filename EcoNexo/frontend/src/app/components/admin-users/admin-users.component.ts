@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Subscription } from 'rxjs';
 import { AdminService, User, AdminStatistics } from '../../services/admin.service';
 
 interface UserForm {
@@ -24,7 +25,7 @@ interface UserForm {
   templateUrl: './admin-users.component.html',
   styleUrls: ['./admin-users.component.css']
 })
-export class AdminUsersComponent implements OnInit {
+export class AdminUsersComponent implements OnInit, OnDestroy {
   users: User[] = [];
   statistics: AdminStatistics | null = null;
   currentPage = 1;
@@ -44,11 +45,94 @@ export class AdminUsersComponent implements OnInit {
   editingUserId: number | null = null;
   formData: UserForm = this.initializeForm();
 
+  // Suscripciones
+  private subscriptions = new Subscription();
+  
+  // Control de auto-refresh
+  autoRefreshEnabled = true;
+  autoRefreshInterval = 30000; // 30 segundos
+  lastUpdate: Date | null = null;
+
   constructor(private adminService: AdminService) {}
 
   ngOnInit(): void {
     this.loadUsers();
+    this.setupReactiveSubscriptions();
+    
+    // Iniciar auto-refresh si está habilitado
+    if (this.autoRefreshEnabled) {
+      this.adminService.startAutoRefresh(this.autoRefreshInterval);
+    }
+  }
+
+  ngOnDestroy(): void {
+    // Limpiar todas las suscripciones
+    this.subscriptions.unsubscribe();
+    this.adminService.stopAutoRefresh();
+  }
+
+  /**
+   * Configurar suscripciones reactivas
+   */
+  setupReactiveSubscriptions(): void {
+    // Suscribirse a estadísticas reactivas
+    this.subscriptions.add(
+      this.adminService.statistics$.subscribe(statistics => {
+        if (statistics) {
+          this.statistics = statistics;
+          this.lastUpdate = new Date();
+        }
+      })
+    );
+
+    // Suscribirse a errores reactivos
+    this.subscriptions.add(
+      this.adminService.error$.subscribe(error => {
+        if (error && !this.error) {
+          // Solo mostrar si no hay error local ya mostrado
+          this.error = error;
+        }
+      })
+    );
+
+    // Suscribirse a estado de carga
+    this.subscriptions.add(
+      this.adminService.loading$.subscribe(loading => {
+        if (!this.isLoading) {
+          this.isLoading = loading;
+        }
+      })
+    );
+
+    // Cargar estadísticas iniciales
     this.loadStatistics();
+  }
+
+  /**
+   * Alternar auto-refresh
+   */
+  toggleAutoRefresh(): void {
+    this.autoRefreshEnabled = !this.autoRefreshEnabled;
+    
+    if (this.autoRefreshEnabled) {
+      this.adminService.startAutoRefresh(this.autoRefreshInterval);
+      this.successMessage = 'Auto-actualización activada';
+    } else {
+      this.adminService.stopAutoRefresh();
+      this.successMessage = 'Auto-actualización desactivada';
+    }
+    
+    setTimeout(() => (this.successMessage = null), 2000);
+  }
+
+  /**
+   * Refrescar datos manualmente
+   */
+  refreshData(): void {
+    this.loadUsers(this.currentPage);
+    this.adminService.refreshStatistics();
+    this.successMessage = 'Datos actualizados';
+    setTimeout(() => (this.successMessage = null), 2000);
   }
 
   /**
@@ -81,17 +165,22 @@ export class AdminUsersComponent implements OnInit {
   }
 
   /**
-   * Load admin statistics
+   * Load admin statistics (con actualización reactiva)
    */
   loadStatistics(): void {
-    this.adminService.getStatistics().subscribe({
-      next: (response: any) => {
-        this.statistics = response.data;
-      },
-      error: (error: HttpErrorResponse) => {
-        console.error('Error loading statistics:', error);
-      }
-    });
+    this.subscriptions.add(
+      this.adminService.getStatistics().subscribe({
+        next: (response: any) => {
+          // Los datos ya están en el BehaviorSubject
+          // pero actualizamos la referencia local por compatibilidad
+          this.statistics = response.data;
+          this.lastUpdate = new Date();
+        },
+        error: (error: HttpErrorResponse) => {
+          console.error('Error loading statistics:', error);
+        }
+      })
+    );
   }
 
   /**
@@ -161,7 +250,7 @@ export class AdminUsersComponent implements OnInit {
           this.successMessage = 'Usuario actualizado exitosamente';
           this.closeModal();
           this.loadUsers(this.currentPage);
-          this.loadStatistics();
+          this.adminService.refreshStatistics();
           setTimeout(() => (this.successMessage = null), 3000);
         },
         error: (error: HttpErrorResponse) => {
@@ -178,7 +267,7 @@ export class AdminUsersComponent implements OnInit {
           this.closeModal();
           this.currentPage = 1;
           this.loadUsers();
-          this.loadStatistics();
+          this.adminService.refreshStatistics();
           setTimeout(() => (this.successMessage = null), 3000);
         },
         error: (error: HttpErrorResponse) => {
@@ -202,7 +291,7 @@ export class AdminUsersComponent implements OnInit {
       next: () => {
         this.successMessage = 'Estado del usuario actualizado';
         this.loadUsers(this.currentPage);
-        this.loadStatistics();
+        this.adminService.refreshStatistics(); // Usar refresh reactivo
         setTimeout(() => (this.successMessage = null), 3000);
       },
       error: (error: HttpErrorResponse) => {
@@ -224,7 +313,7 @@ export class AdminUsersComponent implements OnInit {
       next: () => {
         this.successMessage = 'Usuario eliminado exitosamente';
         this.loadUsers(this.currentPage);
-        this.loadStatistics();
+        this.adminService.refreshStatistics(); // Usar refresh reactivo
         setTimeout(() => (this.successMessage = null), 3000);
       },
       error: (error: HttpErrorResponse) => {

@@ -91,7 +91,19 @@ export class EstadisticasProductor implements OnInit, AfterViewInit, OnDestroy {
   readonly periodLabel = 'Último mes';
 
   // Language translation
-  currentLanguage = 'es';
+  currentLanguage = '';
+
+  private detectCurrentLanguage(): string {
+    try {
+      const selectElement = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+      if (selectElement && selectElement.value) {
+        return selectElement.value;
+      }
+    } catch (error) {
+      console.error('Error detecting language:', error);
+    }
+    return 'es';
+  }
 
   changeLanguage(lang: string): void {
     if (this.currentLanguage === lang) return;
@@ -115,6 +127,9 @@ export class EstadisticasProductor implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Detectar idioma actual
+    this.currentLanguage = this.detectCurrentLanguage();
+    
     interval(30_000)
       .pipe(startWith(0), takeUntil(this.destroy$))
       .subscribe(() => this.loadStats());

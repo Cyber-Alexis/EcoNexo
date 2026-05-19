@@ -37,7 +37,19 @@ export class VistaNegocio implements OnInit {
   private cdr = inject(ChangeDetectorRef);
 
   // Language translation
-  currentLanguage = 'es';
+  currentLanguage = '';
+
+  private detectCurrentLanguage(): string {
+    try {
+      const selectElement = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+      if (selectElement && selectElement.value) {
+        return selectElement.value;
+      }
+    } catch (error) {
+      console.error('Error detecting language:', error);
+    }
+    return 'es';
+  }
 
   changeLanguage(lang: string): void {
     if (this.currentLanguage === lang) return;
@@ -61,6 +73,9 @@ export class VistaNegocio implements OnInit {
   }
 
   ngOnInit() {
+    // Detectar idioma actual
+    this.currentLanguage = this.detectCurrentLanguage();
+    
     // DEBUG: Verificar estado inicial
     console.log('[VISTA-NEGOCIO] ngOnInit');
     

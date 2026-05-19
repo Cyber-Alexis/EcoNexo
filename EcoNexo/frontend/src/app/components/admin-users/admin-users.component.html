@@ -4,6 +4,26 @@
     <div class="header-content">
       <h1>Administración de Usuarios</h1>
       <p class="subtitle">Gestiona todos los usuarios de la plataforma</p>
+      <div class="refresh-controls">
+        <button 
+          class="btn btn-sm btn-outline" 
+          (click)="refreshData()"
+          title="Refrescar datos manualmente">
+          🔄 Actualizar
+        </button>
+        <button 
+          class="btn btn-sm btn-outline" 
+          (click)="toggleAutoRefresh()"
+          [class.active]="autoRefreshEnabled"
+          title="Activar/desactivar actualización automática">
+          {{ autoRefreshEnabled ? '⏸️' : '▶️' }} Auto-refresh
+        </button>
+        @if (lastUpdate) {
+          <span class="last-update">
+            Última actualización: {{ lastUpdate | date:'HH:mm:ss' }}
+          </span>
+        }
+      </div>
     </div>
     <button class="btn btn-primary" (click)="openCreateUserModal()">
       <span>➕</span> Crear Usuario
@@ -11,7 +31,8 @@
   </div>
 
   <!-- Statistics -->
-  <div class="statistics-container" *ngIf="statistics">
+  @if (statistics) {
+    <div class="statistics-container">
     <div class="stat-card">
       <div class="stat-value">{{ statistics.total_users }}</div>
       <div class="stat-label">Total Usuarios</div>
@@ -36,18 +57,23 @@
       <div class="stat-value">{{ statistics.blocked_users }}</div>
       <div class="stat-label">Bloqueados</div>
     </div>
-  </div>
+    </div>
+  }
 
   <!-- Alerts -->
-  <div *ngIf="error" class="alert alert-danger alert-dismissible" role="alert">
-    <strong>⚠️ Error:</strong> {{ error }}
-    <button type="button" class="btn-close" (click)="error = null"></button>
-  </div>
+  @if (error) {
+    <div class="alert alert-danger alert-dismissible" role="alert">
+      <strong>⚠️ Error:</strong> {{ error }}
+      <button type="button" class="btn-close" (click)="error = null"></button>
+    </div>
+  }
 
-  <div *ngIf="successMessage" class="alert alert-success alert-dismissible" role="alert">
-    <strong>✅ Éxito:</strong> {{ successMessage }}
-    <button type="button" class="btn-close" (click)="successMessage = null"></button>
-  </div>
+  @if (successMessage) {
+    <div class="alert alert-success alert-dismissible" role="alert">
+      <strong>✅ Éxito:</strong> {{ successMessage }}
+      <button type="button" class="btn-close" (click)="successMessage = null"></button>
+    </div>
+  }
 
   <!-- Filters -->
   <div class="filters-section">
@@ -97,7 +123,8 @@
 
   <!-- Users Table -->
   <div class="table-container">
-    <table class="users-table" *ngIf="!isLoading">
+    @if (!isLoading) {
+      <table class="users-table">
       <thead>
         <tr>
           <th>Usuario</th>
@@ -109,13 +136,16 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let user of users" class="user-row">
+        @for (user of users; track user.id) {
+          <tr class="user-row">
           <td class="user-name">
             <div class="user-info">
               <div class="user-avatar">{{ user.name.charAt(0).toUpperCase() }}</div>
               <div>
                 <div class="name">{{ user.name }} {{ user.last_name }}</div>
-                <small *ngIf="user.phone" class="phone">{{ user.phone }}</small>
+                @if (user.phone) {
+                  <small class="phone">{{ user.phone }}</small>
+                }
               </div>
             </div>
           </td>
@@ -127,12 +157,20 @@
           </td>
           <td>
             <span class="badge" [ngClass]="getStatusColor(user.status)">
-              <ng-container [ngSwitch]="user.status">
-                <ng-container *ngSwitchCase="'activo'">✅ Activo</ng-container>
-                <ng-container *ngSwitchCase="'inactivo'">⏸️ Inactivo</ng-container>
-                <ng-container *ngSwitchCase="'bloqueado'"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" style="vertical-align:middle;margin-right:3px"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 2c2.13 0 4.08.74 5.62 1.96L4.96 17.62A7.96 7.96 0 0 1 4 12c0-4.41 3.59-8 8-8zm0 16c-2.13 0-4.08-.74-5.62-1.96L19.04 6.38A7.96 7.96 0 0 1 20 12c0 4.41-3.59 8-8 8z" fill="currentColor"/></svg> Bloqueado</ng-container>
-                <ng-container *ngSwitchCase="'pendiente'">⏳ Pendiente</ng-container>
-              </ng-container>
+              @switch (user.status) {
+                @case ('activo') {
+                  ✅ Activo
+                }
+                @case ('inactivo') {
+                  ⏸️ Inactivo
+                }
+                @case ('bloqueado') {
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" style="vertical-align:middle;margin-right:3px"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 2c2.13 0 4.08.74 5.62 1.96L4.96 17.62A7.96 7.96 0 0 1 4 12c0-4.41 3.59-8 8-8zm0 16c-2.13 0-4.08-.74-5.62-1.96L19.04 6.38A7.96 7.96 0 0 1 20 12c0 4.41-3.59 8-8 8z" fill="currentColor"/></svg> Bloqueado
+                }
+                @case ('pendiente') {
+                  ⏳ Pendiente
+                }
+              }
             </span>
           </td>
           <td>{{ formatDate(user.created_at) }}</td>
@@ -145,22 +183,24 @@
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm17.71-10.21a1 1 0 0 0 0-1.42l-2.34-2.34a1 1 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z" fill="currentColor"/></svg>
               </button>
-              <button
-                class="btn btn-sm btn-warning"
-                *ngIf="user.status !== 'bloqueado'"
-                title="Bloquear"
-                (click)="changeUserStatus(user, 'bloqueado')"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 2c2.13 0 4.08.74 5.62 1.96L4.96 17.62A7.96 7.96 0 0 1 4 12c0-4.41 3.59-8 8-8zm0 16c-2.13 0-4.08-.74-5.62-1.96L19.04 6.38A7.96 7.96 0 0 1 20 12c0 4.41-3.59 8-8 8z" fill="currentColor"/></svg>
-              </button>
-              <button
-                class="btn btn-sm btn-success"
-                *ngIf="user.status !== 'activo'"
-                title="Activar"
-                (click)="changeUserStatus(user, 'activo')"
-              >
-                ✅
-              </button>
+              @if (user.status !== 'bloqueado') {
+                <button
+                  class="btn btn-sm btn-warning"
+                  title="Bloquear"
+                  (click)="changeUserStatus(user, 'bloqueado')"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 2c2.13 0 4.08.74 5.62 1.96L4.96 17.62A7.96 7.96 0 0 1 4 12c0-4.41 3.59-8 8-8zm0 16c-2.13 0-4.08-.74-5.62-1.96L19.04 6.38A7.96 7.96 0 0 1 20 12c0 4.41-3.59 8-8 8z" fill="currentColor"/></svg>
+                </button>
+              }
+              @if (user.status !== 'activo') {
+                <button
+                  class="btn btn-sm btn-success"
+                  title="Activar"
+                  (click)="changeUserStatus(user, 'activo')"
+                >
+                  ✅
+                </button>
+              }
               <button
                 class="btn btn-sm btn-danger"
                 title="Eliminar"
@@ -170,24 +210,31 @@
               </button>
             </div>
           </td>
-        </tr>
+          </tr>
+        }
 
-        <tr *ngIf="users.length === 0" class="no-data">
-          <td colspan="6" class="text-center">
-            <p>No hay usuarios que coincidan con los filtros</p>
-          </td>
-        </tr>
+        @if (users.length === 0) {
+          <tr class="no-data">
+            <td colspan="6" class="text-center">
+              <p>No hay usuarios que coincidan con los filtros</p>
+            </td>
+          </tr>
+        }
       </tbody>
-    </table>
+      </table>
+    }
 
-    <div *ngIf="isLoading" class="loading">
-      <div class="spinner"></div>
-      <p>Cargando usuarios...</p>
-    </div>
+    @if (isLoading) {
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Cargando usuarios...</p>
+      </div>
+    }
   </div>
 
   <!-- Pagination -->
-  <div class="pagination-container" *ngIf="totalPages > 1">
+  @if (totalPages > 1) {
+    <div class="pagination-container">
     <button
       class="btn btn-sm"
       [disabled]="currentPage === 1"
@@ -207,10 +254,12 @@
     >
       Siguiente →
     </button>
-  </div>
+    </div>
+  }
 
   <!-- Modal -->
-  <div class="modal" *ngIf="showModal" [class.show]="showModal">
+  @if (showModal) {
+    <div class="modal" [class.show]="showModal">
     <div class="modal-content">
       <div class="modal-header">
         <h2>{{ isEditMode ? 'Editar Usuario' : 'Crear Nuevo Usuario' }}</h2>
@@ -254,10 +303,11 @@
               [attr.name]="'email'"
               placeholder="correo@ejemplo.com"
               [readonly]="isEditMode"
-            />x
+            />
           </div>
 
-          <div class="form-group" *ngIf="!isEditMode">
+          @if (!isEditMode) {
+            <div class="form-group">
             <label for="password">Contraseña:</label>
             <input
               type="password"
@@ -267,7 +317,8 @@
               [attr.name]="'password'"
               placeholder="Contraseña segura"
             />
-          </div>
+            </div>
+          }
 
           <div class="form-row">
             <div class="form-group">
@@ -347,8 +398,11 @@
         </button>
       </div>
     </div>
-  </div>
+    </div>
+  }
 
   <!-- Modal Overlay -->
-  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()"></div>
+  @if (showModal) {
+    <div class="modal-overlay" (click)="closeModal()"></div>
+  }
 </div>

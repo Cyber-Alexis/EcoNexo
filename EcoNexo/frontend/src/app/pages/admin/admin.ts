@@ -33,7 +33,19 @@ export class Admin implements OnInit {
   activeSection = 'dashboard';
   currentUser: AuthUser | null = null;
   isMobileMenuOpen = false;
-  currentLanguage = 'es';
+  currentLanguage = '';
+
+  private detectCurrentLanguage(): string {
+    try {
+      const selectElement = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+      if (selectElement && selectElement.value) {
+        return selectElement.value;
+      }
+    } catch (error) {
+      console.error('Error detecting language:', error);
+    }
+    return 'es';
+  }
 
   // Users data
   users: User[] = [];
@@ -95,6 +107,9 @@ export class Admin implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Detectar idioma actual
+    this.currentLanguage = this.detectCurrentLanguage();
+    
     this.currentUser = this.authService.getUser();
 
     if (!this.authService.isLoggedIn()) {
@@ -102,15 +117,11 @@ export class Admin implements OnInit {
       return;
     }
 
-    // Load dashboard data immediately from cached user while fetchMe is in flight
-    if (this.currentUser?.role === 'admin') {
-      this.loadStatistics(true);
-      this.startAutoRefresh();
-    }
-
+    // Verify session and initialize admin panel
     this.authService.fetchMe().subscribe({
       next: user => this.initializeAdminSession(user),
       error: err => {
+        // Fallback to cached user if available and is admin
         if (this.currentUser?.role === 'admin') {
           this.initializeAdminSession(this.currentUser);
           return;
@@ -177,27 +188,36 @@ export class Admin implements OnInit {
     this.adminService.getAllUsers(page, this.selectedRole, 'todos', this.searchQuery)
       .pipe(finalize(() => {
         if (!silent) {
-          this.isLoading = false;
+          this.ngZone.run(() => {
+            this.isLoading = false;
+            this.cdr.detectChanges();
+          });
         }
       }))
       .subscribe({
       next: (res: any) => {
-        const pageData = res?.data?.data ? res.data : res?.data ? res : null;
+        this.ngZone.run(() => {
+          const pageData = res?.data?.data ? res.data : res?.data ? res : null;
 
-        this.users = Array.isArray(pageData?.data) ? pageData.data : [];
-        this.currentPage = Number(pageData?.current_page ?? 1);
-        this.totalPages = Number(pageData?.last_page ?? 1);
-        this.totalUsers = Number(pageData?.total ?? this.users.length);
+          this.users = Array.isArray(pageData?.data) ? pageData.data : [];
+          this.currentPage = Number(pageData?.current_page ?? 1);
+          this.totalPages = Number(pageData?.last_page ?? 1);
+          this.totalUsers = Number(pageData?.total ?? this.users.length);
+          this.cdr.detectChanges();
+        });
       },
       error: (err) => {
-        console.error('Error loading admin users:', err);
-        if (!silent) {
-          this.isLoading = false;
-        }
-        this.users = [];
-        this.error = err.status === 403
-          ? 'No tienes permisos para consultar usuarios administradores.'
-          : 'Error al cargar los usuarios';
+        this.ngZone.run(() => {
+          console.error('Error loading admin users:', err);
+          if (!silent) {
+            this.isLoading = false;
+          }
+          this.users = [];
+          this.error = err.status === 403
+            ? 'No tienes permisos para consultar usuarios administradores.'
+            : 'Error al cargar los usuarios';
+          this.cdr.detectChanges();
+        });
       }
     });
   }
@@ -207,18 +227,32 @@ export class Admin implements OnInit {
     if (!force && this.statsLoadedAt && (now - this.statsLoadedAt) < this.STATS_TTL_MS) {
       return; // Data is still fresh
     }
+    
+    // Mostrar loading solo si no hay datos previos
+    if (!this.statistics) {
+      this.isLoading = true;
+    }
+    
     this.adminService.getStatistics().subscribe({
       next: (res: any) => {
-        const stats: AdminStatistics = res?.data ?? res ?? null;
-        this.statistics = stats;
-        this.statsLoadedAt = Date.now();
-        this.lastUpdatedAt = stats?.last_updated_at ?? new Date().toISOString();
+        this.ngZone.run(() => {
+          const stats: AdminStatistics = res?.data ?? res ?? null;
+          this.statistics = stats;
+          this.statsLoadedAt = Date.now();
+          this.lastUpdatedAt = stats?.last_updated_at ?? new Date().toISOString();
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        });
       },
       error: (err) => {
-        console.error('Error loading admin statistics:', err);
-        this.error = err.status === 403
-          ? 'No tienes permisos para acceder al panel de administración.'
-          : 'No se pudieron cargar las métricas en tiempo real.';
+        this.ngZone.run(() => {
+          console.error('Error loading admin statistics:', err);
+          this.error = err.status === 403
+            ? 'No tienes permisos para acceder al panel de administración.'
+            : 'No se pudieron cargar las métricas en tiempo real.';
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        });
       }
     });
   }
@@ -779,7 +813,9 @@ export class Admin implements OnInit {
     }
 
     this.error = null;
-    this.loadStatistics();
+    
+    // Force reload statistics on session initialization to ensure fresh data
+    this.loadStatistics(true);
 
     // Only load section data if not already cached
     if (this.activeSection === 'usuarios') {

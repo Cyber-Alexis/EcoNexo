@@ -29,6 +29,50 @@
   font-size: 1rem;
 }
 
+/* Refresh Controls */
+.refresh-controls {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.refresh-controls .btn-outline {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  border: 1px solid #dee2e6;
+  background: white;
+  color: #495057;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.refresh-controls .btn-outline:hover {
+  background: #f8f9fa;
+  border-color: #adb5bd;
+}
+
+.refresh-controls .btn-outline.active {
+  background: #28a745;
+  color: white;
+  border-color: #28a745;
+}
+
+.refresh-controls .btn-outline.active:hover {
+  background: #218838;
+  border-color: #1e7e34;
+}
+
+.last-update {
+  font-size: 0.85rem;
+  color: #6c757d;
+  padding: 0.5rem 0.75rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
 /* Statistics */
 .statistics-container {
   display: grid;

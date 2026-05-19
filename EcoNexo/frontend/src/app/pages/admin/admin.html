@@ -1,11 +1,12 @@
 <div class="admin-layout">
-  <button
-    *ngIf="isMobileMenuOpen"
-    type="button"
-    class="sidebar-backdrop"
-    (click)="closeMobileMenu()"
-    aria-label="Cerrar menú lateral"
-  ></button>
+  @if (isMobileMenuOpen) {
+    <button
+      type="button"
+      class="sidebar-backdrop"
+      (click)="closeMobileMenu()"
+      aria-label="Cerrar menú lateral"
+    ></button>
+  }
 
   <!-- SIDEBAR -->
   <aside class="sidebar" [class.sidebar-open]="isMobileMenuOpen">
@@ -143,13 +144,15 @@
     <main class="main-content">
 
     <!-- ========== USUARIOS SECTION ========== -->
-    <div *ngIf="activeSection === 'usuarios'">
+    @if (activeSection === 'usuarios') {
+    <div>
       <div class="page-header">
         <h1>Administración de Usuarios</h1>
       </div>
 
       <!-- Stats -->
-      <ng-container *ngIf="statistics">
+      @if (statistics) {
+      <ng-container>
         <div class="stats-grid">
           <div class="stat-card">
             <div class="stat-number">{{ statistics!.total_users }}</div>
@@ -169,10 +172,11 @@
           </div>
         </div>
       </ng-container>
+      }
 
       <!-- Alerts -->
-      <div *ngIf="successMessage" class="alert alert-success">✅ {{ successMessage }}</div>
-      <div *ngIf="error && !showModal" class="alert alert-error">⚠️ {{ error }}</div>
+      @if (successMessage) { <div class="alert alert-success">✅ {{ successMessage }}</div> }
+      @if (error && !showModal) { <div class="alert alert-error">⚠️ {{ error }}</div> }
 
       <!-- Users Panel -->
       <div class="panel">
@@ -204,12 +208,15 @@
 
         <!-- Table -->
         <div class="table-wrapper">
-          <div *ngIf="isLoading" class="loading-state">
+          @if (isLoading) {
+          <div class="loading-state">
             <div class="spinner"></div>
             <p>Cargando usuarios...</p>
           </div>
+          }
 
-          <table *ngIf="!isLoading" class="users-table">
+          @if (!isLoading) {
+          <table class="users-table">
             <thead>
               <tr>
                 <th>Usuario</th>
@@ -221,7 +228,8 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let user of users">
+              @for (user of users; track user.id) {
+              <tr>
                 <td class="user-cell">
                   <div class="user-avatar-sm">{{ user.name.charAt(0) }}</div>
                   <div>
@@ -236,12 +244,12 @@
                 </td>
                 <td>
                   <span class="badge" [ngClass]="getStatusBadge(user.status)">
-                    <ng-container [ngSwitch]="user.status">
-                      <ng-container *ngSwitchCase="'activo'">Activo</ng-container>
-                      <ng-container *ngSwitchCase="'inactivo'">Inactivo</ng-container>
-                      <ng-container *ngSwitchCase="'bloqueado'">Bloqueado</ng-container>
-                      <ng-container *ngSwitchCase="'pendiente'">Pendiente</ng-container>
-                    </ng-container>
+                    @switch (user.status) {
+                      @case ('activo') { Activo }
+                      @case ('inactivo') { Inactivo }
+                      @case ('bloqueado') { Bloqueado }
+                      @case ('pendiente') { Pendiente }
+                    }
                   </span>
                 </td>
                 <td class="date-cell notranslate">{{ formatDate(user.created_at) }}</td>
@@ -249,51 +257,64 @@
                 <td class="actions-cell">
                   <div class="action-menu">
                     <button class="action-btn" title="Editar" (click)="openEditModal(user)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm17.71-10.21a1 1 0 0 0 0-1.42l-2.34-2.34a1 1 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z" fill="currentColor"/></svg></button>
-                    <button class="action-btn" title="Activar" *ngIf="user.status !== 'activo'" (click)="changeStatus(user, 'activo')">✅</button>
-                    <button class="action-btn" title="Bloquear" *ngIf="user.status !== 'bloqueado'" (click)="changeStatus(user, 'bloqueado')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 2c2.13 0 4.08.74 5.62 1.96L4.96 17.62A7.96 7.96 0 0 1 4 12c0-4.41 3.59-8 8-8zm0 16c-2.13 0-4.08-.74-5.62-1.96L19.04 6.38A7.96 7.96 0 0 1 20 12c0 4.41-3.59 8-8 8z" fill="currentColor"/></svg></button>
+                    @if (user.status !== 'activo') { <button class="action-btn" title="Activar" (click)="changeStatus(user, 'activo')">✅</button> }
+                    @if (user.status !== 'bloqueado') { <button class="action-btn" title="Bloquear" (click)="changeStatus(user, 'bloqueado')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 2c2.13 0 4.08.74 5.62 1.96L4.96 17.62A7.96 7.96 0 0 1 4 12c0-4.41 3.59-8 8-8zm0 16c-2.13 0-4.08-.74-5.62-1.96L19.04 6.38A7.96 7.96 0 0 1 20 12c0 4.41-3.59 8-8 8z" fill="currentColor"/></svg></button> }
                     <button class="action-btn action-delete" title="Eliminar" (click)="deleteUser(user)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM8 9h8v10H8V9zm7.5-5-1-1h-5l-1 1H5v2h14V4h-3.5z" fill="currentColor"/></svg></button>
                   </div>
                 </td>
               </tr>
-              <tr *ngIf="users.length === 0 && !isLoading">
+              }
+              @if (users.length === 0 && !isLoading) {
+              <tr>
                 <td colspan="6" class="empty-state">No hay usuarios que coincidan con los filtros</td>
               </tr>
+              }
             </tbody>
           </table>
+          }
         </div>
 
         <!-- Pagination -->
-        <div class="pagination" *ngIf="totalPages > 1">
+        @if (totalPages > 1) {
+        <div class="pagination">
           <button [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">← Anterior</button>
           <span>Página {{ currentPage }} de {{ totalPages }}</span>
           <button [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">Siguiente →</button>
         </div>
+        }
       </div>
     </div>
+    }
 
     <!-- ========== ANÁLISIS SECTION ========== -->
-    <div *ngIf="activeSection === 'analisis'">
+    @if (activeSection === 'analisis') {
+    <div>
       <div class="page-header">
         <h1>Análisis y Control</h1>
         <p class="page-subtitle">Métricas reales extraídas de la base de datos de EcoNexo.</p>
       </div>
 
-      <div *ngIf="isAnalyticsLoading" class="analytics-loading">
+      @if (isAnalyticsLoading) {
+      <div class="analytics-loading">
         <div class="spinner"></div>
         <p>Cargando datos...</p>
       </div>
+      }
 
-      <ng-container *ngIf="!isAnalyticsLoading && analytics">
+      @if (!isAnalyticsLoading && analytics) {
+      <ng-container>
 
         <!-- KPI Cards -->
         <div class="analytics-kpi-grid">
-          <article class="analytics-kpi-card" *ngFor="let kpi of analytics.kpis">
+          @for (kpi of analytics.kpis; track $index) {
+          <article class="analytics-kpi-card">
             <div class="analytics-kpi-label">{{ kpi.label }}</div>
             <div class="analytics-kpi-value">{{ kpi.value }}</div>
             <div class="analytics-kpi-change" [class.change-positive]="kpi.change_positive" [class.change-negative]="!kpi.change_positive">
               {{ kpi.change_label }}
             </div>
           </article>
+          }
         </div>
 
         <!-- Charts row -->
@@ -313,8 +334,8 @@
                 <line x1="0" y1="90" x2="460" y2="90" stroke="#f1f5f9" stroke-width="1"/>
                 <line x1="0" y1="128" x2="460" y2="128" stroke="#f1f5f9" stroke-width="1"/>
                 <!-- bars -->
+                @for (bar of getMonthlySalesBars(); track $index) {
                 <rect
-                  *ngFor="let bar of getMonthlySalesBars()"
                   [attr.x]="bar.x"
                   [attr.y]="bar.y"
                   [attr.width]="bar.width"
@@ -322,15 +343,17 @@
                   rx="4"
                   fill="#0f6b53"
                 />
+                }
                 <!-- x-axis labels -->
+                @for (bar of getMonthlySalesBars(); track $index) {
                 <text
-                  *ngFor="let bar of getMonthlySalesBars()"
                   [attr.x]="bar.x + bar.width / 2"
                   y="185"
                   text-anchor="middle"
                   font-size="11"
                   fill="#9ca3af"
                 >{{ bar.label }}</text>
+                }
                 <!-- x-axis line -->
                 <line x1="0" y1="168" x2="460" y2="168" stroke="#e5e7eb" stroke-width="1"/>
               </svg>
@@ -351,15 +374,16 @@
                 <line x1="0" y1="90" x2="400" y2="90" stroke="#f1f5f9" stroke-width="1"/>
                 <line x1="0" y1="128" x2="400" y2="128" stroke="#f1f5f9" stroke-width="1"/>
                 <!-- area fill -->
+                @if (getWeeklyTrafficPoints()) {
                 <polyline
-                  *ngIf="getWeeklyTrafficPoints()"
                   [attr.points]="'0,168 ' + getWeeklyTrafficPoints() + ' 400,168'"
                   fill="rgba(15,107,83,0.08)"
                   stroke="none"
                 />
+                }
                 <!-- line -->
+                @if (getWeeklyTrafficPoints()) {
                 <polyline
-                  *ngIf="getWeeklyTrafficPoints()"
                   [attr.points]="getWeeklyTrafficPoints()"
                   fill="none"
                   stroke="#0f6b53"
@@ -367,9 +391,10 @@
                   stroke-linejoin="round"
                   stroke-linecap="round"
                 />
+                }
                 <!-- dots -->
+                @for (dot of getWeeklyTrafficDots(); track $index) {
                 <circle
-                  *ngFor="let dot of getWeeklyTrafficDots()"
                   [attr.cx]="dot.cx"
                   [attr.cy]="dot.cy"
                   r="4"
@@ -377,15 +402,17 @@
                   stroke="#0f6b53"
                   stroke-width="2"
                 />
+                }
                 <!-- x-axis labels -->
+                @for (item of analytics.weekly_traffic; track $index; let i = $index) {
                 <text
-                  *ngFor="let item of analytics.weekly_traffic; let i = index"
                   [attr.x]="i * (400 / (analytics.weekly_traffic.length - 1))"
                   y="188"
                   text-anchor="middle"
                   font-size="11"
                   fill="#9ca3af"
                 >{{ item.day }}</text>
+                }
                 <!-- x-axis line -->
                 <line x1="0" y1="168" x2="400" y2="168" stroke="#e5e7eb" stroke-width="1"/>
               </svg>
@@ -394,7 +421,8 @@
         </div>
 
         <!-- Category Distribution -->
-        <section class="panel analytics-category-panel" *ngIf="analytics.category_distribution.length">
+        @if (analytics.category_distribution.length) {
+        <section class="panel analytics-category-panel">
           <div class="analytics-chart-header">
             <h2>Distribución por Categoría</h2>
             <p>Porcentaje de ventas por categoría de producto</p>
@@ -404,17 +432,21 @@
               <div class="analytics-pie" [style.background]="getCategoryGradient()"></div>
             </div>
             <div class="analytics-category-legend">
-              <div class="analytics-legend-item" *ngFor="let item of analytics.category_distribution; let i = index">
+              @for (item of analytics.category_distribution; track $index; let i = $index) {
+              <div class="analytics-legend-item">
                 <span class="analytics-legend-dot" [style.background]="getCategoryColors()[i % getCategoryColors().length]"></span>
                 <span class="analytics-legend-name">{{ item.name }}:</span>
                 <strong>{{ item.percentage }}%</strong>
               </div>
+              }
             </div>
           </div>
         </section>
+        }
 
         <!-- Empty state for categories -->
-        <section class="panel analytics-category-panel" *ngIf="!analytics.category_distribution.length">
+        @if (!analytics.category_distribution.length) {
+        <section class="panel analytics-category-panel">
           <div class="analytics-chart-header">
             <h2>Distribución por Categoría</h2>
             <p>Porcentaje de ventas por categoría de producto</p>
@@ -423,13 +455,27 @@
             <p>Sin datos de ventas por categoría todavía.</p>
           </div>
         </section>
+        }
 
       </ng-container>
+      }
     </div>
+    }
 
     <!-- ========== DASHBOARD SECTION ========== -->
-    <div *ngIf="activeSection === 'dashboard'">
-      <ng-container *ngIf="statistics">
+    @if (activeSection === 'dashboard') {
+    <div>
+      
+      <!-- Loading state -->
+      @if (isLoading && !statistics) {
+      <div class="dashboard-loading">
+        <div class="spinner"></div>
+        <p>Cargando panel de administración...</p>
+      </div>
+      }
+      
+      @if (statistics) {
+      <ng-container>
       <div class="page-header dashboard-header">
         <div>
           <h1>Panel de Administración</h1>
@@ -442,7 +488,8 @@
       </div>
 
       <div class="dashboard-overview">
-        <article class="overview-card" *ngFor="let card of getOverviewCards()">
+        @for (card of getOverviewCards(); track $index) {
+        <article class="overview-card">
           <div class="overview-card-label">{{ card.label }}</div>
           <div class="overview-card-value">{{ formatCardValue(card) }}</div>
           <div class="overview-card-trend" [ngClass]="getChangeClass(card.change_percentage)">
@@ -450,9 +497,11 @@
             <span>{{ card.comparison_label }}</span>
           </div>
         </article>
+        }
       </div>
 
-      <div class="dashboard-grid" *ngIf="statistics">
+      @if (statistics) {
+      <div class="dashboard-grid">
         <section class="panel dashboard-panel">
           <div class="panel-header panel-header-stack">
             <div>
@@ -462,7 +511,8 @@
           </div>
 
           <div class="system-status-list">
-            <div class="system-status-item" *ngFor="let item of getSystemStatus()">
+            @for (item of getSystemStatus(); track $index) {
+            <div class="system-status-item">
               <div>
                 <div class="system-status-title">{{ item.label }}</div>
                 <div class="system-status-detail">{{ item.detail }}</div>
@@ -472,6 +522,7 @@
                 <span class="system-status-badge" [ngClass]="getSystemStatusClass(item.status)">{{ item.status }}</span>
               </div>
             </div>
+            }
           </div>
         </section>
 
@@ -484,7 +535,8 @@
           </div>
 
           <div class="activity-list">
-            <div class="activity-item" *ngFor="let activity of getRecentActivity()">
+            @for (activity of getRecentActivity(); track $index) {
+            <div class="activity-item">
               <span class="activity-dot" [ngClass]="getActivityStatusClass(activity.status)"></span>
               <div class="activity-content">
                 <div class="activity-title">{{ activity.title }}</div>
@@ -492,11 +544,14 @@
                 <div class="activity-time">{{ getRelativeTime(activity.occurred_at) }}</div>
               </div>
             </div>
+            }
           </div>
         </section>
       </div>
+      }
 
-      <div class="dashboard-mini-grid" *ngIf="statistics">
+      @if (statistics) {
+      <div class="dashboard-mini-grid">
         <article class="mini-stat-card">
           <span class="mini-stat-label">Pedidos totales</span>
           <strong>{{ statistics!.total_orders }}</strong>
@@ -513,26 +568,33 @@
           <small>{{ statistics!.active_users }} usuarios activos</small>
         </article>
       </div>
+      }
       </ng-container>
+      }
     </div>
+    }
 
     <!-- ========== CONFIGURACION SECTION ========== -->
-    <div *ngIf="activeSection === 'configuracion'">
+    @if (activeSection === 'configuracion') {
+    <div>
       <div class="page-header settings-page-header">
         <h1>Configuración del Sistema</h1>
       </div>
 
-      <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
-      <div *ngIf="error && !showModal" class="alert alert-error">{{ error }}</div>
+      @if (successMessage) { <div class="alert alert-success">{{ successMessage }}</div> }
+      @if (error && !showModal) { <div class="alert alert-error">{{ error }}</div> }
 
-      <div *ngIf="isSettingsLoading" class="panel settings-loading-panel">
+      @if (isSettingsLoading) {
+      <div class="panel settings-loading-panel">
         <div class="loading-state">
           <div class="spinner"></div>
           <p>Cargando configuración del sistema...</p>
         </div>
       </div>
+      }
 
-      <div *ngIf="!isSettingsLoading" class="settings-layout">
+      @if (!isSettingsLoading) {
+      <div class="settings-layout">
         <section class="panel settings-panel">
           <div class="settings-panel-header">
             <div>
@@ -585,14 +647,17 @@
           </div>
         </section>
       </div>
+      }
     </div>
+    }
 
   </main>
   </div><!-- main-wrapper -->
 </div><!-- admin-layout -->
 
 <!-- ========== MODAL CREATE/EDIT ========== -->
-<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+@if (showModal) {
+<div class="modal-overlay" (click)="closeModal()">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>{{ isEditMode ? 'Editar Usuario' : 'Crear Usuario' }}</h2>
@@ -600,7 +665,7 @@
     </div>
 
     <div class="modal-body">
-      <div *ngIf="error" class="alert alert-error">⚠️ {{ error }}</div>
+      @if (error) { <div class="alert alert-error">⚠️ {{ error }}</div> }
 
       <div class="form-grid">
         <div class="form-group">
@@ -615,10 +680,12 @@
           <label>Email *</label>
           <input type="email" [(ngModel)]="formData.email" placeholder="correo@ejemplo.com" />
         </div>
-        <div class="form-group form-full" *ngIf="!isEditMode">
+        @if (!isEditMode) {
+        <div class="form-group form-full">
           <label>Contraseña *</label>
           <input type="password" [(ngModel)]="formData.password" placeholder="Mínimo 6 caracteres" />
         </div>
+        }
         <div class="form-group">
           <label>Rol</label>
           <select [(ngModel)]="formData.role">
@@ -655,3 +722,4 @@
     </div>
   </div>
 </div>
+}

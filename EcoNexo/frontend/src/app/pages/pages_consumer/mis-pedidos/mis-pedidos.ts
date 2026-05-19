@@ -248,7 +248,19 @@ export class MisPedidos implements OnInit, OnDestroy {
   }
 
   // Language translation
-  currentLanguage = 'es';
+  currentLanguage = '';
+
+  private detectCurrentLanguage(): string {
+    try {
+      const selectElement = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+      if (selectElement && selectElement.value) {
+        return selectElement.value;
+      }
+    } catch (error) {
+      console.error('Error detecting language:', error);
+    }
+    return 'es';
+  }
 
   changeLanguage(lang: string): void {
     if (this.currentLanguage === lang) return;
@@ -279,6 +291,9 @@ export class MisPedidos implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Detectar idioma actual
+    this.currentLanguage = this.detectCurrentLanguage();
+    
     const user = this.authService.getUser();
     if (user) {
       this.userName = user.name;

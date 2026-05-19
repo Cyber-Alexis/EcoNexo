@@ -55,7 +55,19 @@ export class Configuracion implements OnInit {
   deleting = false;
 
   // Language translation
-  currentLanguage = 'es';
+  currentLanguage = '';
+
+  private detectCurrentLanguage(): string {
+    try {
+      const selectElement = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+      if (selectElement && selectElement.value) {
+        return selectElement.value;
+      }
+    } catch (error) {
+      console.error('Error detecting language:', error);
+    }
+    return 'es';
+  }
 
   changeLanguage(lang: string): void {
     if (this.currentLanguage === lang) return;
@@ -79,6 +91,9 @@ export class Configuracion implements OnInit {
   }
 
   ngOnInit(): void {
+    // Detectar idioma actual
+    this.currentLanguage = this.detectCurrentLanguage();
+    
     const user = this.authService.getUser();
     if (user) {
       this.userName = user.name;

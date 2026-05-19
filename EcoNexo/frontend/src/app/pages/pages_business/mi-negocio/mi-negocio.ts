@@ -112,7 +112,19 @@ export class MiNegocio implements OnInit, CanComponentDeactivate {
   });
 
   // Language translation
-  currentLanguage = 'es';
+  currentLanguage = '';
+
+  private detectCurrentLanguage(): string {
+    try {
+      const selectElement = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+      if (selectElement && selectElement.value) {
+        return selectElement.value;
+      }
+    } catch (error) {
+      console.error('Error detecting language:', error);
+    }
+    return 'es';
+  }
 
   changeLanguage(lang: string): void {
     if (this.currentLanguage === lang) return;
@@ -136,6 +148,9 @@ export class MiNegocio implements OnInit, CanComponentDeactivate {
   }
 
   ngOnInit(): void {
+    // Detectar idioma actual
+    this.currentLanguage = this.detectCurrentLanguage();
+    
     this.form.get('category_name')?.disable(); // modo lectura por defecto
     
     // FIX: Forzar cierre de todos los modales al iniciar (prevenir bugs de estado)

@@ -37,7 +37,7 @@
   gap: 12px;
   padding: 18px 14px 22px;
   border-bottom: 1px solid #eef2f7;
-  font-weight: 700;
+  font-weight: 500;
   font-size: 1.06rem;
 }
 
@@ -59,7 +59,8 @@
 
 .logo-text {
   color: #23313d;
-  font-size: 1rem;
+  font-size: 1.1rem;
+  font-weight: 700;
   letter-spacing: -0.02em;
 }
 
@@ -87,7 +88,7 @@
   background: transparent;
   border: none;
   color: #6b7280;
-  font-size: 0.97rem;
+  font-size: 0.9rem;
   font-weight: 500;
   transition: all 0.2s;
   text-decoration: none;
@@ -103,7 +104,7 @@
 .nav-item.active {
   background: #2D6A4F;
   color: #ffffff;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .nav-item.active .nav-icon {
@@ -132,7 +133,6 @@
 
 .sidebar-footer {
   padding: 18px 12px 16px;
-  border-top: 1px solid #eef2f7;
 }
 
 .user-info {
@@ -340,7 +340,7 @@
 
 .page-header h1 {
   font-size: 1.6rem;
-  font-weight: 700;
+  font-weight: 600;
   color: #1a2332;
   margin: 0;
 }
@@ -399,7 +399,7 @@
 .overview-card-value {
   margin-top: 10px;
   font-size: 2rem;
-  font-weight: 700;
+  font-weight: 600;
   color: #111827;
 }
 
@@ -418,6 +418,21 @@
 .trend-positive { color: #0f8a5f; }
 .trend-negative { color: #c2410c; }
 .trend-neutral { color: #64748b; }
+
+.dashboard-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.dashboard-loading p {
+  margin-top: 16px;
+  font-size: 0.95rem;
+  color: #6b7280;
+}
 
 .dashboard-grid {
   display: grid;
@@ -575,7 +590,7 @@
 .settings-panel-header h2 {
   margin: 0;
   font-size: 1.05rem;
-  font-weight: 700;
+  font-weight: 600;
   color: #1e293b;
 }
 
@@ -792,7 +807,7 @@
 
 .stat-number {
   font-size: 2rem;
-  font-weight: 700;
+  font-weight: 600;
   color: #1a2332;
 }
 
@@ -942,7 +957,7 @@
   color: #2e7d32;
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.875rem;
   flex-shrink: 0;
 }
@@ -1077,7 +1092,7 @@
 
 .modal-header h2 {
   font-size: 1.1rem;
-  font-weight: 700;
+  font-weight: 600;
   margin: 0;
   color: #1a2332;
 }
@@ -1422,7 +1437,7 @@
 
 .analytics-kpi-value {
   font-size: 2rem;
-  font-weight: 700;
+  font-weight: 600;
   color: #111827;
   line-height: 1.15;
 }
@@ -1454,7 +1469,7 @@
 
 .analytics-chart-header h2 {
   font-size: 1.05rem;
-  font-weight: 700;
+  font-weight: 600;
   color: #1e293b;
   margin: 0;
 }

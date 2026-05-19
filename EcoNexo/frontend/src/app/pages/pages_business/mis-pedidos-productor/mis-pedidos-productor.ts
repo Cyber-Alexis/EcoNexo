@@ -140,7 +140,19 @@ export class MisPedidosProductor implements OnInit, OnDestroy {
   }
 
   // Language translation
-  currentLanguage = 'es';
+  currentLanguage = '';
+
+  private detectCurrentLanguage(): string {
+    try {
+      const selectElement = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+      if (selectElement && selectElement.value) {
+        return selectElement.value;
+      }
+    } catch (error) {
+      console.error('Error detecting language:', error);
+    }
+    return 'es';
+  }
 
   changeLanguage(lang: string): void {
     if (this.currentLanguage === lang) return;
@@ -164,6 +176,9 @@ export class MisPedidosProductor implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Detectar idioma actual
+    this.currentLanguage = this.detectCurrentLanguage();
+    
     // Poll every 30 seconds for real-time updates
     interval(30_000)
       .pipe(startWith(0), takeUntil(this.destroy$))

@@ -15,5 +15,10 @@ export const adminGuard: CanActivateFn = () => {
     return true;
   }
 
+  // Redirect based on user role to avoid double redirections
+  if (user?.role === 'business') {
+    return router.createUrlTree(['/mi-negocio']);
+  }
+
   return router.createUrlTree(['/home']);
 };

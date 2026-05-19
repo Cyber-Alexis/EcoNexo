@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject, interval, Subscription } from 'rxjs';
+import { tap, switchMap, catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 export interface User {
@@ -170,7 +171,114 @@ export interface AnalyticsResponse {
 export class AdminService {
   private readonly baseUrl = `${environment.apiUrl}/admin`;
 
+  // Estado reactivo con BehaviorSubjects
+  private usersSubject = new BehaviorSubject<User[]>([]);
+  private statisticsSubject = new BehaviorSubject<AdminStatistics | null>(null);
+  private analyticsSubject = new BehaviorSubject<AdminAnalytics | null>(null);
+  private settingsSubject = new BehaviorSubject<AdminSettings | null>(null);
+  private loadingSubject = new BehaviorSubject<boolean>(false);
+  private errorSubject = new BehaviorSubject<string | null>(null);
+
+  // Observables públicos
+  public users$ = this.usersSubject.asObservable();
+  public statistics$ = this.statisticsSubject.asObservable();
+  public analytics$ = this.analyticsSubject.asObservable();
+  public settings$ = this.settingsSubject.asObservable();
+  public loading$ = this.loadingSubject.asObservable();
+  public error$ = this.errorSubject.asObservable();
+
+  // Auto-refresh configuration
+  private autoRefreshSubscription?: Subscription;
+  private autoRefreshInterval = 30000; // 30 segundos por defecto
+
   constructor(private http: HttpClient) { }
+
+  /**
+   * Iniciar auto-refresh de datos
+   */
+  startAutoRefresh(intervalMs?: number): void {
+    if (intervalMs) {
+      this.autoRefreshInterval = intervalMs;
+    }
+
+    // Detener cualquier auto-refresh previo
+    this.stopAutoRefresh();
+
+    // Crear nueva suscripción de auto-refresh
+    this.autoRefreshSubscription = interval(this.autoRefreshInterval)
+      .pipe(
+        switchMap(() => this.refreshAllData())
+      )
+      .subscribe();
+  }
+
+  /**
+   * Detener auto-refresh
+   */
+  stopAutoRefresh(): void {
+    if (this.autoRefreshSubscription) {
+      this.autoRefreshSubscription.unsubscribe();
+      this.autoRefreshSubscription = undefined;
+    }
+  }
+
+  /**
+   * Refrescar todos los datos
+   */
+  refreshAllData(): Observable<any> {
+    return new Observable(observer => {
+      this.refreshStatistics();
+      observer.complete();
+    });
+  }
+
+  /**
+   * Refrescar estadísticas
+   */
+  refreshStatistics(): void {
+    this.getStatistics().subscribe({
+      next: (response) => {
+        this.statisticsSubject.next(response.data);
+        this.errorSubject.next(null);
+      },
+      error: (error) => {
+        console.error('Error refreshing statistics:', error);
+        this.errorSubject.next('Error al actualizar estadísticas');
+      }
+    });
+  }
+
+  /**
+   * Refrescar analíticas
+   */
+  refreshAnalytics(): void {
+    this.getAnalytics().subscribe({
+      next: (response) => {
+        this.analyticsSubject.next(response.data);
+        this.errorSubject.next(null);
+      },
+      error: (error) => {
+        console.error('Error refreshing analytics:', error);
+        this.errorSubject.next('Error al actualizar analíticas');
+      }
+    });
+  }
+
+  /**
+   * Refrescar configuración
+   */
+  refreshSettings(): void {
+    this.getSettings().subscribe({
+      next: (response) => {
+        this.settingsSubject.next(response.data);
+        this.errorSubject.next(null);
+      },
+      error: (error) => {
+        console.error('Error refreshing settings:', error);
+        this.errorSubject.next('Error al actualizar configuración');
+      }
+    });
+  }
 
   /**
    * Get all users with optional filters
@@ -240,7 +348,16 @@ export class AdminService {
    * Get admin statistics
    */
   getStatistics(): Observable<StatisticsResponse> {
-    return this.http.get<StatisticsResponse>(`${this.baseUrl}/statistics`);
+    return this.http.get<StatisticsResponse>(`${this.baseUrl}/statistics`).pipe(
+      tap(response => {
+        this.statisticsSubject.next(response.data);
+        this.errorSubject.next(null);
+      }),
+      catchError(error => {
+        this.errorSubject.next('Error al cargar estadísticas');
+        throw error;
+      })
+    );
   }
 
   getSettings(): Observable<SettingsResponse> {
@@ -264,6 +381,15 @@ export class AdminService {
   }
 
   getAnalytics(): Observable<AnalyticsResponse> {
-    return this.http.get<AnalyticsResponse>(`${this.baseUrl}/analytics`);
+    return this.http.get<AnalyticsResponse>(`${this.baseUrl}/analytics`).pipe(
+      tap(response => {
+        this.analyticsSubject.next(response.data);
+        this.errorSubject.next(null);
+      }),
+      catchError(error => {
+        this.errorSubject.next('Error al cargar analíticas');
+        throw error;
+      })
+    );
   }
 }
